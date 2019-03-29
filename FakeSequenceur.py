@@ -104,6 +104,13 @@ class Sequenceur:
             'conditionFin': 'immediat'
         },
         {
+            'instruction': 'suiviImageRoues',  # suiviImageLigneDroite ou suiviImageRoues
+            'activationDistanceIntegrale': True,
+            'vitesse': 2,
+            'conditionFin': 'tacho',
+            'tacho': 10,
+        },
+        {
             'instruction': 'ligneDroite',  # Puis finit le virage 180°
             'vitesse': 2,
             'conditionFin': 'tacho',

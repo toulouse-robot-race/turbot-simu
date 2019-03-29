@@ -1,3 +1,7 @@
+import os
+
+print(os.getcwd())
+
 from Simulator import Simulator
 from FakeSequenceur import Sequenceur
 from FakeVoiture import Voiture
@@ -33,6 +37,7 @@ simulator.start_simulation()
 while time.time() < simulation_duration_seconds:
     speedController.compute_tacho()
     arduino.compute_gyro()
+    imageAnalyser.execute()
     # print(speedController.get_tacho())
     # print(simulator.get_float_signal("gyroZ"))
     # print(simulator.get_float_signal("gyroX"))

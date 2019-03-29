@@ -1,34 +1,60 @@
 # coding=utf-8
-from __future__ import print_function
 import numpy as np
-
+from matplotlib import pyplot as plt
 import cv2
 
 
 class ImageAnalyser:
+    # Constantes
+    MODEL_FILENAME = 'deep_learning_models/craie_quarter_filters_6.h5'
+    DELAY_EXECUTION = 0.07
+    LINE_THRESHOLD = 0.10
+    EVITEMENT_OFFSET = 0.30
+    X_INFERENCE_POINT_1 = 100  # Point depuis le haut de l'image pris pour calculer l'ecart par rapport a la ligne
+    X_INFERENCE_POINT_2 = 150  # Point depuis le haut de l'image pris pour calculer l'ecart par rapport a la ligne
+    WIDTH = 320
+    SAVE_TO_FILENAME = "/tmp_ram/imageAnalysisResult.json"
+    LOG_EVERY_N_IMAGES = 20  # Loggue les images toutes les N
+    LOG_BUFFER_SIZE = 10  # Taille du buffer (nombre d'images enregistrees dans un fichier)
+
     # Constants for cleaning inference results. IMPORTANT to recalibrate this on real conditions track.
     MIN_AREA_RATIO = 0.35  # if area / area_of_biggest_contour is less than this ratio, contour is bad
     MIN_AREA_TO_KEEP = 100.  # if max_area if less than this, reject all image
     MIN_THRESHOLD_CONTOUR = 10
     MAX_VALUE_CONTOUR = 255
 
+    # Param�tres de classe
+    position_consigne = 0.0
+    logTimestampMemory = None
+    logImageMemory = None
+    logMask0Memory = None
+    logMask1Memory = None
+    log_counter = 0
+
+    # Param�tres pour mesurer les temps d'ex�cution
+    time_start = 0.
+    max_time = 0.
+    first_time = True
+    last_execution_time = 0
+
     # Initialisation de la position de la ligne (evite crash si pas de ligne detectee au lancement)
     position_ligne_1 = 0.
     position_ligne_2 = 0.
-    poly_coeff = None
+    poly_coeff_square = None
 
     def __init__(self, simulator, cam_handle):
         self.cam_handle = cam_handle
         self.simulator = simulator
 
-    def analyse_image(self):
+    def execute(self):
         resolution, byte_array_image_string = self.simulator.get_gray_image(self.cam_handle)
         mask0 = self.convert_image_to_numpy(byte_array_image_string, resolution)
         mask0 = self.clean_mask(mask0)
-        self.position_ligne_1, self.position_ligne_2, self.poly_coeff = self.get_ecart_ligne(mask0)
-        print("Position lignes: {:.2f} {:.2f} Poly_coeff_square: {:.4f}".format(self.position_ligne_1,
-                                                                                self.position_ligne_2,
-                                                                                self.poly_coeff))
+        self.position_ligne_1, self.position_ligne_2, poly_coeff = self.get_ecart_ligne(mask0)
+        if poly_coeff is not None:
+            self.poly_coeff_square = poly_coeff[0]
+        else:
+            self.poly_coeff_square = None
 
     def convert_image_to_numpy(self, byte_array_image_string, resolution):
         return np.flipud(np.fromstring(byte_array_image_string, dtype=np.uint8).reshape(resolution[::-1]))
@@ -85,7 +111,9 @@ class ImageAnalyser:
     def get_ecart_ligne(self, image):
 
         def poly_2_interpol(image):
+            print(image)
             nonzeros_indexes = np.nonzero((image > self.LINE_THRESHOLD).copy())
+            print(nonzeros_indexes)
             x = nonzeros_indexes[0]
             y = nonzeros_indexes[1]
             if len(x) < 2:
@@ -103,6 +131,7 @@ class ImageAnalyser:
         # Interpole la ligne � partir des points x, y
         poly2, poly_coeff = poly_2_interpol(image)
 
+
         if poly2 is None:
             # Si on a perdu la ligne, on fait l'hypothese qu'elle est du meme cote que la derniere fois qu'on l'a vue
             return self.position_ligne_1, self.position_ligne_2, None
@@ -110,3 +139,16 @@ class ImageAnalyser:
             position_1 = (2.0 * poly2(self.X_INFERENCE_POINT_1) / self.WIDTH) - 1.0
             position_2 = (2.0 * poly2(self.X_INFERENCE_POINT_2) / self.WIDTH) - 1.0
             return position_1, position_2, poly_coeff
+
+    def getPositionLigne1(self):
+        return self.position_ligne_1
+
+    def getPositionLigne2(self):
+        return self.position_ligne_2
+
+    def getPolyCoeffSquare(self):
+        return self.poly_coeff_square
+
+    # Tells if a new image has arrived
+    def isThereANewImage(self):
+        return True
