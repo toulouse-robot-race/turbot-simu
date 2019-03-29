@@ -81,20 +81,22 @@ class Asservissement:
         self.time = time
         self.timeLastCalculSuiviCourbe = time.time()
 
-    # A appeler lorsqu'on demarre un asservissement de ligne droite
+        # A appeler lorsqu'on demarre un asservissement de ligne droite
+
     def initLigneDroite(self):
         self.ligneDroite = True
         self.ligneDroiteTelemetre = False
         self.suiviCourbesTelemetre = False
         self.suiviImage = False
-        self.recalageAutoCap = False
         self.suiviImageCap = False
         self.suiviImageLigneDroite = False
         self.suiviImageRoues = False
+        self.recalageAutoCap = False
         self.cumulErreurCap = 0
 
-    # A appeler lorsqu'on demarre un asservissement de ligne droite au telemetre
-    # recalageCap indique si on doit recaler automatiquement le cap
+        # A appeler lorsqu'on demarre un asservissement de ligne droite au telemetre
+        # recalageCap indique si on doit recaler automatiquement le cap
+
     def initLigneDroiteTelemetre(self, distance, recalageCap, activationDistanceIntegrale, antiProche):
         self.ligneDroite = True
         self.ligneDroiteTelemetre = True
@@ -107,7 +109,8 @@ class Asservissement:
         self.activationDistanceIntegrale = activationDistanceIntegrale
         self.antiProche = antiProche
 
-    # A appeler lorsqu'on demarre un asservissement de suivi de ligne par reconnaissance d'image (strategie cap)
+        # A appeler lorsqu'on demarre un asservissement de suivi de ligne par reconnaissance d'image (strategie cap)
+
     def initSuiviImageCap(self):
         self.ligneDroite = False
         self.ligneDroiteTelemetre = False
@@ -122,8 +125,9 @@ class Asservissement:
         self.activationDistanceIntegrale = False
         self.antiProche = False
 
-    # A appeler lorsqu'on demarre un asservissement de suivi de ligne par reconnaissance d'image (strategie position roues)
-    def initSuiviImageRoues(self):
+        # A appeler lorsqu'on demarre un asservissement de suivi de ligne par reconnaissance d'image (strategie position roues)
+
+    def initSuiviImageRoues(self, offset=0.0):
         self.ligneDroite = False
         self.ligneDroiteTelemetre = False
         self.suiviCourbesTelemetre = False
@@ -132,13 +136,24 @@ class Asservissement:
         self.suiviImageRoues = True
         self.suiviImageLigneDroite = False
         self.recalageAutoCap = False
+        self.offset = offset
+        self.offset_hors_evitement = offset
+        self.cumulErreurPositionLigne = 0.0
         self.cumulErreurCap = 0.0
         self.cumulErreurBraquage = 0.0
         self.cumulErreurDistanceBordure = 0.0
         self.activationDistanceIntegrale = False
         self.antiProche = False
+        self.obstacleEnabled = True
+        self.vitesseEvitement = None
+        self.offset_progressif = False
+        self.last_position_obstacle = 0
+        self.marche_arriere_en_cours = 0
+        self.tacho_marche_arriere = 0
+        self.cote_marche_arriere = 0
 
-    # A appeler lorsqu'on demarre un asservissement de suivi de ligne par reconnaissance d'image (strategie ligne droite)
+        # A appeler lorsqu'on demarre un asservissement de suivi de ligne par reconnaissance d'image (strategie ligne droite)
+
     def initSuiviImageLigneDroite(self, activationDistanceIntegrale):
         self.ligneDroite = False
         self.ligneDroiteTelemetre = False
@@ -150,11 +165,13 @@ class Asservissement:
         self.recalageAutoCap = False
         self.cumulErreurPositionLigne = 0.0
         self.cumulErreurCap = 0.0
+        self.cumulErreurPositionLigne = 0.0
         self.cumulErreurDistanceBordure = 0.0
         self.activationDistanceIntegrale = activationDistanceIntegrale
         self.antiProche = False
 
-    # A appeler lorsqu'on demarre un asservissement de courbe au telemetre
+        # A appeler lorsqu'on demarre un asservissement de courbe au telemetre
+
     def initCourbeTelemetre(self, distance):
         self.ligneDroite = False
         self.ligneDroiteTelemetre = False
@@ -165,28 +182,38 @@ class Asservissement:
         self.cumulErreurCap = 0.0
         self.cumulErreurDistanceBordure = 0.0
 
-    # A appeler lorsqu'on modifie la vitesse (permet au coefficient P d'etre plus eleve quand on roule moins vite)
+        # A appeler lorsqu'on modifie la vitesse (permet au coefficient P d'etre plus eleve quand on roule moins vite)
+
     def setVitesse(self, vitesse):
         self.vitesse = vitesse
 
-    # A appeler lorsqu'on demarre un asservissement autre que la ligne droite
+        # A appeler lorsqu'on veut fixer une vitesse d'evitement d'obstacle plus faible que la vitesse standard
+
+    def setVitesseEvitement(self, vitesseEvitement):
+        self.vitesseEvitement = vitesseEvitement
+
+        # A appeler lorsqu'on demarre un asservissement autre que la ligne droite
+
     def annuleLigneDroite(self):
         self.ligneDroite = False
         self.ligneDroiteTelemetre = False
         self.recalageAutoCap = False
 
-    # Definit le cap a suivre au cap courant
+        # Definit le cap a suivre au cap courant
+
     def setCapTarget(self):
         target = self.arduino.getCap()
         print ('Cap Target : ', target)
         self.capTarget = target
 
-    # Ajoute deltaCap au cap a suivre
+        # Ajoute deltaCap au cap a suivre
+
     def ajouteCap(self, deltaCap):
         self.capTarget = (self.capTarget + deltaCap) % 360
         print ("Nouveau cap : ", self.capTarget)
 
-    # Verifie si le cap est compris entre capTarget+capFinalMini et capTarget+capFinalMaxi
+        # Verifie si le cap est compris entre capTarget+capFinalMini et capTarget+capFinalMaxi
+
     def checkDeltaCapAtteint(self, capFinalMini, capFinalMaxi):
         absoluteCapMini = (self.capTarget + capFinalMini) % 360
         absoluteCapMaxi = (self.capTarget + capFinalMaxi) % 360
@@ -210,6 +237,7 @@ class Asservissement:
         # On n'execute que s'il y a une nouvelle donnee gyro ou une nouvelle image en mode suiviImage
         if arduino.nouvelleDonneeGyro or (self.suiviImage and self.imageAnalysis.new_image_arrived):
 
+            arduino.nouvelleDonneeGyro = False
 
             capASuivre = 0.0
             positionRoues = 0
@@ -272,33 +300,41 @@ class Asservissement:
 
                 # Envoi de la position des roues au servo
                 if nouvellePositionRoues:
-                    print ("Position roues : ", positionRoues)
+                    print ("Position roues : {:.0f}".format(positionRoues))
                     self.voiture.tourne(positionRoues)
 
                 # Loggue cap, cap corrige, roulis, tangage, telemetre, instruction==ligne droite, instruction==ligne droite telemetre, cap Target, cap a suivre (apres correction telemetre), positionRoues
                 # paramLogger.info(str(arduino.gyroX) + ',' + str(arduino.getCap()) + ',' + str(arduino.gyroY) + ',' + str(arduino.gyroZ) + ',' + str(arduino.telemetre1) + ',' + str(self.ligneDroite) + ',' + str(self.ligneDroiteTelemetre) + ',' + str(self.capTarget) + ',' + str(capASuivre) + ',' + str(positionRoues) + ',' + str(arduino.telemetreIR) + ',' + str(arduino.telemetreLidar) + ',' + str(arduino.bestTelemetrePourSuiviBordure()) + ',' + str(arduino.bestTelemetrePourDetectionVirage()))
 
                 # Before logging, check if suivi_image vars exist, otherwise set them to None
-                # try:
-                #     braquage_courbure
-                # except NameError:
-                #     braquage_courbure = None
-                #     braquage_ecart_1 = None
-                #     braquage_ecart_2 = None
-                #     ecart_total = None
-                #     last_image_time = None
-                # paramLogger.info(str(arduino.getCap()) + ',' + str(self.ligneDroite) + ',' + str(
-                #     self.ligneDroiteTelemetre) + ',' + str(self.suiviImage) + ',' + str(self.capTarget) + ',' + str(
-                #     capASuivre) + ',' + str(positionRoues) + ',' + str(braquage_courbure) + ',' + str(
-                #     braquage_ecart_1) + ',' + str(braquage_ecart_2) + ',' + str(last_image_time))
+                try:
+                    braquage_courbure
+                except NameError:
+                    braquage_courbure = None
+                    braquage_ecart_1 = None
+                    braquage_ecart_2 = None
+                    ecart_total = None
+                    last_image_time = None
+                paramLogger.info(str(arduino.getCap()) + ',' + str(self.ligneDroite) + ',' + str(
+                    self.ligneDroiteTelemetre) + ',' + str(self.suiviImage) + ',' + str(self.capTarget) + ',' + str(
+                    capASuivre) + ',' + str(positionRoues) + ',' + str(braquage_courbure) + ',' + str(
+                    braquage_ecart_1) + ',' + str(braquage_ecart_2) + ',' + str(last_image_time) + ',' + str(
+                    self.currentOffset))
 
+        if arduino.nouvelleDonneeTelemetre1:
+            # Loggue cap, cap corrige, roulis, tangage, telemetre, instruction==ligne droite, instruction==ligne droite telemetre, cap Target, cap a suivre (apres correction telemetre), positionRoues
+            # paramLogger.info(str(arduino.gyroX) + ',' + str(arduino.getCap()) + ',' + str(arduino.gyroY) + ',' + str(arduino.gyroZ) + ',' + str(arduino.telemetre1) + ',' + str(self.ligneDroite) + ',' + str(self.ligneDroiteTelemetre) + ',' + str(self.capTarget) + ',' + '' + ',' + '' + ',' + str(arduino.telemetreIR) + ',' + str(arduino.telemetreLidar)  + ',' + str(arduino.bestTelemetrePourSuiviBordure()) + ',' + str(arduino.bestTelemetrePourDetectionVirage()))
+            arduino.nouvelleDonneeTelemetre1 = False
+            # print "Telemetre1 : ", "{:4.1f}".format(self.arduino.telemetre1), " TelemetreIR : ", "{:4.1f}".format(self.arduino.telemetreIR), " Lidar : ", self.arduino.telemetreLidar, " Best: ", self.arduino.bestTelemetre
+            # print "functionBest : ", "{:4.1f}".format(self.arduino.bestTelemetrePourSuiviBordure()), " TelemetreIR : ", "{:4.1f}".format(self.arduino.telemetreIR), " Lidar : ", self.arduino.telemetreLidar, " Best: ", self.arduino.bestTelemetre
+            # print "bestForVirage : ", "{:4.1f}".format(self.arduino.bestTelemetrePourDetectionVirage())
 
     def calculeCapSuiviImageLigneDroite(self):
 
-        self.COEFF_CAP_IMAGE_LIGNE_DROITE_P = 10
-        self.COEFF_CAP_IMAGE_LIGNE_DROITE_I = 1.0
+        self.COEFF_CAP_IMAGE_LIGNE_DROITE_P = 20
+        self.COEFF_CAP_IMAGE_LIGNE_DROITE_I = 0.5
         self.MAX_ERREUR_FOR_CUMUL_POSITION_LIGNE = 0.5
-        self.MAX_CUMUL_ERREUR_POSITION_LIGNE = 4.0
+        self.MAX_CUMUL_ERREUR_POSITION_LIGNE = 8.0
         self.MAX_CORRECTION_CAP_IMAGE_LIGNE_DROITE = 10.0
 
         # N'execute le calcul que s'il y a une nouvelle image
@@ -311,21 +347,25 @@ class Asservissement:
             position_ligne1 = self.imageAnalysis.getPositionLigne1()
             # position_ligne2 = self.imageAnalysis.getPositionLigne2()
 
-            erreurDistance = position_ligne1
-
+            # Calcul de la correction proportionnelle
+            if position_ligne1 is None:
+                erreurDistance = 0
+            else:
+                erreurDistance = position_ligne1
             correctionProportionnelle = erreurDistance * self.COEFF_CAP_IMAGE_LIGNE_DROITE_P
             print("Correction Proportionnelle: ", correctionProportionnelle)
 
+            # Calcul de la correction integrale
             maxVal = self.MAX_ERREUR_FOR_CUMUL_POSITION_LIGNE
             self.cumulErreurPositionLigne += max(min(erreurDistance, maxVal),
                                                  -maxVal)  # Inutile de cumuler trop vite quand on est vraiment trop loin
             # Maintient le cumul des erreurs à une valeur raisonnable
             maxVal = self.MAX_CUMUL_ERREUR_POSITION_LIGNE
-            self.cumulErreurPositionLigne = max(min(self.cumulErreurDistanceBordure, maxVal), -maxVal)
+            self.cumulErreurPositionLigne = max(min(self.cumulErreurPositionLigne, maxVal), -maxVal)
 
             print ("Cumul erreur distance: ", self.cumulErreurPositionLigne)
             if self.activationDistanceIntegrale:
-                correctionIntegrale = self.cumulErreurDistanceBordure * self.COEFF_CAP_IMAGE_LIGNE_DROITE_I
+                correctionIntegrale = self.cumulErreurPositionLigne * self.COEFF_CAP_IMAGE_LIGNE_DROITE_I
             else:
                 correctionIntegrale = 0
 
@@ -345,57 +385,181 @@ class Asservissement:
 
     def calculePositionRouesFromImage(self):
 
-        self.MAX_SUIVI_COURBURE_ROUES_P = 15  # Valeur max de braquage des roues a appliquer sur la base de la courbure
-        self.COEFF_SUIVI_IMAGE_COURBURE_ROUES_P = 0  # 1000 # Coeff P pour le suivi de la courbure (coeff de degré 2 du polynome)
-        self.COEFF_SUIVI_IMAGE_ROUES_P1 = 150  # Coeff P pour l'ecart par rapport a la position de ligne au point 1 (point au loin)
-        self.COEFF_SUIVI_IMAGE_ROUES_P2 = 0  # Coeff P pour l'ecart par rapport a la position de ligne au point 2 (point proche)
-        self.EXPONENTIELLE_P1_IMAGE_ROUES = 1  # Coeff exponentiel pour accentuer le braquage lors des grands ecarts (point au loin)
-        self.EXPONENTIELLE_P2_IMAGE_ROUES = 1  # Coeff exponentiel pour accentuer le braquage lors des grands ecarts (point proche)
-        self.COEFF_GLOBAL_ECART_IMAGE_ROUES = 1  # Coeff a appliquer sur l'ecart total calcule a partir de l'image, afin d'obtenir une position de roues
-        self.COEFF_SUIVI_IMAGE_ROUES_I = 0.1  # Coeff integral
-        self.MAX_ERREUR_INTEGRALE_ROUES = 300  # Max de l'erreur integrale
+        self.COEFF_SUIVI_IMAGE_PARALLELISME_P_SPEED = 50  # VITESSE RAPIDE : Coeff P pour le suivi du parallelisme
+        self.COEFF_SUIVI_IMAGE_ROUES_P2_SPEED = 25  # VITESSE RAPIDE : Coeff P pour l'ecart par rapport a la position de ligne au point 2 (point proche)
+        self.COEFF_SUIVI_IMAGE_ROUES_I2_SPEED = 1.5  # VITESSE RAPIDE : Coeff I pour l'ecart par rapport a la position de la ligne au point 2 (point proche)
+        self.COEFF_SUIVI_IMAGE_PARALLELISME_P_EVITEMENT = 60  # EVITEMENT : Coeff P pour le suivi du parallelisme
+        self.COEFF_SUIVI_IMAGE_ROUES_P2_EVITEMENT = 70  # EVITEMENT : Coeff P pour l'ecart par rapport a la position de ligne au point 2 (point proche)
+        self.COEFF_SUIVI_IMAGE_ROUES_I2_EVITEMENT = 1.5  # EVITEMENT : Coeff I pour l'ecart par rapport a la position de la ligne au point 2 (point proche)
+        self.COEFF_SUIVI_IMAGES_ROUES_MAX_ERREUR_I = 6.0  # Max cumul ecart ligne pour l'asservissement integral
+        self.OFFSET_ECART_DROITE = 1.0  # Offset a appliquer pour s'ecarter a droite
+        self.OFFSET_ECART_GAUCHE = -1.0  # Offset a appliquer pour s'ecarter a gauche
+        self.TACHO_MARCHE_ARRIERE_1 = 50  # Nombre de tours de tacho pour 1ere sequence de marche arriere evitement
+        self.TACHO_MARCHE_ARRIERE_2 = 70  # Nombre de tours de tacho pour 1ere sequence de marche arriere evitement
 
-        # N'execute le calcul que s'il y a une nouvelle image
+        # Si on a une sequence de marche arriere en cours
+        if self.marche_arriere_en_cours > 0:
+            # Initialise les variables de retour
+            position_roues = None
+            nouvellePositionRoues = False
+
+            # Si on est en train de freiner
+            if self.marche_arriere_en_cours == 1:
+                self.voiture.freine()
+                # Verifie si la voiture est immobile
+                if self.voiture.estImmobile():
+                    # Memorise le tacho
+                    self.tacho_marche_arriere = self.voiture.speedController.get_tacho()
+                    # Tourne les roues du bon cote
+                    position_roues = -0 if self.cote_marche_arriere > 0 else 0
+                    nouvellePositionRoues = True
+                    # Passe a la sequence suivante
+                    self.marche_arriere_en_cours = 2
+                    print ("Arret termine, enclenchement marche arriere, tacho: ", self.tacho_marche_arriere)
+
+            # Si on est en train de reculer, sequence 1
+            if self.marche_arriere_en_cours == 2:
+                print("En cours de marche arriere branche 1")
+                print("RPM: ", self.voiture.speedController.rpm)
+                # Marche arriere
+                self.voiture.reverse()
+                # Verifie si on a assez recule
+                print(self.tacho_marche_arriere - self.voiture.speedController.get_tacho())
+                if self.tacho_marche_arriere - self.voiture.speedController.get_tacho() > self.TACHO_MARCHE_ARRIERE_2:
+                    # Memorise le tacho
+                    self.tacho_marche_arriere = self.voiture.speedController.get_tacho()
+                    # Tourne les roues du bon cote
+                    position_roues = 0 if self.cote_marche_arriere > 0 else -0
+                    nouvellePositionRoues = True
+                    # Passe a la sequence suivante
+                    self.marche_arriere_en_cours = 3
+
+            # Si on est en train de reculer, sequence 2
+            if self.marche_arriere_en_cours == 3:
+                print("En cours de marche arriere branche 2")
+                print("RPM: ", self.voiture.speedController.rpm)
+                # Marche arriere
+                self.voiture.reverse()
+                # Verifie si on a assez recule
+                print(self.tacho_marche_arriere - self.voiture.speedController.get_tacho())
+                if self.tacho_marche_arriere - self.voiture.speedController.get_tacho() > self.TACHO_MARCHE_ARRIERE_2:
+                    # Passe a la sequence suivante
+                    self.marche_arriere_en_cours = 4
+
+            # Fin de la sequence de recul, on freine
+            if self.marche_arriere_en_cours == 4:
+                self.voiture.freine()
+                # Verifie si la voiture est immobile
+                if self.voiture.estImmobile():
+                    # Unlocke la position de l'obstacle
+                    self.imageAnalysis.unlockObstacle()
+                    # Passe a la sequence suivante
+                    self.marche_arriere_en_cours = 0
+                    print ("Fin de la sequence de marche arriere, reprise du programme")
+                    self.voiture.avance(self.vitesse)
+
+            # Laisse un peu de temps entre envoi servo et envoi VESC
+            self.time.sleep(0.1)
+            return position_roues, nouvellePositionRoues
+
+            # N'execute le calcul que s'il y a une nouvelle image
         if self.imageAnalysis.isThereANewImage():
             last_image_time = self.imageAnalysis.last_execution_time
 
-            # Calcule l'ecart de trajectoire par analyse d'image
+            # Verifie s'il faut engager une sequence de marche arriere
+            if self.imageAnalysis.getObstacleInBrakeZone() and self.obstacleEnabled:
+                self.marche_arriere_en_cours = 1
+                self.voiture.freine()
+                self.cote_marche_arriere = self.imageAnalysis.getPositionObstacle()
+                position_roues = None
+                nouvellePositionRoues = False
+                return position_roues, nouvellePositionRoues
+
+                # Calcule l'ecart de trajectoire par analyse d'image
             poly_coeff_square = self.imageAnalysis.getPolyCoeffSquare()
             position_ligne1 = self.imageAnalysis.getPositionLigne1()
             position_ligne2 = self.imageAnalysis.getPositionLigne2()
+            parallelisme = self.imageAnalysis.getParallelism()
+
             if poly_coeff_square is None or position_ligne1 is None:
                 # On n'a pas de ligne detectee, on maintient la position roues precedente (TODO trouver une autre strategie ?)
                 position_roues = None
                 nouvellePositionRoues = False
 
             else:
-                # Calcule la position des roues
-                braquage_courbure = min(self.MAX_SUIVI_COURBURE_ROUES_P, max(-self.MAX_SUIVI_COURBURE_ROUES_P,
-                                                                             self.COEFF_SUIVI_IMAGE_COURBURE_ROUES_P * poly_coeff_square))
-                ecart_ligne1_fois_p = self.COEFF_SUIVI_IMAGE_ROUES_P1 * position_ligne1
-                ecart_ligne2_fois_p = self.COEFF_SUIVI_IMAGE_ROUES_P2 * position_ligne2
-                sign = lambda x: -1 if x < 0 else 1
-                braquage_ecart_1 = sign(ecart_ligne1_fois_p) * abs(
-                    ecart_ligne1_fois_p) ** self.EXPONENTIELLE_P1_IMAGE_ROUES
-                braquage_ecart_2 = sign(ecart_ligne2_fois_p) * abs(
-                    ecart_ligne2_fois_p) ** self.EXPONENTIELLE_P2_IMAGE_ROUES
-                braquage_total = self.COEFF_GLOBAL_ECART_IMAGE_ROUES * (
-                        braquage_courbure + braquage_ecart_1 + braquage_ecart_2)
+                # Set coeff d'asservissement par defaut
+                coeff_parallelisme_P = self.COEFF_SUIVI_IMAGE_PARALLELISME_P_SPEED
+                coeff_p2_p = self.COEFF_SUIVI_IMAGE_ROUES_P2_SPEED
+                coeff_p2_i = self.COEFF_SUIVI_IMAGE_ROUES_I2_SPEED
 
-                # Coeff integral
-                self.cumulErreurBraquage += braquage_total
-                self.cumulErreurBraquage = max(min(self.cumulErreurBraquage, self.MAX_ERREUR_INTEGRALE_ROUES),
-                                               -self.MAX_ERREUR_INTEGRALE_ROUES)
-                correction_integrale = self.cumulErreurBraquage * self.COEFF_SUIVI_IMAGE_ROUES_I
+                # Verifie s'il faut ralentir a cause d'un obstacle
+                if self.vitesseEvitement is not None and self.obstacleEnabled:
+                    if self.imageAnalysis.getObstacleExists():
+                        # Set vitesse d'evitement
+                        self.voiture.avance(self.vitesseEvitement)
+                        # Set coeff d'asservissement evitement
+                        coeff_parallelisme_P = self.COEFF_SUIVI_IMAGE_PARALLELISME_P_EVITEMENT
+                        coeff_p2_p = self.COEFF_SUIVI_IMAGE_ROUES_P2_EVITEMENT
+                        coeff_p2_i = self.COEFF_SUIVI_IMAGE_ROUES_I2_EVITEMENT
+                    else:
+                        # Set vitesse rapide
+                        self.voiture.avance(self.vitesse)
 
-                position_roues = min(max(braquage_total + correction_integrale, -100), 100)
+                # Verifie s'il faut s'ecarter a cause d'un obstacle
+                # Recupere la position de l'obstacle, qui a ete soit mesuree soit lockee en memoire
+                position_obstacle = self.imageAnalysis.getPositionObstacle()
+                if position_obstacle == 0:
+                    self.offset = self.offset_hors_evitement
+                    self.offset_progressif = True
+                    if self.last_position_obstacle != 0:
+                        # Reinitialise l'erreur integrale
+                        self.cumulErreurPositionLigne = 0.
+                elif position_obstacle > 0 and self.obstacleEnabled:
+                    self.offset = self.OFFSET_ECART_GAUCHE
+                    self.offset_progressif = False
+                    if self.last_position_obstacle <= 0:
+                        # Si on vient de commencer l'evitement, met l'erreur integrale au max pour aider a tourner
+                        self.cumulErreurPositionLigne = self.COEFF_SUIVI_IMAGES_ROUES_MAX_ERREUR_I
+                elif position_obstacle < 0 and self.obstacleEnabled:
+                    self.offset = self.OFFSET_ECART_DROITE
+                    self.offset_progressif = False
+                    if self.last_position_obstacle >= 0:
+                        # Si on vient de commencer l'evitement, met l'erreur integrale au max pour aider a tourner
+                        self.cumulErreurPositionLigne = -self.COEFF_SUIVI_IMAGES_ROUES_MAX_ERREUR_I
+
+                if self.offset_progressif:
+                    # Fait tendre progressivement l'offset courant vers la cible
+                    steps_progression_offset = 10
+                    self.currentOffset += (self.offset - self.currentOffset) / steps_progression_offset
+                else:
+                    # Pas de progressivite de l'offset, on y va direct !
+                    self.currentOffset = self.offset
+                print("Offset: ", self.currentOffset)
+
+                offset = self.currentOffset
+
+                # Calcul roues parallelisme
+                braquage_parallelisme = coeff_parallelisme_P * parallelisme
+                # Calcul roues position ligne Proportionnel
+                braquage_position_ligne_2_p = coeff_p2_p * (position_ligne2 + offset)
+                # Calcul roues position ligne Integral
+                self.cumulErreurPositionLigne += position_ligne2 + offset
+                self.cumulErreurPositionLigne = max(-self.COEFF_SUIVI_IMAGES_ROUES_MAX_ERREUR_I,
+                                                    min(self.COEFF_SUIVI_IMAGES_ROUES_MAX_ERREUR_I,
+                                                        self.cumulErreurPositionLigne))
+                braquage_position_ligne_2_i = coeff_p2_i * self.cumulErreurPositionLigne
+                # TOTAL
+                braquage_total = braquage_parallelisme + braquage_position_ligne_2_p + braquage_position_ligne_2_i
+                position_roues = min(max(braquage_total, -100), 100)
+
                 print(
-                    "Braquage total P: {:.0f} Braquage courbure: {:.0f} Braquage ecart 1: {:.0f} Braquage ecart 2: {:.0f} Corr integ: {:.0f}".format(
-                        braquage_total, braquage_courbure, braquage_ecart_1, braquage_ecart_2, correction_integrale))
+                    "Braquage total P: {:.0f} Braquage parallelisme: {:.0f} Braquage ecart 2 P: {:.0f} Braquage ecart 2 I: {:.0f}".format(
+                        braquage_total, braquage_parallelisme, braquage_position_ligne_2_p,
+                        braquage_position_ligne_2_i))
 
                 nouvellePositionRoues = True
 
-                elapsedSinceLastImageMs = int(self.time.time() - last_image_time * 1000)
+                elapsedSinceLastImageMs = int((self.time.time() - last_image_time) * 1000)
                 print ("Position lignes: {:.2f} {:.2f} Position roues: {:.0f} Last image since: {:d}ms".format(
                     position_ligne1, position_ligne2, position_roues, elapsedSinceLastImageMs))
 
@@ -489,7 +653,8 @@ class Asservissement:
         capASuivre = (capASuivre + correctionCap) % 360
         return capASuivre, autoriseRecalage
 
-    # Calcule le cap a suivre pour le suivi de courbes au telemetre
+        # Calcule le cap a suivre pour le suivi de courbes au telemetre
+
     def calculeCapSuiviCourbes(self):
         arduino = self.arduino
         print ("Enter calcul suivi courbes")
@@ -545,7 +710,7 @@ class Asservissement:
         # Calcul de la position des roues
         sign = lambda x: -1 if x < 0 else 1
         ########## TODO remove Test offset
-        offset = self.OFFSET  # A mettre entre -15 et 20 environ
+        offset = 0  # A mettre entre -15 et 20 environ
         positionRoues = min(
             max(int(-(coeff_proportionnel * (sign(erreurCap) * abs(erreurCap) ** self.EXPONENTIELLE_P_IMAGE))) + offset,
                 -100), 100)

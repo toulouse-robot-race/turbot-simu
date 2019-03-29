@@ -4,3 +4,6 @@ class Time:
 
     def time(self):
         return self.simulator.get_simulation_time()
+
+    def sleep(self):
+        pass
