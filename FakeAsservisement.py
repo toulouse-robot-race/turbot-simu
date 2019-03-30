@@ -70,6 +70,10 @@ class Asservissement:
     capTargetSuiviCourbe = 0.0
     lastErreurCap = 0.0
     lastCapASuivreForImageAnalysis = 0.0
+    currentOffset = 0.0  # Offset actuel, doit tendre progressivement vers l'offset voulu
+    marche_arriere_en_cours = 0  # Indique si une marche arriere est en cours, et a quelle sequence on en est
+    tacho_marche_arriere = 0  # Memorise le tacho pour la marche arriere
+    obstacleEnabled = True
 
     cumulErreurCap = 0.0
     cumulErreurDistanceBordure = 0.0
@@ -283,6 +287,7 @@ class Asservissement:
                 ###############################
 
                 if self.suiviImageRoues:
+                    print("suivi image roues")
                     # Si suivi image sans cap (asservissement direct des roues)
                     positionRoues, nouvellePositionRoues = self.calculePositionRouesFromImage()
                 else:

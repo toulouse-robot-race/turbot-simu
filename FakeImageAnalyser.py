@@ -30,6 +30,7 @@ class ImageAnalyser:
     logMask0Memory = None
     logMask1Memory = None
     log_counter = 0
+    new_image_arrived = True
 
     # Param�tres pour mesurer les temps d'ex�cution
     time_start = 0.
@@ -111,9 +112,7 @@ class ImageAnalyser:
     def get_ecart_ligne(self, image):
 
         def poly_2_interpol(image):
-            print(image)
             nonzeros_indexes = np.nonzero((image > self.LINE_THRESHOLD).copy())
-            print(nonzeros_indexes)
             x = nonzeros_indexes[0]
             y = nonzeros_indexes[1]
             if len(x) < 2:
@@ -150,5 +149,34 @@ class ImageAnalyser:
         return self.poly_coeff_square
 
     # Tells if a new image has arrived
+    def isThereANewImage(self):
+        return True
+
+    def getPolyCoeff1(self):
+        pass
+
+    def getPolyCoeffConst(self):
+        pass
+
+    def getObstacleExists(self):
+        pass
+
+    def getPositionObstacle(self):
+        return 0
+
+    def getParallelism(self):
+        return 0
+
+    def getObstacleInBrakeZone(self):
+        return False
+
+    def getStartDetected(self):
+        pass
+
+    def unlockObstacle(self):
+        pass
+
+        # Tells if a new image has arrived
+
     def isThereANewImage(self):
         return True

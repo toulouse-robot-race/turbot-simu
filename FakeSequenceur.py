@@ -104,9 +104,9 @@ class Sequenceur:
             'conditionFin': 'immediat'
         },
         {
-            'instruction': 'suiviImageRoues',  # suiviImageLigneDroite ou suiviImageRoues
-            'activationDistanceIntegrale': True,
-            'vitesse': 2,
+            'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
+            'activationDistanceIntegrale': False,
+            'vitesse': 1,
             'conditionFin': 'tacho',
             'tacho': 10,
         },
@@ -289,7 +289,10 @@ class Sequenceur:
                 self.tacho = self.voiture.speedController.get_tacho()
 
             # Programme la vitesse de la voiture
-            if instruction == 'ligneDroite' or instruction == 'ligneDroiteTelemetre' or instruction == 'tourne' or instruction == 'suiviCourbeTelemetre' or instruction == 'suiviLigne' or instruction == 'suiviImageLigneDroite' or instruction == 'suiviImageRoues':
+            if instruction == 'ligneDroite' or instruction == 'ligneDroiteTelemetre' or instruction == 'tourne' or \
+                    instruction == 'suiviCourbeTelemetre' or instruction == 'suiviLigne' or\
+                    instruction == 'suiviImageLigneDroite' or instruction == 'suiviImageRoues' or \
+                    instruction == 'suiviImageCap':
                 vitesse = self.programmeCourant['vitesse']
                 print ("Vitesse : ", vitesse)
                 self.voiture.avance(vitesse)

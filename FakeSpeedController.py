@@ -43,7 +43,6 @@ class SpeedController:
         self.send_speed_command()
 
     def send_speed_command(self):
-        print("speed %f" % self.speed)
         angular_speed = -self.speed / self.wheel_radius
         self.simulator.set_target_speed(self.motor_handles[0], angular_speed)
         self.simulator.set_target_speed(self.motor_handles[1], angular_speed)

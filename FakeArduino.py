@@ -6,6 +6,7 @@ class Arduino:
         self.nouvelleDonneeGyro = True
         self.step_time = simulator.get_simulation_time_step()
         self.gyro = float(0)
+        self.nouvelleDonneeTelemetre1 = False
 
     def getCap(self):
         return self.gyro
