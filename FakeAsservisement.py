@@ -352,6 +352,8 @@ class Asservissement:
             position_ligne1 = self.imageAnalysis.getPositionLigne1()
             # position_ligne2 = self.imageAnalysis.getPositionLigne2()
 
+            print("Position ligne: ", position_ligne1)
+
             # Calcul de la correction proportionnelle
             if position_ligne1 is None:
                 erreurDistance = 0
