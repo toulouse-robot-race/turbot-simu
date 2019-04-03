@@ -241,7 +241,7 @@ class Asservissement:
         # On n'execute que s'il y a une nouvelle donnee gyro ou une nouvelle image en mode suiviImage
         if arduino.nouvelleDonneeGyro or (self.suiviImage and self.imageAnalysis.new_image_arrived):
 
-            arduino.nouvelleDonneeGyro = False
+
 
             capASuivre = 0.0
             positionRoues = 0
