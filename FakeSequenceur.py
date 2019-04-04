@@ -106,7 +106,7 @@ class Sequenceur:
         {
             'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
             'activationDistanceIntegrale': False,
-            'vitesse': 4,
+            'vitesse': 2,
             'conditionFin': 'tacho',
             'tacho': 10,
         },

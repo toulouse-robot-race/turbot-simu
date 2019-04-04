@@ -34,10 +34,10 @@ class Simulator:
         return self.client.simxGetObjectHandle(object_name, self.client.simxServiceCall())[1]
 
     def set_target_pos(self, joint_name, target_pos):
-        self.client.simxSetJointTargetPosition(joint_name, target_pos, self.client.simxServiceCall())
+        self.client.simxSetJointTargetPosition(joint_name, target_pos, self.client.simxDefaultPublisher())
 
     def set_target_speed(self, joint_name, target_speed):
-        self.client.simxSetJointTargetVelocity(joint_name, target_speed, self.client.simxServiceCall())
+        self.client.simxSetJointTargetVelocity(joint_name, target_speed, self.client.simxDefaultPublisher())
 
     def get_linear_speed(self, handle):
         return self.client.simxGetObjectVelocity(handle, self.client.simxServiceCall())[1]
