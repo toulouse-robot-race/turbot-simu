@@ -39,8 +39,6 @@ while simu_time.time() < simulation_duration_seconds:
     sequenceur.execute()
     asservissement.execute()
     speedController.execute()
-    print ("Code execution time : %fs " % ((time.time() - start_step_time) ))
     start_simu_step_time = time.time()
     simulator.do_simulation_step()
-    print ("Simulation execution time : %fs " % ((time.time() - start_simu_step_time) ))
 simulator.stop_simulation()

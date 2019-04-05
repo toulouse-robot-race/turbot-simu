@@ -106,15 +106,19 @@ class Sequenceur:
         {
             'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
             'activationDistanceIntegrale': False,
-            'vitesse': 2,
+            'vitesse': 1,
             'conditionFin': 'tacho',
-            'tacho': 10,
+            'tacho': 3,
+        },
+        {
+            'instruction': 'setTacho',  # Memorise le tacho actuel
+            'conditionFin': 'immediat'
         },
         {
             'instruction': 'ligneDroite',  # Puis finit le virage 180°
-            'vitesse': 2,
+            'vitesse': 1,
             'conditionFin': 'tacho',
-            'tacho': 5,
+            'tacho': 1,
         },
         # {
         #     'instruction': 'tourne',  # Puis finit le virage 180°
@@ -132,9 +136,9 @@ class Sequenceur:
             'capFinalMaxi': 195  # En relatif par rapport au cap initial
         },
         {
-         'instruction' : 'ajouteCap',
-         'cap' : 180,
-         'conditionFin' : 'immediat',
+            'instruction': 'ajouteCap',
+            'cap': 180,
+            'conditionFin': 'immediat',
         },
         {
             'instruction': 'setTacho',  # Memorise le tacho actuel
@@ -149,7 +153,7 @@ class Sequenceur:
         # },
         {
             'instruction': 'ligneDroite',  # Puis finit le virage 180°
-            'vitesse': 2,
+            'vitesse': 1,
             'conditionFin': 'tacho',
             'tacho': 5,
         },
@@ -290,7 +294,7 @@ class Sequenceur:
 
             # Programme la vitesse de la voiture
             if instruction == 'ligneDroite' or instruction == 'ligneDroiteTelemetre' or instruction == 'tourne' or \
-                    instruction == 'suiviCourbeTelemetre' or instruction == 'suiviLigne' or\
+                    instruction == 'suiviCourbeTelemetre' or instruction == 'suiviLigne' or \
                     instruction == 'suiviImageLigneDroite' or instruction == 'suiviImageRoues' or \
                     instruction == 'suiviImageCap':
                 vitesse = self.programmeCourant['vitesse']
@@ -338,7 +342,6 @@ class Sequenceur:
 
                 self.asservissement.initLigneDroiteTelemetre(self.programmeCourant['distance'], recalageCap,
                                                              activationDistanceIntegrale, antiProche)
-
             elif instruction == 'suiviCourbeTelemetre':
                 self.asservissement.initCourbeTelemetre(self.programmeCourant['distance'])
             else:

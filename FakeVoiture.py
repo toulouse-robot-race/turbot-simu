@@ -13,7 +13,7 @@ class Voiture:
         self.max_steering = math.pi / 4
 
     def tourne(self, steering_percent):
-        pos_steering = steering_percent * self.max_steering / 100
+        pos_steering = -steering_percent * self.max_steering / 100
         self.simulator.set_target_pos(self.steering_handles[0], pos_steering)
         self.simulator.set_target_pos(self.steering_handles[1], pos_steering)
 

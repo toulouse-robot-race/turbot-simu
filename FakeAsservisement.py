@@ -242,7 +242,6 @@ class Asservissement:
         if arduino.nouvelleDonneeGyro or (self.suiviImage and self.imageAnalysis.new_image_arrived):
 
 
-
             capASuivre = 0.0
             positionRoues = 0
 
