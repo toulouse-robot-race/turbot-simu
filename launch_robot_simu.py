@@ -22,10 +22,9 @@ base_car = simulator.get_handle("base_link")
 simu_time = Time(simulator)
 imageAnalyser = ImageAnalyser(simulator, cam)
 speedController = SpeedController(simulator, [left_motor, right_motor],
-                                  wheel_radius=0.05,
                                   simulation_step_time=simulator.get_simulation_time_step())
 voiture = Voiture(simulator, [left_steering, right_steering], [left_motor, right_motor],
-                  speedController, 0.05)
+                  speedController, )
 arduino = Arduino(simulator, gyro)
 asservissement = Asservissement(arduino, voiture, imageAnalyser, simu_time)
 sequenceur = Sequenceur(voiture, simu_time, arduino, asservissement)
@@ -39,6 +38,6 @@ while simu_time.time() < simulation_duration_seconds:
     sequenceur.execute()
     asservissement.execute()
     speedController.execute()
-    start_simu_step_time = time.time()
+    print("code execution time : %fs " % (time.time() - start_step_time))
     simulator.do_simulation_step()
 simulator.stop_simulation()

@@ -1,9 +1,11 @@
+from Config import SPEED_COEF, TACHO_COEF
+
+
 class SpeedController:
-    def __init__(self, simulator, motor_handles, wheel_radius, simulation_step_time):
+    def __init__(self, simulator, motor_handles, simulation_step_time):
         self.simulation_step_time = simulation_step_time
         self.motor_handles = motor_handles
         self.simulator = simulator
-        self.wheel_radius = wheel_radius
         self.previous_speed = 0
         self.tacho = 0
         self.speed = 0
@@ -43,7 +45,7 @@ class SpeedController:
         self.send_speed_command()
 
     def send_speed_command(self):
-        angular_speed = -self.speed / self.wheel_radius
+        angular_speed = self.speed * SPEED_COEF
         self.simulator.set_target_speed(self.motor_handles[0], angular_speed)
         self.simulator.set_target_speed(self.motor_handles[1], angular_speed)
 
@@ -51,8 +53,9 @@ class SpeedController:
         return self.tacho
 
     def compute_tacho(self):
-        current_speed_rad_s = -self.simulator.get_joint_angular_speed(self.motor_handles[0])
-        current_speed = current_speed_rad_s * self.wheel_radius
+        current_speed = self.simulator.get_joint_angular_speed(self.motor_handles[0]) * TACHO_COEF
+        # current_speed_rad_s = -self.simulator.get_joint_angular_speed(self.motor_handles[0]) * self.wheel_radius
+        # current_speed = current_speed_rad_s * self.wheel_radius
         step_distance = ((current_speed + self.previous_speed) / 2) * self.simulation_step_time
         self.tacho += step_distance
         self.previous_speed = current_speed

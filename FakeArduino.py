@@ -1,3 +1,6 @@
+from Config import GYRO_COEF
+
+
 class Arduino:
 
     def __init__(self, simulator, gyro_name):
@@ -16,7 +19,7 @@ class Arduino:
 
     def get_gyro_variation_step(self):
         if self.simulator.get_float_signal(self.gyro_name) is not None:
-            return -self.simulator.get_float_signal(self.gyro_name) * 57.2958
+            return self.simulator.get_float_signal(self.gyro_name) * GYRO_COEF
         else:
             return 0
 
