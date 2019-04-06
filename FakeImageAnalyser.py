@@ -49,6 +49,8 @@ class ImageAnalyser:
 
     def execute(self):
         resolution, byte_array_image_string = self.simulator.get_gray_image(self.cam_handle)
+        if resolution is None and byte_array_image_string is None:
+            return
         mask0 = self.convert_image_to_numpy(byte_array_image_string, resolution)
         mask0 = self.clean_mask(mask0)
         self.position_ligne_1, self.position_ligne_2, poly_coeff = self.get_ecart_ligne(mask0)

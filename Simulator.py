@@ -33,29 +33,64 @@ class Simulator:
     def get_handle(self, object_name):
         return self.client.simxGetObjectHandle(object_name, self.client.simxServiceCall())[1]
 
-    def set_target_pos(self, joint_name, target_pos):
-        self.client.simxSetJointTargetPosition(joint_name, target_pos, self.client.simxDefaultPublisher())
+    def set_target_pos(self, joint_handle, target_pos):
+        self.client.simxSetJointTargetPosition(joint_handle, target_pos, self.client.simxDefaultPublisher())
 
-    def set_target_speed(self, joint_name, target_speed):
-        self.client.simxSetJointTargetVelocity(joint_name, target_speed, self.client.simxDefaultPublisher())
-
-    def get_linear_speed(self, handle):
-        return self.client.simxGetObjectVelocity(handle, self.client.simxServiceCall())[1]
+    def set_target_speed(self, joint_handle, target_speed):
+        self.client.simxSetJointTargetVelocity(joint_handle, target_speed, self.client.simxDefaultPublisher())
 
     def get_joint_angular_speed(self, joint):
-        return self.get_object_float_parameter(joint, JOINT_VELOCITY_PARAMETER)
+        angular_speed = self.get_object_float_parameter(joint, JOINT_VELOCITY_PARAMETER)
+        return angular_speed if angular_speed is not None else 0
+
+    simulation_time = 0
 
     def get_simulation_time(self):
-        return self.client.simxGetSimulationTime(self.client.simxServiceCall())[1]
+        if self.simulation_time == 0:
+            def callback(result):
+                self.simulation_time = result[1]
+
+            self.client.simxGetSimulationTime(self.client.simxDefaultSubscriber(callback))
+
+        return self.simulation_time
 
     def get_simulation_time_step(self):
         return self.client.simxGetSimulationTimeStep(self.client.simxServiceCall())[1]
 
+    signals = {}
+
     def get_float_signal(self, signal_name):
-        return self.client.simxGetFloatSignal(signal_name, self.client.simxServiceCall())[1]
+        if signal_name not in self.signals:
+            def callback(result):
+                self.signals[signal_name] = result[1]
+
+            self.signals[signal_name] = None
+            self.client.simxGetFloatSignal(signal_name, self.client.simxDefaultSubscriber(callback))
+
+        return self.signals[signal_name]
+
+    parameters = {}
 
     def get_object_float_parameter(self, object_handle, parameter):
-        return self.client.simxGetObjectFloatParameter(object_handle, parameter, self.client.simxServiceCall())[1]
+        if object_handle not in self.parameters:
+            self.parameters[object_handle] = {}
+            self.parameters[object_handle][parameter] = None
 
-    def get_gray_image(self, vision_sensor_name):
-        return self.client.simxGetVisionSensorImage(vision_sensor_name, True, self.client.simxServiceCall())[1:]
+            def callback(result):
+                self.parameters[object_handle][parameter] = result[1]
+
+            self.client.simxGetObjectFloatParameter(object_handle, parameter,
+                                                    self.client.simxDefaultSubscriber(callback))
+
+        return self.parameters[object_handle][parameter]
+
+    image = None, None
+
+    def get_gray_image(self, vision_sensor_handle):
+        if self.image == (None, None):
+            def callback(result):
+                self.image = result[1:]
+
+            self.client.simxGetVisionSensorImage(vision_sensor_handle, True,
+                                                 self.client.simxDefaultSubscriber(callback))
+        return self.image
