@@ -54,8 +54,6 @@ class SpeedController:
 
     def compute_tacho(self):
         current_speed = self.simulator.get_joint_angular_speed(self.motor_handles[0]) * TACHO_COEF
-        # current_speed_rad_s = -self.simulator.get_joint_angular_speed(self.motor_handles[0]) * self.wheel_radius
-        # current_speed = current_speed_rad_s * self.wheel_radius
         step_distance = ((current_speed + self.previous_speed) / 2) * self.simulation_step_time
         self.tacho += step_distance
         self.previous_speed = current_speed
