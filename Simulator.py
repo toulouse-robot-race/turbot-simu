@@ -1,3 +1,4 @@
+import Config
 import b0RemoteApi
 
 JOINT_VELOCITY_PARAMETER = 2012
@@ -48,7 +49,7 @@ class Simulator:
     def get_simulation_time(self):
         if self.simulation_time == 0:
             def callback(result):
-                self.simulation_time = result[1]
+                self.simulation_time = round(result[1],3)
 
             self.client.simxGetSimulationTime(self.client.simxDefaultSubscriber(callback))
 
@@ -84,13 +85,16 @@ class Simulator:
 
         return self.parameters[object_handle][parameter]
 
-    image = None, None
+    images = {}
 
     def get_gray_image(self, vision_sensor_handle):
-        if self.image == (None, None):
+        if not self.images:
             def callback(result):
-                self.image = result[1:]
+                self.images[self.simulation_time] = result[1:]
 
             self.client.simxGetVisionSensorImage(vision_sensor_handle, True,
                                                  self.client.simxDefaultSubscriber(callback))
-        return self.image
+        if self.simulation_time - Config.CAMERA_DELAY in self.images:
+            return self.images[self.simulation_time - Config.CAMERA_DELAY]
+        else:
+            return None, None

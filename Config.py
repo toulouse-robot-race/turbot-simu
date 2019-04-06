@@ -6,6 +6,7 @@ STEERING_COEF = (-math.pi / 4) / 100
 SPEED_COEF = -1 / WHEEL_SIZE
 TACHO_COEF = -WHEEL_SIZE
 GYRO_COEF = -RAD_TO_DEG
+CAMERA_DELAY = 0.15
 
 
 def steering_response_ramp(x):
