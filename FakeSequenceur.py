@@ -103,12 +103,12 @@ class Sequenceur:
             'conditionFin': 'immediat'
         },
         {
-            'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
-            'activationDistanceIntegrale': True,
+            'instruction': 'suiviImageRoues',  # suiviImageLigneDroite ou suiviImageRoues
+            'activationDistanceIntegrale': False,
             'obstacle': False,
             'vitesse': 1,
             'conditionFin': 'tacho',
-            'tacho': 23
+            'tacho': 50
         },
         {
             'instruction': 'setTacho',  # Memorise le tacho actuel
@@ -120,7 +120,7 @@ class Sequenceur:
             'obstacle': False,
             'vitesse': 1,
             'conditionFin': 'tacho',
-            'tacho': 2
+            'tacho': 1
         },
         # Premier virage
         {
