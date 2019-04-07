@@ -92,12 +92,23 @@ class Sequenceur:
     DUREE_APPUI_LONG_SHUTDOWN = 10  # Nombre de secondes d'appui sur le poussoir pour eteindre le raspberry
 
     programme = [
-
-        ############ TEST HIPPODROME
         {
-            'label': 'hippodrome',
-            'instruction': 'SetCap',
-            'conditionFin': 'immediat',
+            'instruction': 'setCap',  # Cap asuivre = cap actuel
+            'chenillard': True,
+            'conditionFin': 'immediat'
+        },
+        {
+            'label': 'startTest',
+            'instruction': 'setTacho',  # Memorise le tacho actuel
+            'conditionFin': 'immediat'
+        },
+        {
+            'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
+            'activationDistanceIntegrale': True,
+            'obstacle': False,
+            'vitesse': 1,
+            'conditionFin': 'tacho',
+            'tacho': 23
         },
         {
             'instruction': 'setTacho',  # Memorise le tacho actuel
@@ -105,105 +116,235 @@ class Sequenceur:
         },
         {
             'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
-            'activationDistanceIntegrale': False,
+            'activationDistanceIntegrale': True,
+            'obstacle': False,
             'vitesse': 1,
             'conditionFin': 'tacho',
-            'tacho': 3,
+            'tacho': 2
+        },
+        # Premier virage
+        {
+            'instruction': 'suiviImageRoues',  # suiviImageLigneDroite ou suiviImageRoues
+            'activationDistanceIntegrale': True,
+            'obstacle': False,
+            'vitesse': 1,
+            'conditionFin': 'cap',
+            'capFinalMini': 160,
+            # En relatif par rapport au cap initial, pour la gauche : 180 300, pour la droite 60 180
+            'capFinalMaxi': 270,  # En relatif par rapport au cap initial
         },
         {
             'instruction': 'setTacho',  # Memorise le tacho actuel
             'conditionFin': 'immediat'
-        },
-        {
-            'instruction': 'ligneDroite',  # Puis finit le virage 180°
-            'vitesse': 1,
-            'conditionFin': 'tacho',
-            'tacho': 1,
-        },
-        # {
-        #     'instruction': 'tourne',  # Puis finit le virage 180°
-        #     'positionRoues': 0,
-        #     'vitesse': 0.5,
-        #     'conditionFin': 'tacho',
-        #     'tacho': 3,
-        # },
-        {
-            'instruction': 'tourne',  # Puis finit le virage 180°
-            'positionRoues': 80,
-            'vitesse': 1,
-            'conditionFin': 'cap',
-            'capFinalMini': 165,  # En relatif par rapport au cap initial
-            'capFinalMaxi': 195  # En relatif par rapport au cap initial
         },
         {
             'instruction': 'ajouteCap',
             'cap': 180,
             'conditionFin': 'immediat',
         },
+        # deuxième ligne droite sortie de premier virage
+        {
+            'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
+            'activationDistanceIntegrale': True,
+            'obstacle': False,
+            'vitesse': 1,
+            'conditionFin': 'tacho',
+            'tacho': 9,
+        },
         {
             'instruction': 'setTacho',  # Memorise le tacho actuel
             'conditionFin': 'immediat'
         },
-        # {
-        #     'instruction': 'tourne',  # Puis finit le virage 180°
-        #     'positionRoues': 0,
-        #     'vitesse': 0.5,
-        #     'conditionFin': 'tacho',
-        #     'tacho': 5,
-        # },
+        # Fin deuxième ligne droite
         {
-            'instruction': 'ligneDroite',  # Puis finit le virage 180°
+            'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
+            'activationDistanceIntegrale': True,
+            'obstacle': False,
+            'vitesse': 1,
+            'conditionFin': 'tacho',
+            'tacho': 2
+        },
+        {
+            'instruction': 'setTacho',  # Memorise le tacho actuel
+            'conditionFin': 'immediat'
+        },
+        # Chicane
+        {
+            'instruction': 'suiviImageRoues',  # suiviImageLigneDroite ou suiviImageRoues
+            'activationDistanceIntegrale': True,
+            'obstacle': False,
+            'vitesse': 1,
+            'conditionFin': 'tacho1',
+            'tacho': 5,
+        },
+        {
+            'instruction': 'setTacho1',  # Memorise le tacho actuel
+            'conditionFin': 'immediat'
+        },
+        # Troisième ligne droite sortie de chicane
+        {
+            'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
+            'activationDistanceIntegrale': True,
+            'obstacle': False,
+            'vitesse': 1,
+            'conditionFin': 'tacho',
+            'tacho': 10,
+        },
+        {
+            'instruction': 'setTacho',  # Memorise le tacho actuel
+            'conditionFin': 'immediat'
+        },
+        # Fin troisième ligne droite
+        {
+            'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
+            'activationDistanceIntegrale': True,
+            'obstacle': False,
+            'vitesse': 1,
+            'conditionFin': 'tacho',
+            'tacho': 500
+        },
+        # Deuxième virage
+        {
+            'instruction': 'suiviImageRoues',  # suiviImageLigneDroite ou suiviImageRoues
+            'activationDistanceIntegrale': True,
+            'obstacle': False,
+            'vitesse': 1,
+            'conditionFin': 'cap',
+            'capFinalMini': 160,
+            'capFinalMaxi': 270,
+        },
+        {
+            'instruction': 'setTacho',
+            'conditionFin': 'immediat'
+        },
+        {
+            'instruction': 'ajouteCap',
+            'cap': 180,
+            'conditionFin': 'immediat',
+        },
+        # début dernière ligne droite, sortie de deuxième virage
+        {
+            'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
+            'activationDistanceIntegrale': True,
+            'obstacle': False,
             'vitesse': 1,
             'conditionFin': 'tacho',
             'tacho': 5,
         },
         {
-            'instruction': 'tourne',  # Puis finit le virage 180°
-            'positionRoues': 80,
+            'instruction': 'setTacho',  # Memorise le tacho actuel
+            'conditionFin': 'immediat'
+        },
+        # Dernière ligne droite
+        {
+            'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
+            'activationDistanceIntegrale': True,
+            'obstacle': False,
             'vitesse': 1,
-            'conditionFin': 'cap',
-            'capFinalMini': 165,  # En relatif par rapport au cap initial
-            'capFinalMaxi': 195  # En relatif par rapport au cap initial
-        },
-        {
-            'instruction': 'ajouteCap',
-            'cap': 180,
-            'conditionFin': 'immediat',
-            'nextLabel': 'hippodrome'
-        },
-        {
-            'instruction': 'tourne',  # Puis finit le virage 180°
-            'positionRoues': 0,
-            'vitesse': 0,
             'conditionFin': 'tacho',
-            'tacho': 100,
+            'tacho': 20,
         },
-        # {
-        #  'instruction' : 'ajouteCap',
-        #  'cap' : 180,
-        #  'conditionFin' : 'immediat',
-        # },
-        # {
-        # 'instruction' : 'ligneDroite',               # Ligne droite au cap
-        #  'vitesse' :     23,
-        #  'conditionFin' : 'duree',
-        #  'duree' :    4
-        # },
-        # {
-        #  'instruction' : 'tourne',                   # Puis finit le virage 180°
-        #  'positionRoues' : 100,
-        #  'vitesse' : 20,
-        #  'conditionFin' : 'cap',
-        #  'capFinalMini' : 150,  # En relatif par rapport au cap initial
-        #  'capFinalMaxi' : 270 # En relatif par rapport au cap initial
-        # },
-        # {
-        #  'instruction' : 'ajouteCap',
-        #  'cap' : 180,
-        #  'conditionFin' : 'immediat',
-        #  'nextLabel' :     'hippodrome'
-        # },
+        {
+            'instruction': 'setTacho',  # Memorise le tacho actuel
+            'conditionFin': 'immediat'
+        },
+        # Ralentissement arrivée
+        {
+            'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
+            'activationDistanceIntegrale': True,
+            'obstacle': False,
+            'vitesse': 1,
+            'conditionFin': 'tacho',
+            'tacho': 2,
 
+        },
+        {
+            'instruction': 'setTacho',  # Memorise le tacho actuel
+            'conditionFin': 'immediat'
+        },
+        {
+            'instruction': 'suiviImageRoues',  # suiviImageLigneDroite ou suiviImageRoues
+            'activationDistanceIntegrale': True,
+            'obstacle': False,
+            'vitesse': 1,
+            'conditionFin': 'tacho',
+            'tacho': 2,
+            'nextLabel': 'arret_apres_freinage'
+        },
+        ############ TEST HIPPODROME
+        # {
+        #     'label': 'hippodrome',
+        #     'instruction': 'SetCap',
+        #     'conditionFin': 'immediat',
+        # },
+        # {
+        #     'instruction': 'setTacho',  # Memorise le tacho actuel
+        #     'conditionFin': 'immediat'
+        # },
+        # {
+        #     'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
+        #     'activationDistanceIntegrale': False,
+        #     'vitesse': 4,
+        #     'conditionFin': 'tacho',
+        #     'tacho': 10,
+        # },
+        # {
+        #     'instruction': 'ligneDroite',  # Puis finit le virage 180°
+        #     'vitesse': 2,
+        #     'conditionFin': 'tacho',
+        #     'tacho': 5,
+        # },
+        # # {
+        # #     'instruction': 'tourne',  # Puis finit le virage 180°
+        # #     'positionRoues': 0,
+        # #     'vitesse': 0.5,
+        # #     'conditionFin': 'tacho',
+        # #     'tacho': 3,
+        # # },
+        # {
+        #     'instruction': 'tourne',  # Puis finit le virage 180°
+        #     'positionRoues': 80,
+        #     'vitesse': 1,
+        #     'conditionFin': 'cap',
+        #     'capFinalMini': 165,  # En relatif par rapport au cap initial
+        #     'capFinalMaxi': 195  # En relatif par rapport au cap initial
+        # },
+        # {
+        #     'instruction': 'ajouteCap',
+        #     'cap': 180,
+        #     'conditionFin': 'immediat',
+        # },
+        # {
+        #     'instruction': 'setTacho',  # Memorise le tacho actuel
+        #     'conditionFin': 'immediat'
+        # },
+        # # {
+        # #     'instruction': 'tourne',  # Puis finit le virage 180°
+        # #     'positionRoues': 0,
+        # #     'vitesse': 0.5,
+        # #     'conditionFin': 'tacho',
+        # #     'tacho': 5,
+        # # },
+        # {
+        #     'instruction': 'ligneDroite',  # Puis finit le virage 180°
+        #     'vitesse': 2,
+        #     'conditionFin': 'tacho',
+        #     'tacho': 5,
+        # },
+        # {
+        #     'instruction': 'tourne',  # Puis finit le virage 180°
+        #     'positionRoues': 80,
+        #     'vitesse': 1,
+        #     'conditionFin': 'cap',
+        #     'capFinalMini': 165,  # En relatif par rapport au cap initial
+        #     'capFinalMaxi': 195  # En relatif par rapport au cap initial
+        # },
+        # {
+        #     'instruction': 'ajouteCap',
+        #     'cap': 180,
+        #     'conditionFin': 'immediat',
+        #     'nextLabel': 'hippodrome'
+        # },
     ]
 
     tacho = 0
