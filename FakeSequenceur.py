@@ -103,12 +103,12 @@ class Sequenceur:
             'conditionFin': 'immediat'
         },
         {
-            'instruction': 'suiviImageRoues',  # suiviImageLigneDroite ou suiviImageRoues
+            'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
             'activationDistanceIntegrale': False,
             'obstacle': False,
             'vitesse': 1,
             'conditionFin': 'tacho',
-            'tacho': 50
+            'tacho': 2000
         },
         {
             'instruction': 'setTacho',  # Memorise le tacho actuel
@@ -120,7 +120,7 @@ class Sequenceur:
             'obstacle': False,
             'vitesse': 1,
             'conditionFin': 'tacho',
-            'tacho': 1
+            'tacho': 500
         },
         # Premier virage
         {
@@ -149,7 +149,7 @@ class Sequenceur:
             'obstacle': False,
             'vitesse': 1,
             'conditionFin': 'tacho',
-            'tacho': 9,
+            'tacho': 1800,
         },
         {
             'instruction': 'setTacho',  # Memorise le tacho actuel
@@ -162,7 +162,7 @@ class Sequenceur:
             'obstacle': False,
             'vitesse': 1,
             'conditionFin': 'tacho',
-            'tacho': 2
+            'tacho': 450
         },
         {
             'instruction': 'setTacho',  # Memorise le tacho actuel
@@ -174,8 +174,8 @@ class Sequenceur:
             'activationDistanceIntegrale': True,
             'obstacle': False,
             'vitesse': 1,
-            'conditionFin': 'tacho1',
-            'tacho': 5,
+            'conditionFin': 'tacho',
+            'tacho': 4250,
         },
         {
             'instruction': 'setTacho1',  # Memorise le tacho actuel
@@ -188,7 +188,7 @@ class Sequenceur:
             'obstacle': False,
             'vitesse': 1,
             'conditionFin': 'tacho',
-            'tacho': 10,
+            'tacho': 2000,
         },
         {
             'instruction': 'setTacho',  # Memorise le tacho actuel
@@ -229,7 +229,7 @@ class Sequenceur:
             'obstacle': False,
             'vitesse': 1,
             'conditionFin': 'tacho',
-            'tacho': 5,
+            'tacho': 1000,
         },
         {
             'instruction': 'setTacho',  # Memorise le tacho actuel
@@ -242,7 +242,7 @@ class Sequenceur:
             'obstacle': False,
             'vitesse': 1,
             'conditionFin': 'tacho',
-            'tacho': 20,
+            'tacho': 5900,
         },
         {
             'instruction': 'setTacho',  # Memorise le tacho actuel
@@ -255,7 +255,7 @@ class Sequenceur:
             'obstacle': False,
             'vitesse': 1,
             'conditionFin': 'tacho',
-            'tacho': 2,
+            'tacho': 500,
 
         },
         {
@@ -268,7 +268,7 @@ class Sequenceur:
             'obstacle': False,
             'vitesse': 1,
             'conditionFin': 'tacho',
-            'tacho': 2,
+            'tacho': 500,
             'nextLabel': 'arret_apres_freinage'
         },
         ############ TEST HIPPODROME
@@ -345,6 +345,15 @@ class Sequenceur:
         #     'conditionFin': 'immediat',
         #     'nextLabel': 'hippodrome'
         # },
+        {
+            'label': 'arret_apres_freinage',
+            'instruction': 'tourne',  # Arrêt avec roues a 0
+            'vitesse': 0,
+            'positionRoues': 0,
+            'conditionFin': 'duree',
+            'duree': 1.5,
+            'nextLabel': 'attendBouton'  # Retour au début
+        }
     ]
 
     tacho = 0
