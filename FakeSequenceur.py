@@ -106,7 +106,7 @@ class Sequenceur:
             'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
             'activationDistanceIntegrale': False,
             'obstacle': False,
-            'vitesse': 1,
+            'vitesse': 70,
             'conditionFin': 'tacho',
             'tacho': 2000
         },
@@ -118,7 +118,7 @@ class Sequenceur:
             'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
             'activationDistanceIntegrale': True,
             'obstacle': False,
-            'vitesse': 1,
+            'vitesse': 45,
             'conditionFin': 'tacho',
             'tacho': 500
         },
@@ -127,7 +127,7 @@ class Sequenceur:
             'instruction': 'suiviImageRoues',  # suiviImageLigneDroite ou suiviImageRoues
             'activationDistanceIntegrale': True,
             'obstacle': False,
-            'vitesse': 1,
+            'vitesse': 31,
             'conditionFin': 'cap',
             'capFinalMini': 160,
             # En relatif par rapport au cap initial, pour la gauche : 180 300, pour la droite 60 180
@@ -147,7 +147,7 @@ class Sequenceur:
             'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
             'activationDistanceIntegrale': True,
             'obstacle': False,
-            'vitesse': 1,
+            'vitesse': 70,
             'conditionFin': 'tacho',
             'tacho': 1800,
         },
@@ -160,7 +160,7 @@ class Sequenceur:
             'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
             'activationDistanceIntegrale': True,
             'obstacle': False,
-            'vitesse': 1,
+            'vitesse': 45,
             'conditionFin': 'tacho',
             'tacho': 450
         },
@@ -173,7 +173,7 @@ class Sequenceur:
             'instruction': 'suiviImageRoues',  # suiviImageLigneDroite ou suiviImageRoues
             'activationDistanceIntegrale': True,
             'obstacle': False,
-            'vitesse': 1,
+            'vitesse': 31,
             'conditionFin': 'tacho',
             'tacho': 4250,
         },
@@ -186,7 +186,7 @@ class Sequenceur:
             'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
             'activationDistanceIntegrale': True,
             'obstacle': False,
-            'vitesse': 1,
+            'vitesse': 70,
             'conditionFin': 'tacho',
             'tacho': 2000,
         },
@@ -199,7 +199,7 @@ class Sequenceur:
             'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
             'activationDistanceIntegrale': True,
             'obstacle': False,
-            'vitesse': 1,
+            'vitesse': 45,
             'conditionFin': 'tacho',
             'tacho': 500
         },
@@ -208,7 +208,7 @@ class Sequenceur:
             'instruction': 'suiviImageRoues',  # suiviImageLigneDroite ou suiviImageRoues
             'activationDistanceIntegrale': True,
             'obstacle': False,
-            'vitesse': 1,
+            'vitesse': 28,
             'conditionFin': 'cap',
             'capFinalMini': 160,
             'capFinalMaxi': 270,
@@ -227,7 +227,7 @@ class Sequenceur:
             'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
             'activationDistanceIntegrale': True,
             'obstacle': False,
-            'vitesse': 1,
+            'vitesse': 50,
             'conditionFin': 'tacho',
             'tacho': 1000,
         },
@@ -240,7 +240,7 @@ class Sequenceur:
             'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
             'activationDistanceIntegrale': True,
             'obstacle': False,
-            'vitesse': 1,
+            'vitesse': 70,  # Was 90 in TRR2018
             'conditionFin': 'tacho',
             'tacho': 5900,
         },
@@ -253,7 +253,7 @@ class Sequenceur:
             'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
             'activationDistanceIntegrale': True,
             'obstacle': False,
-            'vitesse': 1,
+            'vitesse': 40,
             'conditionFin': 'tacho',
             'tacho': 500,
 
@@ -266,7 +266,7 @@ class Sequenceur:
             'instruction': 'suiviImageRoues',  # suiviImageLigneDroite ou suiviImageRoues
             'activationDistanceIntegrale': True,
             'obstacle': False,
-            'vitesse': 1,
+            'vitesse': 30,
             'conditionFin': 'tacho',
             'tacho': 500,
             'nextLabel': 'arret_apres_freinage'
@@ -520,6 +520,7 @@ class Sequenceur:
             if (self.time.time() - self.timeDebut) > self.programmeCourant['duree']:
                 finSequence = True
         elif conditionFin == 'tacho':
+            print(self.voiture.speedController.get_tacho())
             if self.voiture.speedController.get_tacho() > (self.tacho + self.programmeCourant['tacho']):
                 finSequence = True
         elif conditionFin == 'immediat':
