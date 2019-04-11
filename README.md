@@ -40,3 +40,9 @@ python PATH_TO_THE_PROJECT\launch_robot_simu.py
 That's all, you should see the robot moving in the simulator!
 
 You can then edit the python files to create your own code to command TurboDroid.
+
+## Licence
+
+Copyright 2018 - Lior Perez & Cédric Franck
+
+This content is shared by Lior Perez and Cédric Franck under the Apache 2.0 licence.
