@@ -16,6 +16,5 @@ class Logger:
     def log(self):
         print("tacho : %s" % self.speed_controller.get_tacho())
         print("Simu time : %fs " % self.simu_time.time())
-        # print(simulator.get_object_orientation(base_car))
 
 

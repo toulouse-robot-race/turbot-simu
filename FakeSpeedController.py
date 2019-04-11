@@ -11,7 +11,7 @@ class SpeedController:
         self.simulator = simulator
         self.previous_speed = 0
         self.tacho = 0
-        self.previous_pos = np.array([0, 0, 0])
+        self.previous_pos = None
         self.speed = 0
         self.min_speed = 0
         self.deceleration_step = 2  # TODO make this dependent on time step (on real Turbodroid it is 0.1)
@@ -57,13 +57,18 @@ class SpeedController:
     def get_tacho(self):
         return self.tacho
 
-    def compute_position_vector(self):
+    def compute_tacho(self):
         current_pos = self.simulator.get_object_position(self.base_car)
-        current_pos = current_pos if current_pos is not None else [0, 0, 0]
+        orientation = self.simulator.get_object_orientation(self.base_car)
+
+        if current_pos is None or orientation is None:
+            return
+
+        if self.previous_pos is None:
+            self.previous_pos = current_pos
+            return
+
         position_vector = np.array(current_pos) - np.array(self.previous_pos)
         self.previous_pos = current_pos
-        return position_vector
-
-    def compute_tacho(self):
-        position_vector = self.compute_position_vector()
-        self.tacho += np.linalg.norm(position_vector) * TACHO_COEF
+        gyro_vector = np.array([np.sin(orientation[2]), -np.cos(orientation[2]), 0])
+        self.tacho += position_vector.dot(gyro_vector) * TACHO_COEF

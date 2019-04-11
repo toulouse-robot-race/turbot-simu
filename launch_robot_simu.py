@@ -1,3 +1,5 @@
+import numpy as np
+
 from Logger import Logger
 from Simulator import Simulator
 from FakeSequenceur import Sequenceur
@@ -44,7 +46,6 @@ components = [arduino, sequenceur, imageAnalyser, sequenceur,
 simulator.start_simulation()
 
 while simu_time.time() < simulation_duration_seconds:
-
     start_step_time = time.time()
     [component.execute() for component in components]
     print("code execution time : %fs " % (time.time() - start_step_time))
