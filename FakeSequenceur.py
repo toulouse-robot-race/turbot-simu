@@ -178,7 +178,7 @@ class Sequenceur:
             'tacho': 4250,
         },
         {
-            'instruction': 'setTacho1',  # Memorise le tacho actuel
+            'instruction': 'setTacho',  # Memorise le tacho actuel
             'conditionFin': 'immediat'
         },
         # Troisième ligne droite sortie de chicane

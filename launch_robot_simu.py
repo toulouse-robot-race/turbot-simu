@@ -12,6 +12,7 @@ simulation_duration_seconds = 200
 simulator = Simulator()
 
 right_motor = simulator.get_handle("driving_joint_rear_right")
+right_motor = simulator.get_handle("driving_joint_rear_right")
 left_motor = simulator.get_handle("driving_joint_rear_left")
 left_steering = simulator.get_handle("steering_joint_fl")
 right_steering = simulator.get_handle("steering_joint_fr")
@@ -43,5 +44,7 @@ while simu_time.time() < simulation_duration_seconds:
     simulator.do_simulation_step()
     print("simulator execution time : %fs " % (time.time() - start_simulator_step_time))
     print("Simu time : %fs " % simu_time.time())
+    print(simulator.get_object_orientation(base_car))
+    print(simulator.get_object_position(base_car))
 
 simulator.stop_simulation()

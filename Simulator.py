@@ -49,7 +49,7 @@ class Simulator:
     def get_simulation_time(self):
         if self.simulation_time == 0:
             def callback(result):
-                self.simulation_time = round(result[1],3)
+                self.simulation_time = round(result[1], 3)
 
             self.client.simxGetSimulationTime(self.client.simxDefaultSubscriber(callback))
 
@@ -98,3 +98,27 @@ class Simulator:
             return self.images[self.simulation_time - Config.CAMERA_DELAY]
         else:
             return None, None
+
+    positions = {}
+
+    def get_object_position(self, object_handle):
+        if object_handle not in self.positions:
+            self.positions[object_handle] = None
+
+            def callback(result):
+                self.positions[object_handle] = result[1]
+
+            self.client.simxGetObjectPosition(object_handle, -1, self.client.simxDefaultSubscriber(callback))
+        return self.positions[object_handle]
+
+    orientations = {}
+
+    def get_object_orientation(self, object_handle):
+        if object_handle not in self.orientations:
+            self.orientations[object_handle] = None
+
+            def callback(result):
+                self.orientations[object_handle] = result[1]
+
+            self.client.simxGetObjectOrientation(object_handle, -1, self.client.simxDefaultSubscriber(callback))
+        return self.orientations[object_handle]
