@@ -1,3 +1,4 @@
+from Logger import Logger
 from Simulator import Simulator
 from FakeSequenceur import Sequenceur
 from FakeVoiture import Voiture
@@ -7,6 +8,9 @@ from FakeImageAnalyser import ImageAnalyser
 from FakeTime import Time
 from FakeSpeedController import SpeedController
 import time
+import signal
+import sys
+
 simulation_duration_seconds = 200
 
 simulator = Simulator()
@@ -23,28 +27,30 @@ base_car = simulator.get_handle("base_link")
 simu_time = Time(simulator)
 imageAnalyser = ImageAnalyser(simulator, cam)
 speedController = SpeedController(simulator, [left_motor, right_motor],
-                                  simulation_step_time=simulator.get_simulation_time_step())
+                                  simulation_step_time=simulator.get_simulation_time_step(),
+                                  base_car=base_car)
 voiture = Voiture(simulator, [left_steering, right_steering], [left_motor, right_motor],
                   speedController, )
 arduino = Arduino(simulator, gyro)
 asservissement = Asservissement(arduino, voiture, imageAnalyser, simu_time)
 sequenceur = Sequenceur(voiture, simu_time, arduino, asservissement)
+logger = Logger(simulator, simu_time, imageAnalyser, speedController, voiture,
+                arduino, asservissement, sequenceur)
+
+# Order matter, components will be executed one by one
+components = [arduino, sequenceur, imageAnalyser, sequenceur,
+              asservissement, speedController, logger]
 
 simulator.start_simulation()
+
 while simu_time.time() < simulation_duration_seconds:
+
     start_step_time = time.time()
-    speedController.compute_tacho()
-    arduino.compute_gyro()
-    imageAnalyser.execute()
-    sequenceur.execute()
-    asservissement.execute()
-    speedController.execute()
+    [component.execute() for component in components]
     print("code execution time : %fs " % (time.time() - start_step_time))
+
     start_simulator_step_time = time.time()
     simulator.do_simulation_step()
     print("simulator execution time : %fs " % (time.time() - start_simulator_step_time))
-    print("Simu time : %fs " % simu_time.time())
-    print(simulator.get_object_orientation(base_car))
-    print(simulator.get_object_position(base_car))
 
 simulator.stop_simulation()

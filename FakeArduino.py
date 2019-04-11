@@ -11,6 +11,9 @@ class Arduino:
         self.gyro = float(0)
         self.nouvelleDonneeTelemetre1 = False
 
+    def execute(self):
+        self.compute_gyro()
+
     def getCap(self):
         return self.gyro
 

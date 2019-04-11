@@ -1,17 +1,21 @@
+import numpy as np
+
 from Config import SPEED_COEF, TACHO_COEF
 
 
 class SpeedController:
-    def __init__(self, simulator, motor_handles, simulation_step_time):
+    def __init__(self, simulator, motor_handles, simulation_step_time, base_car):
+        self.base_car = base_car
         self.simulation_step_time = simulation_step_time
         self.motor_handles = motor_handles
         self.simulator = simulator
         self.previous_speed = 0
         self.tacho = 0
+        self.previous_pos = np.array([0, 0, 0])
         self.speed = 0
         self.min_speed = 0
-        self.deceleration_step = 2    # TODO make this dependent on time step (on real Turbodroid it is 0.1)
-        self.acceleration_step = 2    # TODO make this dependent on time step
+        self.deceleration_step = 2  # TODO make this dependent on time step (on real Turbodroid it is 0.1)
+        self.acceleration_step = 2  # TODO make this dependent on time step
         self.speed_target = 0
         self.simulation_step_time = self.simulator.get_simulation_time_step()
 
@@ -20,6 +24,7 @@ class SpeedController:
 
     def execute(self):
         self.update_speed()
+        self.compute_tacho()
         self.send_speed_command()
 
     def update_speed(self):
@@ -52,8 +57,13 @@ class SpeedController:
     def get_tacho(self):
         return self.tacho
 
+    def compute_position_vector(self):
+        current_pos = self.simulator.get_object_position(self.base_car)
+        current_pos = current_pos if current_pos is not None else [0, 0, 0]
+        position_vector = np.array(current_pos) - np.array(self.previous_pos)
+        self.previous_pos = current_pos
+        return position_vector
+
     def compute_tacho(self):
-        current_speed = self.simulator.get_joint_angular_speed(self.motor_handles[0]) * TACHO_COEF
-        step_distance = ((current_speed + self.previous_speed) / 2) * self.simulation_step_time
-        self.tacho += step_distance
-        self.previous_speed = current_speed
+        position_vector = self.compute_position_vector()
+        self.tacho += np.linalg.norm(position_vector) * TACHO_COEF
