@@ -1,6 +1,7 @@
 class Logger:
 
-    def __init__(self, simulator, simu_time, image_analyser, speed_controller, voiture, arduino, asservissement, sequenceur):
+    def __init__(self, simulator, simu_time, image_analyser, speed_controller, voiture, arduino, asservissement, sequenceur, handles):
+        self.handles = handles
         self.simu_time = simu_time
         self.image_analyser = image_analyser
         self.sequenceur = sequenceur

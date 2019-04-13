@@ -66,7 +66,8 @@ logger = Logger(simulator,
                 voiture,
                 arduino,
                 asservissement,
-                sequenceur)
+                sequenceur,
+                handles)
 
 # Order matter, components will be executed one by one
 components = [arduino,
