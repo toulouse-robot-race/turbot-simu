@@ -13,6 +13,10 @@ class Voiture:
         self.speedController = speed_controller
 
     def tourne(self, steering_percent):
+        # Apply exponential
+        sign = 1 if steering_percent > 0 else -1
+        steering_percent = sign * (abs(steering_percent) ** 1.2) * 0.7    # TODO calibrate according to real robot
+
         pos_steering = steering_percent * STEERING_COEF
         self.simulator.set_target_pos(self.steering_handles[0], pos_steering)
         self.simulator.set_target_pos(self.steering_handles[1], pos_steering)
