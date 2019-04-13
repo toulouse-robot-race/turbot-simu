@@ -4,7 +4,7 @@ WHEEL_SIZE = 0.05
 RAD_TO_DEG = 57.2958
 STEERING_COEF = (-math.pi / 2) / 100 # In radians / 100 for 100%
 SPEED_COEF = 4 / -WHEEL_SIZE / 100 # First number is speed in m/s for 100%
-TACHO_COEF = 159
+TACHO_COEF = 195  # Number of tachometer increments for 1 meter
 GYRO_COEF = -RAD_TO_DEG
 CAMERA_DELAY = 0.15
 
