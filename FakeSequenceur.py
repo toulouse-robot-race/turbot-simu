@@ -240,7 +240,7 @@ class Sequenceur:
             'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
             'activationDistanceIntegrale': True,
             'obstacle': False,
-            'vitesse': 70,  # Was 90 in TRR2018
+            'vitesse': 90,  # Was 90 in TRR2018
             'conditionFin': 'tacho',
             'tacho': 5900,
         },

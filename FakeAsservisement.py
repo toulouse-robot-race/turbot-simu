@@ -13,7 +13,7 @@ class Asservissement:
     COEFF_PROPORTIONNEL_POUR_VITESSE_MIN = 2.0  # 2.0 lors des essais post TRR2017
     COEFF_PROPORTIONNEL_IMAGE_POUR_VITESSE_NOMINALE = 1.0  # 0.3 lors des essais post TRR2017
     COEFF_PROPORTIONNEL_IMAGE_POUR_VITESSE_MIN = 2.0  # 2.0 lors des essais post TRR2018
-    VITESSE_NOMINALE = 75  # 45 lors des manches de la TRR2017 (surtout pas mettre 45, mettre la vitesse max utilisee, sinon le coeff prop peut devenir negatif ! Teste en 2017 apres la course, stable a vitesse 75)
+    VITESSE_NOMINALE = 100  # 45 lors des manches de la TRR2017 (surtout pas mettre 45, mettre la vitesse max utilisee, sinon le coeff prop peut devenir negatif ! Teste en 2017 apres la course, stable a vitesse 75.)
     VITESSE_MIN = 20  # 25 lors des manches de la TRR2017
     # ***********************
     # TODO MODIFIE POUR TESTS, mise a zero des coeff integral et derivee
