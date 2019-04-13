@@ -6,7 +6,7 @@ STEERING_COEF = (-math.pi / 5) / 100 # In radians / 100 for 100%
 SPEED_COEF = 9.9 / -WHEEL_SIZE / 100 # First number is speed in m/s for 100%
 TACHO_COEF = 205  # Number of tachometer increments for 1 meter
 GYRO_COEF = -RAD_TO_DEG
-CAMERA_DELAY = 0.00
+CAMERA_DELAY = 0.05
 
 
 def steering_response_ramp(x):
