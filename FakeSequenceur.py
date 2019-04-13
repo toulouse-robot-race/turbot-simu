@@ -255,7 +255,7 @@ class Sequenceur:
             'obstacle': False,
             'vitesse': 40,
             'conditionFin': 'tacho',
-            'tacho': 500,
+            'tacho': 1000,
 
         },
         {
@@ -266,9 +266,9 @@ class Sequenceur:
             'instruction': 'suiviImageRoues',  # suiviImageLigneDroite ou suiviImageRoues
             'activationDistanceIntegrale': True,
             'obstacle': False,
-            'vitesse': 30,
+            'vitesse': 0,
             'conditionFin': 'tacho',
-            'tacho': 500,
+            'tacho': 2500,
             'nextLabel': 'arret_apres_freinage'
         },
         ############ TEST HIPPODROME
