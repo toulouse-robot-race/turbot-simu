@@ -28,8 +28,8 @@ class Sequencer:
     last_bouton = 1  # 1 = bouton relache, 0 = bouton appuye
     flag_appui_court = False  # Passe a True quand un appui court (3 secondes) a ete detecte
 
-    def __init__(self, car, time, asservissement, programme):
-        self.programme = programme
+    def __init__(self, car, time, asservissement, program):
+        self.program = program
         self.car = car
         self.time = time
         self.asservissement = asservissement
@@ -68,16 +68,16 @@ class Sequencer:
                 # Si on a detecte un appui court avant la relache du bouton
                 self.flag_appui_court = False
                 # Retourne a la sequence du debut
-                for i in range(len(self.programme)):
-                    if 'label' in self.programme[i]:
-                        if self.programme[i]['label'] == 'attendBouton':
+                for i in range(len(self.program)):
+                    if 'label' in self.program[i]:
+                        if self.program[i]['label'] == 'attendBouton':
                             # On a trouve la prochaine sequence
                             self.sequence = i
                             self.debut = True
 
         if self.debut:
             # Premiere execution de l'instruction courante
-            self.programmeCourant = self.programme[self.sequence]
+            self.programmeCourant = self.program[self.sequence]
             instruction = self.programmeCourant['instruction']
             print ("********** Nouvelle instruction *********** ", instruction)
             self.timeDebut = self.time.time()
@@ -166,9 +166,9 @@ class Sequencer:
             # Si le champ nextLabel est defini, alors il faut chercher le prochain element par son label
             if 'nextLabel' in self.programmeCourant:
                 nextLabel = self.programmeCourant['nextLabel']
-                for i in range(len(self.programme)):
-                    if 'label' in self.programme[i]:
-                        if self.programme[i]['label'] == nextLabel:
+                for i in range(len(self.program)):
+                    if 'label' in self.program[i]:
+                        if self.program[i]['label'] == nextLabel:
                             # On a trouve la prochaine sequence
                             self.sequence = i
             else:

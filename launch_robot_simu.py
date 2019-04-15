@@ -1,5 +1,3 @@
-import numpy as np
-
 import Programs
 from Logger import Logger
 from Simulator import Simulator
@@ -50,25 +48,25 @@ car = Car(simulator=simulator,
           tachometer=tachometer,
           gyro=gyro)
 
-asservissement = Asservissement(car,
-                                image_analyzer,
-                                simu_time)
+asservissement = Asservissement(car=car,
+                                image_analyzer=image_analyzer,
+                                time=simu_time)
 
-sequencer = Sequencer(car,
-                      simu_time,
-                      asservissement,
-                      Programs.TRR)
+sequencer = Sequencer(car=car,
+                      time=simu_time,
+                      asservissement=asservissement,
+                      program=Programs.TRR)
 
-logger = Logger(simulator,
-                simu_time,
-                image_analyzer,
-                speed_controller,
-                car,
-                gyro,
-                asservissement,
-                sequencer,
-                handles,
-                tachometer)
+logger = Logger(simulator=simulator,
+                time=simu_time,
+                image_analyzer=image_analyzer,
+                speed_controller=speed_controller,
+                car=car,
+                gyro=gyro,
+                asservissement=asservissement,
+                sequencer=sequencer,
+                handles=handles,
+                tachometer=tachometer)
 
 # Order matter, components will be executed one by one
 executable_components = [gyro,
