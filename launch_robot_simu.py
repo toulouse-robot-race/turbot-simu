@@ -3,13 +3,13 @@ import numpy as np
 import Programs
 from Logger import Logger
 from Simulator import Simulator
-from FakeSequenceur import Sequenceur
-from FakeVoiture import Voiture
-from FakeAsservisement import Asservissement
-from FakeArduino import Arduino
-from FakeImageAnalyser import ImageAnalyser
-from FakeTime import Time
-from FakeSpeedController import SpeedController
+from Sequenceur import Sequenceur
+from Voiture import Voiture
+from Asservisement import Asservissement
+from Arduino import Arduino
+from ImageAnalyser import ImageAnalyser
+from Time import Time
+from SpeedController import SpeedController
 import time
 import signal
 import sys
