@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 import cv2
 
 
-class ImageAnalyser:
+class ImageAnalyzer:
     # Constantes
     MODEL_FILENAME = 'deep_learning_models/craie_quarter_filters_6.h5'
     DELAY_EXECUTION = 0.07

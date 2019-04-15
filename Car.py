@@ -4,9 +4,11 @@ import random
 from Config import STEERING_COEF
 
 
-class Voiture:
+class Car:
 
-    def __init__(self, simulator, steering_handles, motors_handles, speed_controller):
+    def __init__(self, simulator, steering_handles, motors_handles, speed_controller, tachometer, gyro):
+        self.gyro = gyro
+        self.tachometer = tachometer
         self.motors_handles = motors_handles
         self.steering_handles = steering_handles
         self.simulator = simulator
@@ -19,6 +21,15 @@ class Voiture:
 
     def avance(self, speed):
         self.speedController.set_speed_target(speed)
+
+    def get_tacho(self):
+        return self.tachometer.get_tacho()
+
+    def get_cap(self):
+        return self.gyro.get_cap()
+
+    def has_gyro_data(self):
+        return True
 
     def setLed(self, etat):
         pass

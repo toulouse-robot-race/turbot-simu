@@ -1,24 +1,18 @@
 from Config import GYRO_COEF
 
 
-class Arduino:
-
+class Gyro:
     def __init__(self, simulator, gyro_name):
         self.gyro_name = gyro_name
         self.simulator = simulator
-        self.nouvelleDonneeGyro = True
         self.step_time = simulator.get_simulation_time_step()
         self.gyro = float(0)
-        self.nouvelleDonneeTelemetre1 = False
 
     def execute(self):
         self.compute_gyro()
 
-    def getCap(self):
+    def get_cap(self):
         return self.gyro
-
-    def annuleRecalageCap(self):
-        pass
 
     def get_gyro_variation_step(self):
         if self.simulator.get_float_signal(self.gyro_name) is not None:

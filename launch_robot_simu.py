@@ -3,16 +3,15 @@ import numpy as np
 import Programs
 from Logger import Logger
 from Simulator import Simulator
-from Sequenceur import Sequenceur
-from Voiture import Voiture
+from Sequencer import Sequencer
+from Car import Car
 from Asservisement import Asservissement
-from Arduino import Arduino
-from ImageAnalyser import ImageAnalyser
+from Gyro import Gyro
+from ImageAnalyzer import ImageAnalyzer
 from Time import Time
 from SpeedController import SpeedController
+from Tachometer import Tachometer
 import time
-import signal
-import sys
 
 simulation_duration_seconds = 200
 
@@ -31,60 +30,60 @@ gyro_name = "gyroZ"
 
 simu_time = Time(simulator)
 
-imageAnalyser = ImageAnalyser(simulator,
-                              handles["cam"])
+image_analyzer = ImageAnalyzer(simulator=simulator,
+                               cam_handle=handles["cam"])
 
-speedController = SpeedController(simulator,
-                                  [handles["left_motor"],
-                                   handles["right_motor"]],
-                                  simulation_step_time=simulator.get_simulation_time_step(),
-                                  base_car=handles["base_car"])
+speed_controller = SpeedController(simulator=simulator,
+                                   motor_handles=[handles["left_motor"], handles["right_motor"]],
+                                   simulation_step_time=simulator.get_simulation_time_step())
 
-voiture = Voiture(simulator,
-                  [handles["left_steering"],
-                   handles["right_steering"]],
-                  [handles["left_motor"],
-                   handles["right_motor"]],
-                  speedController)
+gyro = Gyro(simulator=simulator,
+            gyro_name=gyro_name)
 
-arduino = Arduino(simulator,
-                  gyro_name)
+tachometer = Tachometer(simulator=simulator,
+                        base_car=handles['base_car'])
 
-asservissement = Asservissement(arduino,
-                                voiture,
-                                imageAnalyser,
+car = Car(simulator=simulator,
+          steering_handles=[handles["left_steering"], handles["right_steering"]],
+          motors_handles=[handles["left_motor"], handles["right_motor"]],
+          speed_controller=speed_controller,
+          tachometer=tachometer,
+          gyro=gyro)
+
+asservissement = Asservissement(car,
+                                image_analyzer,
                                 simu_time)
 
-sequenceur = Sequenceur(voiture,
-                        simu_time,
-                        arduino,
-                        asservissement,
-                        Programs.course)
+sequencer = Sequencer(car,
+                      simu_time,
+                      asservissement,
+                      Programs.TRR)
 
 logger = Logger(simulator,
                 simu_time,
-                imageAnalyser,
-                speedController,
-                voiture,
-                arduino,
+                image_analyzer,
+                speed_controller,
+                car,
+                gyro,
                 asservissement,
-                sequenceur,
-                handles)
+                sequencer,
+                handles,
+                tachometer)
 
 # Order matter, components will be executed one by one
-components = [arduino,
-              sequenceur,
-              imageAnalyser,
-              sequenceur,
-              asservissement,
-              speedController,
-              logger]
+executable_components = [gyro,
+                         tachometer,
+                         image_analyzer,
+                         sequencer,
+                         asservissement,
+                         speed_controller,
+                         logger]
 
 simulator.start_simulation()
 
 while simu_time.time() < simulation_duration_seconds:
     start_step_time = time.time()
-    [component.execute() for component in components]
+    [component.execute() for component in executable_components]
     print("code execution time : %fs " % (time.time() - start_step_time))
 
     start_simulator_step_time = time.time()

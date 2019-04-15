@@ -1,13 +1,15 @@
 class Logger:
 
-    def __init__(self, simulator, simu_time, image_analyser, speed_controller, voiture, arduino, asservissement, sequenceur, handles):
+    def __init__(self, simulator, simu_time, image_analyser, speed_controller,
+                 car, gyro, asservissement, sequencer, handles, tachometer):
+        self.tachometer = tachometer
         self.handles = handles
         self.simu_time = simu_time
         self.image_analyser = image_analyser
-        self.sequenceur = sequenceur
+        self.sequencer = sequencer
         self.asservissement = asservissement
-        self.arduino = arduino
-        self.voiture = voiture
+        self.gyro = gyro
+        self.car = car
         self.speed_controller = speed_controller
         self.simulator = simulator
 
@@ -15,7 +17,7 @@ class Logger:
         self.log()
 
     def log(self):
-        print("tacho : %s" % self.speed_controller.get_tacho())
+        print("tacho : %s" % self.tachometer.get_tacho())
         print("Simu time : %fs " % self.simu_time.time())
 
 

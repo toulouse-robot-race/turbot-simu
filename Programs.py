@@ -1,6 +1,6 @@
 # coding=utf-8
 
-course = [
+TRR = [
     {
         'instruction': 'setCap',  # Cap asuivre = cap actuel
         'chenillard': True,
@@ -192,7 +192,7 @@ course = [
     }
 ]
 
-hippodrome = [
+HIPPODROME = [
     ############ TEST HIPPODROME
     {
         'label': 'hippodrome',

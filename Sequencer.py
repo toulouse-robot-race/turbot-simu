@@ -3,8 +3,8 @@
 # Librairies tierces
 import os
 
-class Sequenceur:
 
+class Sequencer:
     # Durees d'appui sur le bouton poussoir
     DUREE_APPUI_COURT_REDEMARRAGE = 2  # Nombre de secondes d'appui sur le poussoir pour reinitialiser le programme
     DUREE_APPUI_LONG_SHUTDOWN = 10  # Nombre de secondes d'appui sur le poussoir pour eteindre le raspberry
@@ -16,7 +16,7 @@ class Sequenceur:
     timeDebut = 0
     time = None
     programmeCourant = {}
-    voiture = None
+    car = None
     asservissement = None
 
     timer_led = 0
@@ -28,11 +28,10 @@ class Sequenceur:
     last_bouton = 1  # 1 = bouton relache, 0 = bouton appuye
     flag_appui_court = False  # Passe a True quand un appui court (3 secondes) a ete detecte
 
-    def __init__(self, voiture, time, arduino, asservissement, programme):
+    def __init__(self, car, time, asservissement, programme):
         self.programme = programme
-        self.voiture = voiture
+        self.car = car
         self.time = time
-        self.arduino = arduino
         self.asservissement = asservissement
 
     def execute(self):
@@ -42,19 +41,19 @@ class Sequenceur:
             if self.time.time() > self.timer_led + self.vitesse_clignote_led:
                 self.timer_led = self.time.time()
                 self.last_led = 0 if self.last_led else 1
-                self.voiture.setLed(self.last_led)
+                self.car.setLed(self.last_led)
         else:
-            self.voiture.setLed(1)
+            self.car.setLed(1)
 
         # Verifie appui court (3 sec) ou long (10 sec) sur bouton
-        if self.voiture.getBoutonPoussoir() == 0:
+        if self.car.getBoutonPoussoir() == 0:
             if self.last_bouton == 1:
                 self.timer_bouton = self.time.time()
             else:
                 if self.time.time() > self.timer_bouton + self.DUREE_APPUI_COURT_REDEMARRAGE:
-                    # Arrete la voiture
-                    self.voiture.avance(0)
-                    self.voiture.tourne(0)
+                    # Arrete la car
+                    self.car.avance(0)
+                    self.car.tourne(0)
                     self.vitesse_clignote_led = 0.3
                     self.led_clignote = True
                     self.flag_appui_court = True
@@ -83,20 +82,19 @@ class Sequenceur:
             print ("********** Nouvelle instruction *********** ", instruction)
             self.timeDebut = self.time.time()
             self.debut = False
-            self.arduino.annuleRecalageCap()
             self.asservissement.cumulErreurCap = 0
 
             # Fait du cap courant le cap a suivre
             if instruction == 'setCap':
-                target = self.arduino.getCap()
+                target = self.car.get_cap()
                 print ('Cap Target : ', target)
                 self.cap_target = target
                 self.asservissement.setCapTarget()
 
             if instruction == 'setTacho':
-                self.tacho = self.voiture.speedController.get_tacho()
+                self.tacho = self.car.get_tacho()
 
-            # Programme la vitesse de la voiture
+            # Programme la vitesse de la car
             if instruction == 'ligneDroite' or \
                     instruction == 'tourne' or \
                     instruction == 'suiviLigne' or \
@@ -105,14 +103,14 @@ class Sequenceur:
                     instruction == 'suiviImageCap':
                 vitesse = self.programmeCourant['vitesse']
                 print ("Vitesse : ", vitesse)
-                self.voiture.avance(vitesse)
+                self.car.avance(vitesse)
                 self.asservissement.setVitesse(vitesse)
 
             # Positionne les roues pour l'instruction 'tourne'
             if instruction == 'tourne':
                 positionRoues = self.programmeCourant['positionRoues']
                 print ("Position roues : ", positionRoues)
-                self.voiture.tourne(positionRoues)
+                self.car.tourne(positionRoues)
 
             # Ajoute une valeur a capTarget pour l'instruction 'ajouteCap'
             if instruction == 'ajouteCap':
@@ -143,12 +141,7 @@ class Sequenceur:
         # Recupere la condition de fin
         conditionFin = self.programmeCourant['conditionFin']
         # Verifie si la condition de fin est atteinte
-        if conditionFin == 'attendreGyroStable':
-            if self.arduino.gyroX != 0.0:
-                # Si l'arduino a bien reussi a acquerir le gyro, le dit a travers la vitesse de clignotement de la led
-                self.vitesse_clignote_led = 1.5
-            finSequence = self.arduino.checkGyroStable()
-        elif conditionFin == 'cap':
+        if conditionFin == 'cap':
             capFinalMini = self.programmeCourant['capFinalMini']
             capFinalMaxi = self.programmeCourant['capFinalMaxi']
             if self.checkDeltaCapAtteint(capFinalMini, capFinalMaxi):
@@ -157,15 +150,15 @@ class Sequenceur:
             if (self.time.time() - self.timeDebut) > self.programmeCourant['duree']:
                 finSequence = True
         elif conditionFin == 'tacho':
-            print(self.voiture.speedController.get_tacho())
-            if self.voiture.speedController.get_tacho() > (self.tacho + self.programmeCourant['tacho']):
+            print(self.car.get_tacho())
+            if self.car.get_tacho() > (self.tacho + self.programmeCourant['tacho']):
                 finSequence = True
         elif conditionFin == 'immediat':
             finSequence = True
         elif conditionFin == 'attendBouton':
             self.vitesse_clignote_led = 0.3
             self.led_clignote = True
-            if self.voiture.getBoutonPoussoir() == 0:
+            if self.car.getBoutonPoussoir() == 0:
                 self.led_clignote = False
                 finSequence = True
 
@@ -187,12 +180,12 @@ class Sequenceur:
         absoluteCapMini = (self.cap_target + capFinalMini) % 360
         absoluteCapMaxi = (self.cap_target + capFinalMaxi) % 360
 
-        ecartCapMini = (((self.arduino.getCap() - absoluteCapMini) + 180) % 360) - 180
-        ecartCapMaxi = (((self.arduino.getCap() - absoluteCapMaxi) + 180) % 360) - 180
+        ecartCapMini = (((self.car.get_cap() - absoluteCapMini) + 180) % 360) - 180
+        ecartCapMaxi = (((self.car.get_cap() - absoluteCapMaxi) + 180) % 360) - 180
 
         if (ecartCapMini > 0 and ecartCapMaxi < 0):
             print ("--------------- Fin de virage ----------------")
-            print ("CapTarget : ", self.cap_target, "Cap : ", self.arduino.getCap(), " Ecart cap mini : ", ecartCapMini,
+            print ("CapTarget : ", self.cap_target, "Cap : ", self.car.get_cap(), " Ecart cap mini : ", ecartCapMini,
                    " Ecart cap maxi : ", ecartCapMaxi)
             print ("----------------------------------------------")
 

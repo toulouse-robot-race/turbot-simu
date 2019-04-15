@@ -2,12 +2,6 @@
 
 
 class Asservissement:
-    # Robot dependencies
-    arduino = None
-    voiture = None
-    imageAnalysis = None
-    time = None
-
     # PID
     # Le coeff proportionnel reel depend de la vitesse
     COEFF_PROPORTIONNEL_POUR_VITESSE_NOMINALE = 0.3  # 0.3 lors des essais post TRR2017
@@ -98,10 +92,9 @@ class Asservissement:
     cumulErreurBraquage = 0.0
     cumulErreurDistanceBordure = 0.0
 
-    def __init__(self, arduino, voiture, imageAnalysis, time):
-        self.arduino = arduino
-        self.voiture = voiture
-        self.imageAnalysis = imageAnalysis
+    def __init__(self, car, image_analyzer, time):
+        self.car = car
+        self.image_analyzer = image_analyzer
         self.time = time
         self.timeLastCalculSuiviCourbe = time.time()
 
@@ -175,7 +168,7 @@ class Asservissement:
         # Definit le cap a suivre au cap courant
 
     def setCapTarget(self):
-        target = self.arduino.getCap()
+        target = self.car.get_cap()
         print ('Cap Target : ', target)
         self.capTarget = target
 
@@ -188,7 +181,7 @@ class Asservissement:
     # Execute l'asservissement
     def execute(self):
         # On n'execute que s'il y a une nouvelle donnee gyro ou une nouvelle image en mode suiviImage
-        if self.arduino.nouvelleDonneeGyro or (self.suiviImage and self.imageAnalysis.new_image_arrived):
+        if self.car.has_gyro_data() or (self.suiviImage and self.image_analyzer.new_image_arrived):
 
             capASuivre = 0.0
 
@@ -219,7 +212,7 @@ class Asservissement:
                     positionRoues, nouvellePositionRoues = self.calculePositionRouesFromImage()
                 else:
                     nouvellePositionRoues = True
-                    erreurCap = (((self.arduino.getCap() - capASuivre) + 180) % 360) - 180
+                    erreurCap = (((self.car.get_cap() - capASuivre) + 180) % 360) - 180
                     print ("Erreur cap : ", erreurCap)
 
                     if self.suiviImageCap:
@@ -232,18 +225,18 @@ class Asservissement:
                 # Envoi de la position des roues au servo
                 if nouvellePositionRoues:
                     print ("Position roues : {:.0f}".format(positionRoues))
-                    self.voiture.tourne(positionRoues)
+                    self.car.tourne(positionRoues)
 
     def calculeCapSuiviImageLigneDroite(self):
 
         # N'execute le calcul que s'il y a une nouvelle image
-        if self.imageAnalysis.isThereANewImage():
+        if self.image_analyzer.isThereANewImage():
 
             # Initialise le cap a suivre en fonction de la cible fixee initialement
             capASuivre = self.capTarget
 
             # Recale le cap a suivre en fonction de l'erreur mesuree sur la ligne
-            position_ligne1 = self.imageAnalysis.getPositionLigne1()
+            position_ligne1 = self.image_analyzer.getPositionLigne1()
             # position_ligne2 = self.imageAnalysis.getPositionLigne2()
 
             print("Position ligne: ", position_ligne1)
@@ -294,11 +287,11 @@ class Asservissement:
 
             # Si on est en train de freiner
             if self.marche_arriere_en_cours == 1:
-                self.voiture.freine()
-                # Verifie si la voiture est immobile
-                if self.voiture.estImmobile():
+                self.car.freine()
+                # Verifie si la car est immobile
+                if self.car.estImmobile():
                     # Memorise le tacho
-                    self.tacho_marche_arriere = self.voiture.speedController.get_tacho()
+                    self.tacho_marche_arriere = self.car.get_tacho()
                     # Tourne les roues du bon cote
                     position_roues = -0 if self.cote_marche_arriere > 0 else 0
                     nouvellePositionRoues = True
@@ -309,14 +302,13 @@ class Asservissement:
             # Si on est en train de reculer, sequence 1
             if self.marche_arriere_en_cours == 2:
                 print("En cours de marche arriere branche 1")
-                print("RPM: ", self.voiture.speedController.rpm)
                 # Marche arriere
-                self.voiture.reverse()
+                self.car.reverse()
                 # Verifie si on a assez recule
-                print(self.tacho_marche_arriere - self.voiture.speedController.get_tacho())
-                if self.tacho_marche_arriere - self.voiture.speedController.get_tacho() > self.TACHO_MARCHE_ARRIERE_2:
+                print(self.tacho_marche_arriere - self.car.get_tacho())
+                if self.tacho_marche_arriere - self.car.get_tacho() > self.TACHO_MARCHE_ARRIERE_2:
                     # Memorise le tacho
-                    self.tacho_marche_arriere = self.voiture.speedController.get_tacho()
+                    self.tacho_marche_arriere = self.car.get_tacho()
                     # Tourne les roues du bon cote
                     position_roues = 0 if self.cote_marche_arriere > 0 else -0
                     nouvellePositionRoues = True
@@ -326,49 +318,48 @@ class Asservissement:
             # Si on est en train de reculer, sequence 2
             if self.marche_arriere_en_cours == 3:
                 print("En cours de marche arriere branche 2")
-                print("RPM: ", self.voiture.speedController.rpm)
                 # Marche arriere
-                self.voiture.reverse()
+                self.car.reverse()
                 # Verifie si on a assez recule
-                print(self.tacho_marche_arriere - self.voiture.speedController.get_tacho())
-                if self.tacho_marche_arriere - self.voiture.speedController.get_tacho() > self.TACHO_MARCHE_ARRIERE_2:
+                print(self.tacho_marche_arriere - self.car.get_tacho())
+                if self.tacho_marche_arriere - self.car.get_tacho() > self.TACHO_MARCHE_ARRIERE_2:
                     # Passe a la sequence suivante
                     self.marche_arriere_en_cours = 4
 
             # Fin de la sequence de recul, on freine
             if self.marche_arriere_en_cours == 4:
-                self.voiture.freine()
-                # Verifie si la voiture est immobile
-                if self.voiture.estImmobile():
+                self.car.freine()
+                # Verifie si la car est immobile
+                if self.car.estImmobile():
                     # Unlocke la position de l'obstacle
-                    self.imageAnalysis.unlockObstacle()
+                    self.image_analyzer.unlockObstacle()
                     # Passe a la sequence suivante
                     self.marche_arriere_en_cours = 0
                     print ("Fin de la sequence de marche arriere, reprise du programme")
-                    self.voiture.avance(self.vitesse)
+                    self.car.avance(self.vitesse)
 
             # Laisse un peu de temps entre envoi servo et envoi VESC
             self.time.sleep(0.1)
             return position_roues, nouvellePositionRoues
 
             # N'execute le calcul que s'il y a une nouvelle image
-        if self.imageAnalysis.isThereANewImage():
-            last_image_time = self.imageAnalysis.last_execution_time
+        if self.image_analyzer.isThereANewImage():
+            last_image_time = self.image_analyzer.last_execution_time
 
             # Verifie s'il faut engager une sequence de marche arriere
-            if self.imageAnalysis.getObstacleInBrakeZone() and self.obstacleEnabled:
+            if self.image_analyzer.getObstacleInBrakeZone() and self.obstacleEnabled:
                 self.marche_arriere_en_cours = 1
-                self.voiture.freine()
-                self.cote_marche_arriere = self.imageAnalysis.getPositionObstacle()
+                self.car.freine()
+                self.cote_marche_arriere = self.image_analyzer.getPositionObstacle()
                 position_roues = None
                 nouvellePositionRoues = False
                 return position_roues, nouvellePositionRoues
 
                 # Calcule l'ecart de trajectoire par analyse d'image
-            poly_coeff_square = self.imageAnalysis.getPolyCoeffSquare()
-            position_ligne1 = self.imageAnalysis.getPositionLigne1()
-            position_ligne2 = self.imageAnalysis.getPositionLigne2()
-            parallelisme = self.imageAnalysis.getParallelism()
+            poly_coeff_square = self.image_analyzer.getPolyCoeffSquare()
+            position_ligne1 = self.image_analyzer.getPositionLigne1()
+            position_ligne2 = self.image_analyzer.getPositionLigne2()
+            parallelisme = self.image_analyzer.getParallelism()
 
             if poly_coeff_square is None or position_ligne1 is None:
                 # On n'a pas de ligne detectee, on maintient la position roues precedente (TODO trouver une autre strategie ?)
@@ -383,20 +374,20 @@ class Asservissement:
 
                 # Verifie s'il faut ralentir a cause d'un obstacle
                 if self.vitesseEvitement is not None and self.obstacleEnabled:
-                    if self.imageAnalysis.getObstacleExists():
+                    if self.image_analyzer.getObstacleExists():
                         # Set vitesse d'evitement
-                        self.voiture.avance(self.vitesseEvitement)
+                        self.car.avance(self.vitesseEvitement)
                         # Set coeff d'asservissement evitement
                         coeff_parallelisme_P = self.COEFF_SUIVI_IMAGE_PARALLELISME_P_EVITEMENT
                         coeff_p2_p = self.COEFF_SUIVI_IMAGE_ROUES_P2_EVITEMENT
                         coeff_p2_i = self.COEFF_SUIVI_IMAGE_ROUES_I2_EVITEMENT
                     else:
                         # Set vitesse rapide
-                        self.voiture.avance(self.vitesse)
+                        self.car.avance(self.vitesse)
 
                 # Verifie s'il faut s'ecarter a cause d'un obstacle
                 # Recupere la position de l'obstacle, qui a ete soit mesuree soit lockee en memoire
-                position_obstacle = self.imageAnalysis.getPositionObstacle()
+                position_obstacle = self.image_analyzer.getPositionObstacle()
                 if position_obstacle == 0:
                     self.offset = self.offset_hors_evitement
                     self.offset_progressif = True
@@ -460,17 +451,17 @@ class Asservissement:
 
     def calculeCapSuiviImageLent(self):
         # N'execute le calcul que s'il y a une nouvelle image
-        if self.imageAnalysis.isThereANewImage():
-            cap_actuel = self.arduino.getCap()
-            last_image_time = self.imageAnalysis.last_execution_time
+        if self.image_analyzer.isThereANewImage():
+            cap_actuel = self.car.get_cap()
+            last_image_time = self.image_analyzer.last_execution_time
 
             # Calcule l'ecart de trajectoire par analyse d'image
-            poly_coeff_square = self.imageAnalysis.getPolyCoeffSquare()
+            poly_coeff_square = self.image_analyzer.getPolyCoeffSquare()
             if poly_coeff_square is None:
                 # TODO voir ce qu'il faut faire. En attendant on met a zero
                 poly_coeff_square = 0
-            position_ligne1 = self.imageAnalysis.getPositionLigne1()
-            position_ligne2 = self.imageAnalysis.getPositionLigne2()
+            position_ligne1 = self.image_analyzer.getPositionLigne1()
+            position_ligne2 = self.image_analyzer.getPositionLigne2()
             # Calcule la position des roues
             braquage_courbure = min(self.MAX_SUIVI_COURBURE_P, max(-self.MAX_SUIVI_COURBURE_P,
                                                                    self.COEFF_SUIVI_IMAGE_COURBURE_P * poly_coeff_square))
