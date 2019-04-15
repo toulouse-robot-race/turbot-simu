@@ -42,6 +42,26 @@ class Asservissement:
     COEFF_GLOBAL_ECART_IMAGE = 0.6  # Coeff a appliquer sur l'ecart total calcule a partir de l'image, afin d'obtenir une erreur de cap en degres
     OFFSET = 0  # TODO to remove (+60 pour rouler a doite, -20 pour rouler a gauche)
 
+    # Suivi image ligne droite
+    COEFF_CAP_IMAGE_LIGNE_DROITE_P = 20
+    COEFF_CAP_IMAGE_LIGNE_DROITE_I = 0.5
+    MAX_ERREUR_FOR_CUMUL_POSITION_LIGNE = 0.5
+    MAX_CUMUL_ERREUR_POSITION_LIGNE = 8.0
+    MAX_CORRECTION_CAP_IMAGE_LIGNE_DROITE = 10.0
+
+    # Suivi image roues
+    COEFF_SUIVI_IMAGE_PARALLELISME_P_SPEED = 50  # VITESSE RAPIDE : Coeff P pour le suivi du parallelisme
+    COEFF_SUIVI_IMAGE_ROUES_P2_SPEED = 25  # VITESSE RAPIDE : Coeff P pour l'ecart par rapport a la position de ligne au point 2 (point proche)
+    COEFF_SUIVI_IMAGE_ROUES_I2_SPEED = 1.5  # VITESSE RAPIDE : Coeff I pour l'ecart par rapport a la position de la ligne au point 2 (point proche)
+    COEFF_SUIVI_IMAGE_PARALLELISME_P_EVITEMENT = 60  # EVITEMENT : Coeff P pour le suivi du parallelisme
+    COEFF_SUIVI_IMAGE_ROUES_P2_EVITEMENT = 70  # EVITEMENT : Coeff P pour l'ecart par rapport a la position de ligne au point 2 (point proche)
+    COEFF_SUIVI_IMAGE_ROUES_I2_EVITEMENT = 1.5  # EVITEMENT : Coeff I pour l'ecart par rapport a la position de la ligne au point 2 (point proche)
+    COEFF_SUIVI_IMAGES_ROUES_MAX_ERREUR_I = 6.0  # Max cumul ecart ligne pour l'asservissement integral
+    OFFSET_ECART_DROITE = 1.0  # Offset a appliquer pour s'ecarter a droite
+    OFFSET_ECART_GAUCHE = -1.0  # Offset a appliquer pour s'ecarter a gauche
+    TACHO_MARCHE_ARRIERE_1 = 50  # Nombre de tours de tacho pour 1ere sequence de marche arriere evitement
+    TACHO_MARCHE_ARRIERE_2 = 70  # Nombre de tours de tacho pour 1ere sequence de marche arriere evitement
+
     # Autres constantes
     DELTA_T_SUIVI_COURBES = 0.1
     COEFF_DERIVEE_TELEMETRE_COURBES = 0.8
@@ -89,7 +109,7 @@ class Asservissement:
         self.ligneDroite = False
         self.suiviImage = False
         self.suiviImageCap = False
-        self.suiviImageRoues = True
+        self.suiviImageRoues = False
         self.suiviImageLigneDroite = False
         self.offset = 0.0
         self.offset_hors_evitement = 0.0
@@ -216,12 +236,6 @@ class Asservissement:
 
     def calculeCapSuiviImageLigneDroite(self):
 
-        self.COEFF_CAP_IMAGE_LIGNE_DROITE_P = 20
-        self.COEFF_CAP_IMAGE_LIGNE_DROITE_I = 0.5
-        self.MAX_ERREUR_FOR_CUMUL_POSITION_LIGNE = 0.5
-        self.MAX_CUMUL_ERREUR_POSITION_LIGNE = 8.0
-        self.MAX_CORRECTION_CAP_IMAGE_LIGNE_DROITE = 10.0
-
         # N'execute le calcul que s'il y a une nouvelle image
         if self.imageAnalysis.isThereANewImage():
 
@@ -272,18 +286,6 @@ class Asservissement:
 
     def calculePositionRouesFromImage(self):
 
-        COEFF_SUIVI_IMAGE_PARALLELISME_P_SPEED = 50  # VITESSE RAPIDE : Coeff P pour le suivi du parallelisme
-        COEFF_SUIVI_IMAGE_ROUES_P2_SPEED = 25  # VITESSE RAPIDE : Coeff P pour l'ecart par rapport a la position de ligne au point 2 (point proche)
-        COEFF_SUIVI_IMAGE_ROUES_I2_SPEED = 1.5  # VITESSE RAPIDE : Coeff I pour l'ecart par rapport a la position de la ligne au point 2 (point proche)
-        COEFF_SUIVI_IMAGE_PARALLELISME_P_EVITEMENT = 60  # EVITEMENT : Coeff P pour le suivi du parallelisme
-        COEFF_SUIVI_IMAGE_ROUES_P2_EVITEMENT = 70  # EVITEMENT : Coeff P pour l'ecart par rapport a la position de ligne au point 2 (point proche)
-        COEFF_SUIVI_IMAGE_ROUES_I2_EVITEMENT = 1.5  # EVITEMENT : Coeff I pour l'ecart par rapport a la position de la ligne au point 2 (point proche)
-        COEFF_SUIVI_IMAGES_ROUES_MAX_ERREUR_I = 6.0  # Max cumul ecart ligne pour l'asservissement integral
-        OFFSET_ECART_DROITE = 1.0  # Offset a appliquer pour s'ecarter a droite
-        OFFSET_ECART_GAUCHE = -1.0  # Offset a appliquer pour s'ecarter a gauche
-        TACHO_MARCHE_ARRIERE_1 = 50  # Nombre de tours de tacho pour 1ere sequence de marche arriere evitement
-        TACHO_MARCHE_ARRIERE_2 = 70  # Nombre de tours de tacho pour 1ere sequence de marche arriere evitement
-
         # Si on a une sequence de marche arriere en cours
         if self.marche_arriere_en_cours > 0:
             # Initialise les variables de retour
@@ -312,7 +314,7 @@ class Asservissement:
                 self.voiture.reverse()
                 # Verifie si on a assez recule
                 print(self.tacho_marche_arriere - self.voiture.speedController.get_tacho())
-                if self.tacho_marche_arriere - self.voiture.speedController.get_tacho() > TACHO_MARCHE_ARRIERE_2:
+                if self.tacho_marche_arriere - self.voiture.speedController.get_tacho() > self.TACHO_MARCHE_ARRIERE_2:
                     # Memorise le tacho
                     self.tacho_marche_arriere = self.voiture.speedController.get_tacho()
                     # Tourne les roues du bon cote
@@ -329,7 +331,7 @@ class Asservissement:
                 self.voiture.reverse()
                 # Verifie si on a assez recule
                 print(self.tacho_marche_arriere - self.voiture.speedController.get_tacho())
-                if self.tacho_marche_arriere - self.voiture.speedController.get_tacho() > TACHO_MARCHE_ARRIERE_2:
+                if self.tacho_marche_arriere - self.voiture.speedController.get_tacho() > self.TACHO_MARCHE_ARRIERE_2:
                     # Passe a la sequence suivante
                     self.marche_arriere_en_cours = 4
 
@@ -375,9 +377,9 @@ class Asservissement:
 
             else:
                 # Set coeff d'asservissement par defaut
-                coeff_parallelisme_P = COEFF_SUIVI_IMAGE_PARALLELISME_P_SPEED
-                coeff_p2_p = COEFF_SUIVI_IMAGE_ROUES_P2_SPEED
-                coeff_p2_i = COEFF_SUIVI_IMAGE_ROUES_I2_SPEED
+                coeff_parallelisme_P = self.COEFF_SUIVI_IMAGE_PARALLELISME_P_SPEED
+                coeff_p2_p = self.COEFF_SUIVI_IMAGE_ROUES_P2_SPEED
+                coeff_p2_i = self.COEFF_SUIVI_IMAGE_ROUES_I2_SPEED
 
                 # Verifie s'il faut ralentir a cause d'un obstacle
                 if self.vitesseEvitement is not None and self.obstacleEnabled:
@@ -385,9 +387,9 @@ class Asservissement:
                         # Set vitesse d'evitement
                         self.voiture.avance(self.vitesseEvitement)
                         # Set coeff d'asservissement evitement
-                        coeff_parallelisme_P = COEFF_SUIVI_IMAGE_PARALLELISME_P_EVITEMENT
-                        coeff_p2_p = COEFF_SUIVI_IMAGE_ROUES_P2_EVITEMENT
-                        coeff_p2_i = COEFF_SUIVI_IMAGE_ROUES_I2_EVITEMENT
+                        coeff_parallelisme_P = self.COEFF_SUIVI_IMAGE_PARALLELISME_P_EVITEMENT
+                        coeff_p2_p = self.COEFF_SUIVI_IMAGE_ROUES_P2_EVITEMENT
+                        coeff_p2_i = self.COEFF_SUIVI_IMAGE_ROUES_I2_EVITEMENT
                     else:
                         # Set vitesse rapide
                         self.voiture.avance(self.vitesse)
@@ -402,17 +404,17 @@ class Asservissement:
                         # Reinitialise l'erreur integrale
                         self.cumulErreurPositionLigne = 0.
                 elif position_obstacle > 0 and self.obstacleEnabled:
-                    self.offset = OFFSET_ECART_GAUCHE
+                    self.offset = self.OFFSET_ECART_GAUCHE
                     self.offset_progressif = False
                     if self.last_position_obstacle <= 0:
                         # Si on vient de commencer l'evitement, met l'erreur integrale au max pour aider a tourner
-                        self.cumulErreurPositionLigne = COEFF_SUIVI_IMAGES_ROUES_MAX_ERREUR_I
+                        self.cumulErreurPositionLigne = self.COEFF_SUIVI_IMAGES_ROUES_MAX_ERREUR_I
                 elif position_obstacle < 0 and self.obstacleEnabled:
-                    self.offset = OFFSET_ECART_DROITE
+                    self.offset = self.OFFSET_ECART_DROITE
                     self.offset_progressif = False
                     if self.last_position_obstacle >= 0:
                         # Si on vient de commencer l'evitement, met l'erreur integrale au max pour aider a tourner
-                        self.cumulErreurPositionLigne = -COEFF_SUIVI_IMAGES_ROUES_MAX_ERREUR_I
+                        self.cumulErreurPositionLigne = -self.COEFF_SUIVI_IMAGES_ROUES_MAX_ERREUR_I
 
                 if self.offset_progressif:
                     # Fait tendre progressivement l'offset courant vers la cible
@@ -431,8 +433,8 @@ class Asservissement:
                 braquage_position_ligne_2_p = coeff_p2_p * (position_ligne2 + offset)
                 # Calcul roues position ligne Integral
                 self.cumulErreurPositionLigne += position_ligne2 + offset
-                self.cumulErreurPositionLigne = max(-COEFF_SUIVI_IMAGES_ROUES_MAX_ERREUR_I,
-                                                    min(COEFF_SUIVI_IMAGES_ROUES_MAX_ERREUR_I,
+                self.cumulErreurPositionLigne = max(-self.COEFF_SUIVI_IMAGES_ROUES_MAX_ERREUR_I,
+                                                    min(self.COEFF_SUIVI_IMAGES_ROUES_MAX_ERREUR_I,
                                                         self.cumulErreurPositionLigne))
                 braquage_position_ligne_2_i = coeff_p2_i * self.cumulErreurPositionLigne
                 # TOTAL

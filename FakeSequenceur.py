@@ -91,7 +91,7 @@ class Sequenceur:
                 target = self.arduino.getCap()
                 print ('Cap Target : ', target)
                 self.cap_target = target
-                self.asservissement.setCapTarget(target)
+                self.asservissement.setCapTarget()
 
             if instruction == 'setTacho':
                 self.tacho = self.voiture.speedController.get_tacho()

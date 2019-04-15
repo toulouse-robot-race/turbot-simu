@@ -1,5 +1,6 @@
 import numpy as np
 
+import Programs
 from Logger import Logger
 from Simulator import Simulator
 from FakeSequenceur import Sequenceur
@@ -57,7 +58,8 @@ asservissement = Asservissement(arduino,
 sequenceur = Sequenceur(voiture,
                         simu_time,
                         arduino,
-                        asservissement)
+                        asservissement,
+                        Programs.course)
 
 logger = Logger(simulator,
                 simu_time,
