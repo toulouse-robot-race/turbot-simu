@@ -88,4 +88,6 @@ while simu_time.time() < simulation_duration_seconds:
     simulator.do_simulation_step()
     print("simulator execution time : %fs " % (time.time() - start_simulator_step_time))
 
+    # time.sleep(0.05)
+
 simulator.stop_simulation()

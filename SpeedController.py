@@ -11,8 +11,8 @@ class SpeedController:
         self.previous_speed = 0
         self.speed = 0
         self.min_speed = 0
-        self.deceleration_step = 2  # TODO make this dependent on time step (on real Turbodroid it is 0.1)
-        self.acceleration_step = 2  # TODO make this dependent on time step
+        self.deceleration_step = 1.2  # TODO make this dependent on time step (on real Turbodroid it is 0.1)
+        self.acceleration_step = 1.2  # TODO make this dependent on time step
         self.speed_target = 0
         self.simulation_step_time = self.simulator.get_simulation_time_step()
 
