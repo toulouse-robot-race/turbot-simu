@@ -14,10 +14,7 @@ class Sequencer:
     sequence = 0
     debut = True
     timeDebut = 0
-    time = None
     programmeCourant = {}
-    car = None
-    asservissement = None
 
     timer_led = 0
     vitesse_clignote_led = 10
