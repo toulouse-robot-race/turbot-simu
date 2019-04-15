@@ -1,6 +1,3 @@
-import math
-import random
-
 from Config import STEERING_COEF
 
 
