@@ -1,14 +1,14 @@
-import Programs
-from Logger import Logger
-from Simulator import Simulator
-from Sequencer import Sequencer
-from Car import Car
-from Asservisement import Asservissement
-from Gyro import Gyro
-from ImageAnalyzer import ImageAnalyzer
-from Time import Time
-from SpeedController import SpeedController
-from Tachometer import Tachometer
+from robot import Programs
+from robot.Logger import Logger
+from robot.Simulator import Simulator
+from robot.Sequencer import Sequencer
+from robot.Car import Car
+from robot.Asservisement import Asservissement
+from robot.Gyro import Gyro
+from robot.ImageAnalyzer import ImageAnalyzer
+from robot.Time import Time
+from robot.SpeedController import SpeedController
+from robot.Tachometer import Tachometer
 import time
 
 simulation_duration_seconds = 200

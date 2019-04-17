@@ -1,6 +1,4 @@
-import numpy as np
-
-from Config import SPEED_COEF, TACHO_COEF
+from robot.Config import SPEED_COEF
 
 
 class SpeedController:

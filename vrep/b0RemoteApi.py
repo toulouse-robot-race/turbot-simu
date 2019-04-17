@@ -3,11 +3,12 @@
 # and the server counterpart to lua/b0RemoteApiServer.lua
 # -------------------------------------------------------
 
-import b0
 import msgpack
 import random
 import string
-import time
+from robot import Time
+from vrep import b0
+
 
 class RemoteApiClient:
     def __init__(self,nodeName='b0RemoteApi_pythonClient',channelName='b0RemoteApi',inactivityToleranceInSec=60,setupSubscribersAsynchronously=False):
@@ -19,12 +20,12 @@ class RemoteApiClient:
         self._nextDedicatedPublisherHandle=500
         self._nextDedicatedSubscriberHandle=1000
         b0.init()
-        self._node=b0.Node(nodeName)
+        self._node= b0.Node(nodeName)
         self._clientId=''.join(random.choice(string.ascii_uppercase+string.ascii_lowercase+string.digits) for _ in range(10))
-        self._serviceClient=b0.ServiceClient(self._node,self._serviceCallTopic)
+        self._serviceClient= b0.ServiceClient(self._node, self._serviceCallTopic)
         self._serviceClient.set_option(3,1000) #read timeout of 1000ms
-        self._defaultPublisher=b0.Publisher(self._node,self._defaultPublisherTopic)
-        self._defaultSubscriber=b0.Subscriber(self._node,self._defaultSubscriberTopic,None) # we will poll the socket
+        self._defaultPublisher= b0.Publisher(self._node, self._defaultPublisherTopic)
+        self._defaultSubscriber= b0.Subscriber(self._node, self._defaultSubscriberTopic, None) # we will poll the socket
         print('\n  Running B0 Remote API client with channel name ['+channelName+']')
         print('  make sure that: 1) the B0 resolver is running')
         print('                  2) V-REP is running the B0 Remote API server with the same channel name')
@@ -99,7 +100,7 @@ class RemoteApiClient:
     def simxCreatePublisher(self,dropMessages=False):
         topic=self._channelName+'Sub'+str(self._nextDedicatedPublisherHandle)+self._clientId
         self._nextDedicatedPublisherHandle=self._nextDedicatedPublisherHandle+1
-        pub=b0.Publisher(self._node,topic,0,1)
+        pub= b0.Publisher(self._node, topic, 0, 1)
         pub.init()
         self._allDedicatedPublishers[topic]=pub
         self._handleFunction('createSubscriber',[topic,dropMessages],self._serviceCallTopic)
@@ -121,7 +122,7 @@ class RemoteApiClient:
     def simxCreateSubscriber(self,cb,publishInterval=1,dropMessages=False):
         topic=self._channelName+'Pub'+str(self._nextDedicatedSubscriberHandle)+self._clientId
         self._nextDedicatedSubscriberHandle=self._nextDedicatedSubscriberHandle+1
-        sub=b0.Subscriber(self._node,topic,None,0,1)
+        sub= b0.Subscriber(self._node, topic, None, 0, 1)
         if dropMessages:
             sub.set_option(6,1) #conflate option enabled
         else:
@@ -161,7 +162,7 @@ class RemoteApiClient:
         return self._node.hardware_time_usec()/1000;    
 
     def simxSleep(self,durationInMs):
-        time.sleep(durationInMs)
+        Time.sleep(durationInMs)
         
     def simxSynchronous(self,enable):
         reqArgs = [enable]

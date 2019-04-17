@@ -1,4 +1,4 @@
-from Config import STEERING_COEF
+from robot.Config import STEERING_COEF
 
 
 class Car:

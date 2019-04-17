@@ -1,4 +1,4 @@
-from Config import GYRO_COEF
+from robot.Config import GYRO_COEF
 
 
 class Gyro:

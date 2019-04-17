@@ -1,5 +1,5 @@
-import Config
-import b0RemoteApi
+from robot import Config
+from vrep import b0RemoteApi
 
 JOINT_VELOCITY_PARAMETER = 2012
 
