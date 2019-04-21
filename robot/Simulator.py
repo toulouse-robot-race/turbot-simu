@@ -1,6 +1,5 @@
-import Config
+from robot import Config
 from vrep import b0RemoteApi
-import time
 
 JOINT_VELOCITY_PARAMETER = 2012
 
@@ -19,38 +18,10 @@ class Simulator:
         self.running = False
 
     def start_simulation(self):
-        try:
-            self.client.simxSynchronous(True)
-            self.client.simxStartSimulation(self.client.simxDefaultPublisher())
-        except:
-            # In case of issue in start simulation, retry
-            print("Warning: start_simulation failure.")
-            time.sleep(3)   # Wait 3 seconds
-            # self.start_simulation()
-
+        self.client.simxSynchronous(True)
+        self.client.simxStartSimulation(self.client.simxDefaultPublisher())
         self.client.simxGetSimulationStepDone(self.client.simxDefaultSubscriber(self.simulation_step_done))
         self.running = True
-
-    def reset_simulation(self):
-        if self.running:
-            # self.client.simxRemoveObjects([object_to_reset], 1,  self.client.simxDefaultPublisher())
-            try:
-                self.client.simxStopSimulation(self.client.simxServiceCall())
-                while(self.client.simxGetSimulationState(self.client.simxServiceCall())[1] != 0):
-                    print ("Restarting simulation: waiting for simulation to stop")
-            except:
-                print("Warning: failed to reset simulation.")
-                time.sleep(3)
-                # self.reset_simulation()
-        
-        print("Simulation stopped: restarting")
-        # Restart
-        self.start_simulation()
-
-        while(self.client.simxGetSimulationState(self.client.simxServiceCall())[1] != 16):
-            print ("Restarting simulation: waiting for simulation to restart")
-        
-        print("Success: simulation restarted")
 
     def do_simulation_step(self):
         if not self.running:
@@ -68,12 +39,6 @@ class Simulator:
 
     def set_target_speed(self, joint_handle, target_speed):
         self.client.simxSetJointTargetVelocity(joint_handle, target_speed, self.client.simxDefaultPublisher())
-
-    def set_object_orientation(self, object_handle, orientation):
-        self.client.simxSetObjectOrientation(object_handle, -1, orientation, self.client.simxDefaultPublisher())
-
-    def set_object_pos(self, object_handle, pos):
-        self.client.simxSetObjectPosition(object_handle, -1, pos, self.client.simxDefaultPublisher())
 
     def get_joint_angular_speed(self, joint):
         angular_speed = self.get_object_float_parameter(joint, JOINT_VELOCITY_PARAMETER)
@@ -123,7 +88,6 @@ class Simulator:
     images = {}
 
     def get_gray_image(self, vision_sensor_handle):
-        self.get_simulation_time()
         if not self.images:
             def callback(result):
                 self.images[self.simulation_time] = result[1:]
@@ -142,7 +106,6 @@ class Simulator:
             self.positions[object_handle] = None
 
             def callback(result):
-
                 self.positions[object_handle] = result[1]
 
             self.client.simxGetObjectPosition(object_handle, -1, self.client.simxDefaultSubscriber(callback))
