@@ -1,7 +1,8 @@
 # coding=utf-8
-import numpy as np
-from matplotlib import pyplot as plt
 import cv2
+import numpy as np
+
+from Config import CAMERA_DELAY
 
 
 class ImageAnalyzer:
@@ -48,7 +49,7 @@ class ImageAnalyzer:
         self.simulator = simulator
 
     def execute(self):
-        resolution, byte_array_image_string = self.simulator.get_gray_image(self.cam_handle)
+        resolution, byte_array_image_string = self.simulator.get_gray_image(self.cam_handle, CAMERA_DELAY)
         if resolution is None and byte_array_image_string is None:
             return
         mask0 = self.convert_image_to_numpy(byte_array_image_string, resolution)

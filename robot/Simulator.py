@@ -1,4 +1,3 @@
-from robot import Config
 from vrep import b0RemoteApi
 
 JOINT_VELOCITY_PARAMETER = 2012
@@ -87,15 +86,15 @@ class Simulator:
 
     images = {}
 
-    def get_gray_image(self, vision_sensor_handle):
+    def get_gray_image(self, vision_sensor_handle, delay):
         if not self.images:
             def callback(result):
                 self.images[self.simulation_time] = result[1:]
 
             self.client.simxGetVisionSensorImage(vision_sensor_handle, True,
                                                  self.client.simxDefaultSubscriber(callback))
-        if self.simulation_time - Config.CAMERA_DELAY in self.images:
-            return self.images[self.simulation_time - Config.CAMERA_DELAY]
+        if self.simulation_time - delay in self.images:
+            return self.images[self.simulation_time - delay]
         else:
             return None, None
 
@@ -126,3 +125,9 @@ class Simulator:
     def teleport_to_start_pos(self):
         self.client.simxCallScriptFunction("teleport@base_link", "sim.scripttype_childscript", None,
                                                 self.client.simxServiceCall())
+
+    def set_object_pos(self, object, pos):
+        self.client.simxSetObjectPosition(object, -1, pos, self.client.simxServiceCall())
+
+    def set_object_orientation(self, object, orientation):
+        self.client.simxSetObjectOrientation(object, -1, orientation, self.client.simxServiceCall())

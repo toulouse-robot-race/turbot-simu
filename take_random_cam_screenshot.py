@@ -1,11 +1,12 @@
 import os
 import random
-import numpy as np
 import time
+
+import numpy as np
 
 from robot.Simulator import Simulator
 
-simulation_duration_seconds = 30
+simulation_duration_seconds = 40
 
 simulator = Simulator()
 
@@ -31,12 +32,12 @@ while time.time() - start_time < simulation_duration_seconds:
         pos = simulator.get_object_position(handles['base_car'])
         orientation = simulator.get_object_orientation(handles['base_car'])
     else:
-        pos[1] = random.uniform(23, 25)
-        pos[0] = random.uniform(-3, 3)
-        orientation[2] = random.uniform(1.40,1.50)
+        pos[1] = random.uniform(20, 22)
+        pos[0] = random.uniform(-3, -1)
+        orientation[2] = random.uniform(3.10,3.14)
         simulator.set_object_pos(handles["base_car"], pos)
         simulator.set_object_orientation(handles["base_car"], orientation)
-        resolution, byte_array_image_string = simulator.get_gray_image(handles["cam"])
+        resolution, byte_array_image_string = simulator.get_gray_image(handles["cam"], 0)
         if resolution is not None and byte_array_image_string is not None:
             image_numpy = np.flipud(np.fromstring(byte_array_image_string, dtype=np.uint8).reshape(resolution[::-1]))
             if image_numpy.mean() > 1:
