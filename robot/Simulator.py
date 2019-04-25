@@ -122,3 +122,7 @@ class Simulator:
 
             self.client.simxGetObjectOrientation(object_handle, -1, self.client.simxDefaultSubscriber(callback))
         return self.orientations[object_handle]
+
+    def teleport_to_start_pos(self):
+        self.client.simxCallScriptFunction("teleport@base_link", "sim.scripttype_childscript", None,
+                                                self.client.simxServiceCall())

@@ -1,17 +1,18 @@
-from robot import Programs
-from robot.Logger import Logger
-from robot.Simulator import Simulator
-from robot.Sequencer import Sequencer
-from robot.Car import Car
-from robot.Asservisement import Asservissement
-from robot.Gyro import Gyro
-from robot.ImageAnalyzer import ImageAnalyzer
-from robot.Time import Time
-from robot.SpeedController import SpeedController
-from robot.Tachometer import Tachometer
 import time
 
-simulation_duration_seconds = 200
+from robot import Programs
+from robot.Asservisement import Asservissement
+from robot.Car import Car
+from robot.Gyro import Gyro
+from robot.ImageAnalyzer import ImageAnalyzer
+from robot.Logger import Logger
+from robot.Sequencer import Sequencer
+from robot.Simulator import Simulator
+from robot.SpeedController import SpeedController
+from robot.Tachometer import Tachometer
+from robot.Time import Time
+
+simulation_duration_seconds = 10
 
 simulator = Simulator()
 
@@ -87,7 +88,3 @@ while simu_time.time() < simulation_duration_seconds:
     start_simulator_step_time = time.time()
     simulator.do_simulation_step()
     print("simulator execution time : %fs " % (time.time() - start_simulator_step_time))
-
-    # time.sleep(0.05)
-
-simulator.stop_simulation()
