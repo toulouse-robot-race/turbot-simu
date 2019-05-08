@@ -70,8 +70,13 @@ class ImageAnalyzer:
 
         # Get contours
         _, thresh = cv2.threshold(int_mat, self.MIN_THRESHOLD_CONTOUR, self.MAX_VALUE_CONTOUR, 0)
-        _, contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        result = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
+        # Open cv version compatibility issue
+        if len(result) == 2:
+            contours = result[0]
+        else:
+            contours = result[1]
         if len(contours) == 0:
             # No contours, no need to remove anything
             return image
