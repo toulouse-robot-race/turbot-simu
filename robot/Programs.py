@@ -7,7 +7,6 @@ TRR = [
         'conditionFin': 'immediat'
     },
     {
-        'label': 'startTest',
         'instruction': 'setTacho',  # Memorise le tacho actuel
         'conditionFin': 'immediat'
     },

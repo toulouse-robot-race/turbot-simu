@@ -12,7 +12,7 @@ from robot.SpeedController import SpeedController
 from robot.Tachometer import Tachometer
 from robot.Time import Time
 
-simulation_duration_seconds = 10
+simulation_duration_seconds = 50
 
 simulator = Simulator()
 
@@ -37,7 +37,7 @@ speed_controller = SpeedController(simulator=simulator,
                                    simulation_step_time=simulator.get_simulation_time_step())
 
 gyro = Gyro(simulator=simulator,
-            gyro_name=gyro_name)
+            base_car=handles["base_car"])
 
 tachometer = Tachometer(simulator=simulator,
                         base_car=handles['base_car'])
