@@ -1,5 +1,7 @@
 # TurboDroid simulation
 
+CAUTION! This work is in progress. It is still buggy, but you can use it if you want to understand the strategy of TurboDroid robot, winner of Toulouse Robot Race 2018 in the "driving without obstacles" category.
+
 ## What is it?
 
 Simulation of TurboDroid robot on the Toulouse Robot Race Track.
