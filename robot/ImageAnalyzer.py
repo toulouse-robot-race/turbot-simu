@@ -2,7 +2,7 @@
 import cv2
 import numpy as np
 
-from Config import CAMERA_DELAY
+from robot.Config import CAMERA_DELAY
 
 
 class ImageAnalyzer:
