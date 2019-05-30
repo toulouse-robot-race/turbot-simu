@@ -18,7 +18,7 @@ class ImageWarper:
         rotation = self.gyro.get_delta_cap() * R_COEFF
         translation = self.tacho.get_delta_tacho() * T_COEFF
 
-        # Define a tetrahedron that will become square and take all screen
+        # Define a tetrahedron that will become rectangular and take all screen
         before_perspective_warp = np.float32([[100, 60], [width - 100, 60], bl, br])
         after_perspective_warp = np.float32([[0, 0], [width, 0], bl, br])
         perspective_matrix = cv2.getPerspectiveTransform(before_perspective_warp, after_perspective_warp)
