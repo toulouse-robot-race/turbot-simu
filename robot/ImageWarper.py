@@ -32,7 +32,8 @@ class ImageWarper:
         cv2.imshow("translation1", translation)
         rotation = cv2.warpAffine(translation, rotation_matrix, (width, height))
         cv2.imshow("rotation", rotation)
-        translation2 = cv2.warpAffine(rotation, perspective_matrix, (width, height))
+        translation2 = cv2.warpAffine(rotation, translation_matrix, (width, height))
         cv2.imshow("translation2", translation2)
         cv2.waitKey(0)
+
         return translation2
