@@ -56,8 +56,7 @@ class ImageAnalyzer:
         mask0 = self.convert_image_to_numpy(byte_array_image_string, resolution)
         mask0 = self.clean_mask(mask0)
         mask0 = self.image_warper.warp(mask0)
-        cv2.imshow("image", mask0)
-        cv2.waitKey(0)
+
         self.position_ligne_1, self.position_ligne_2, poly_coeff = self.get_ecart_ligne(mask0)
         if poly_coeff is not None:
             self.poly_coeff_square = poly_coeff[0]

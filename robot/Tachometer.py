@@ -6,6 +6,7 @@ from robot.Config import TACHO_COEF
 class Tachometer:
 
     def __init__(self, simulator, base_car):
+        self.delta_tacho = 0
         self.simulator = simulator
         self.base_car = base_car
         self.tacho = 0
@@ -28,7 +29,16 @@ class Tachometer:
         position_vector = np.array(current_pos) - np.array(self.previous_pos)
         self.previous_pos = current_pos
         gyro_vector = np.array([np.sin(orientation[2]), -np.cos(orientation[2]), 0])
-        self.tacho += position_vector.dot(gyro_vector) * TACHO_COEF
+        self.delta_tacho = position_vector.dot(gyro_vector) * TACHO_COEF
+        self.tacho += self.delta_tacho
 
     def get_tacho(self):
         return self.tacho
+
+    def get_delta_tacho(self):
+        return self.delta_tacho
+
+    def reset(self):
+        self.tacho = 0
+        self.delta_tacho = 0
+        self.previous_pos = None
