@@ -5,6 +5,7 @@ from robot.Asservisement import Asservissement
 from robot.Car import Car
 from robot.Gyro import Gyro
 from robot.ImageAnalyzer import ImageAnalyzer
+from robot.ImageWarper import ImageWarper
 from robot.Logger import Logger
 from robot.Sequencer import Sequencer
 from robot.Simulator import Simulator
@@ -29,9 +30,6 @@ gyro_name = "gyroZ"
 
 simu_time = Time(simulator)
 
-image_analyzer = ImageAnalyzer(simulator=simulator,
-                               cam_handle=handles["cam"])
-
 speed_controller = SpeedController(simulator=simulator,
                                    motor_handles=[handles["left_motor"], handles["right_motor"]],
                                    simulation_step_time=simulator.get_simulation_time_step())
@@ -39,8 +37,16 @@ speed_controller = SpeedController(simulator=simulator,
 gyro = Gyro(simulator=simulator,
             gyro_name=gyro_name)
 
+
 tachometer = Tachometer(simulator=simulator,
                         base_car=handles['base_car'])
+
+image_warper = ImageWarper(tachometer=tachometer,
+                           gyro=gyro)
+
+image_analyzer = ImageAnalyzer(simulator=simulator,
+                               cam_handle=handles["cam"],
+                               image_warper=image_warper)
 
 car = Car(simulator=simulator,
           steering_handles=[handles["left_steering"], handles["right_steering"]],
