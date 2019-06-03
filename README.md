@@ -6,6 +6,8 @@ CAUTION! This work is in progress. It is still buggy, but you can use it if you 
 
 Simulation of TurboDroid robot on the Toulouse Robot Race Track.
 
+[![Demo video](docs/images/turbodroid_simu_animation.gif)](https://youtu.be/zJ_R3UGv1NU)
+
 ## Installation
 
 You will need to install the V-Rep robot simulator:
