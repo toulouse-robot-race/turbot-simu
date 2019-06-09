@@ -62,6 +62,7 @@ asservissement = Asservissement(car=car,
 sequencer = Sequencer(car=car,
                       time=simu_time,
                       asservissement=asservissement,
+                      image_warper=image_warper,
                       program=Programs.TRR)
 
 logger = Logger(simulator=simulator,
