@@ -7,7 +7,6 @@ TRR = [
         'conditionFin': 'immediat'
     },
     {
-        'label': 'startTest',
         'instruction': 'setTacho',  # Memorise le tacho actuel
         'conditionFin': 'immediat'
     },
@@ -190,6 +189,35 @@ TRR = [
         'duree': 1.5,
         'nextLabel': 'attendBouton'  # Retour au début
     }
+]
+
+DLVV = [
+    {
+        'instruction': 'setCap',  # Cap asuivre = cap actuel
+        'conditionFin': 'immediat'
+    },
+
+    {
+        'instruction': 'setTacho1',  # Memorise le tacho actuel
+        'conditionFin': 'immediat'
+    },
+    {
+        'instruction': 'suiviImageRoues',  # suiviImageLigneDroite ou suiviImageRoues
+        'activationDistanceIntegrale': True,
+        'display': 'GO',
+        'vitesse': 30,
+        'vitesseEvitement': 16,
+        'conditionFin': 'tacho1',
+        'tacho': 25000,
+    },
+    {
+        'instruction': 'tourne',  # Arrêt avec roues a 0
+        'vitesse': 0,
+        'positionRoues': 0,
+        'conditionFin': 'duree',
+        'duree': 1.5,
+    }
+
 ]
 
 HIPPODROME = [

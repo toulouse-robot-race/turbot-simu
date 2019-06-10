@@ -58,7 +58,7 @@ asservissement = Asservissement(car=car,
 sequencer = Sequencer(car=car,
                       time=simu_time,
                       asservissement=asservissement,
-                      program=Programs.TRR)
+                      program=Programs.DLVV)
 
 logger = Logger(simulator=simulator,
                 time=simu_time,

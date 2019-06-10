@@ -62,6 +62,14 @@ class ImageAnalyzer:
     position_ligne_1 = 0.
     position_ligne_2 = 0.
     poly_coeff_square = None
+    poly_coeff_1 = None
+    poly_coeff_const = None
+    position_obstacle = False
+    parallelism = 0
+    obstacle_exists = False
+    obstacle_in_brake_zone = False
+    obstacle_position_unlock = True
+    obstacle_position_lock = False
 
     def __init__(self, simulator, line_cam_handle, obstacles_cam_handle):
         self.obstacles_cam_handle = obstacles_cam_handle
@@ -76,15 +84,14 @@ class ImageAnalyzer:
         if resolution is not None and byte_array_image_string is not None:
             mask0 = self.convert_image_to_numpy(byte_array_image_string, resolution)
             mask0 = self.clean_mask(mask0)
-            self.position_ligne_1, self.position_ligne_2, poly_coeff, poly2, parallelism = self.get_ecart_ligne(mask0)
+            self.position_ligne_1, self.position_ligne_2, poly_coeff, poly2, self.parallelism = self.get_ecart_ligne(mask0)
             self.poly_coeff_square = poly_coeff[0] if poly_coeff is not None else None
 
             if resolution_obstacles is not None and byte_array_image_string_obstacle is not None:
                 mask1 = self.convert_image_to_numpy(byte_array_image_string_obstacle, resolution_obstacles)
-                obstacles = self.findObstacles(
+                self.obstacle_exists, self.position_obstacle, self.obstacle_position_lock, \
+                self.obstacle_position_unlock, self.obstacle_in_brake_zone = self.findObstacles(
                     mask1, poly2)
-
-                print(obstacles)
 
     def convert_image_to_numpy(self, byte_array_image_string, resolution):
         return np.flipud(np.fromstring(byte_array_image_string, dtype=np.uint8).reshape(resolution[::-1]))
@@ -302,30 +309,25 @@ class ImageAnalyzer:
         return True
 
     def getPolyCoeff1(self):
-        pass
+        return self.poly_coeff_1
 
     def getPolyCoeffConst(self):
-        pass
+        return self.poly_coeff_const
 
     def getObstacleExists(self):
-        pass
+        return self.obstacle_exists
 
     def getPositionObstacle(self):
-        return 0
+        return self.position_obstacle
 
     def getParallelism(self):
-        return 0
+        return self.parallelism
 
     def getObstacleInBrakeZone(self):
-        return False
+        return self.obstacle_in_brake_zone
 
     def getStartDetected(self):
         pass
 
     def unlockObstacle(self):
-        pass
-
-        # Tells if a new image has arrived
-
-    def isThereANewImage(self):
-        return True
+        self.position_obstacle = 0
