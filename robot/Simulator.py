@@ -87,14 +87,16 @@ class Simulator:
     images = {}
 
     def get_gray_image(self, vision_sensor_handle, delay):
-        if not self.images:
+        if vision_sensor_handle not in self.images:
+            self.images[vision_sensor_handle] = {}
+
             def callback(result):
-                self.images[self.simulation_time] = result[1:]
+                self.images[vision_sensor_handle][self.simulation_time] = result[1:]
 
             self.client.simxGetVisionSensorImage(vision_sensor_handle, True,
                                                  self.client.simxDefaultSubscriber(callback))
-        if self.simulation_time - delay in self.images:
-            return self.images[self.simulation_time - delay]
+        if self.simulation_time - delay in self.images[vision_sensor_handle]:
+            return self.images[vision_sensor_handle][self.simulation_time - delay]
         else:
             return None, None
 

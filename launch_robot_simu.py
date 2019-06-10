@@ -21,7 +21,8 @@ handles = {
     "left_motor": simulator.get_handle("driving_joint_rear_left"),
     "left_steering": simulator.get_handle("steering_joint_fl"),
     "right_steering": simulator.get_handle("steering_joint_fr"),
-    "cam": simulator.get_handle("Vision_sensor"),
+    "line_cam": simulator.get_handle("Vision_sensor_line"),
+    "obstacles_cam": simulator.get_handle("Vision_sensor_obstacles"),
     "base_car": simulator.get_handle("base_link")
 }
 
@@ -30,7 +31,8 @@ gyro_name = "gyroZ"
 simu_time = Time(simulator)
 
 image_analyzer = ImageAnalyzer(simulator=simulator,
-                               cam_handle=handles["cam"])
+                               line_cam_handle=handles["line_cam"],
+                               obstacles_cam_handle=handles["obstacles_cam"])
 
 speed_controller = SpeedController(simulator=simulator,
                                    motor_handles=[handles["left_motor"], handles["right_motor"]],

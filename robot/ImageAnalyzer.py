@@ -44,21 +44,28 @@ class ImageAnalyzer:
     position_ligne_2 = 0.
     poly_coeff_square = None
 
-    def __init__(self, simulator, cam_handle):
-        self.cam_handle = cam_handle
+    def __init__(self, simulator, line_cam_handle, obstacles_cam_handle):
+        self.obstacles_cam_handle = obstacles_cam_handle
+        self.line_cam_handle = line_cam_handle
         self.simulator = simulator
 
     def execute(self):
-        resolution, byte_array_image_string = self.simulator.get_gray_image(self.cam_handle, CAMERA_DELAY)
-        if resolution is None and byte_array_image_string is None:
-            return
-        mask0 = self.convert_image_to_numpy(byte_array_image_string, resolution)
-        mask0 = self.clean_mask(mask0)
-        self.position_ligne_1, self.position_ligne_2, poly_coeff = self.get_ecart_ligne(mask0)
-        if poly_coeff is not None:
-            self.poly_coeff_square = poly_coeff[0]
-        else:
-            self.poly_coeff_square = None
+        resolution, byte_array_image_string = self.simulator.get_gray_image(self.line_cam_handle, CAMERA_DELAY)
+        resolution_obstacles, byte_array_image_string_obstacle = self.simulator.get_gray_image(self.obstacles_cam_handle, CAMERA_DELAY)
+
+        if resolution is not None and byte_array_image_string is not None:
+            mask0 = self.convert_image_to_numpy(byte_array_image_string, resolution)
+            mask0 = self.clean_mask(mask0)
+            self.position_ligne_1, self.position_ligne_2, poly_coeff = self.get_ecart_ligne(mask0)
+            if poly_coeff is not None:
+                self.poly_coeff_square = poly_coeff[0]
+            else:
+                self.poly_coeff_square = None
+
+        if resolution_obstacles is not None and byte_array_image_string_obstacle is not None:
+            mask1 = self.convert_image_to_numpy(byte_array_image_string_obstacle, resolution_obstacles)
+            cv2.imshow("obstacles", mask1)
+            cv2.waitKey(0)
 
     def convert_image_to_numpy(self, byte_array_image_string, resolution):
         return np.flipud(np.fromstring(byte_array_image_string, dtype=np.uint8).reshape(resolution[::-1]))
