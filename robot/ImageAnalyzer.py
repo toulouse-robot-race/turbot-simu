@@ -71,11 +71,10 @@ class ImageAnalyzer:
     obstacle_position_unlock = True
     obstacle_position_lock = False
 
-    def __init__(self, simulator, cam_handle, image_warper):
-        self.image_warper = image_warper
-        self.cam_handle = cam_handle
-    def __init__(self, simulator, line_cam_handle, obstacles_cam_handle):
+    def __init__(self, simulator, line_cam_handle, obstacles_cam_handle, image_warper):
         self.obstacles_cam_handle = obstacles_cam_handle
+        self.line_cam_handle = line_cam_handle
+        self.image_warper = image_warper
         self.line_cam_handle = line_cam_handle
         self.simulator = simulator
 
@@ -87,26 +86,17 @@ class ImageAnalyzer:
         if resolution is not None and byte_array_image_string is not None:
             mask0 = self.convert_image_to_numpy(byte_array_image_string, resolution)
             mask0 = self.clean_mask(mask0)
-            self.position_ligne_1, self.position_ligne_2, poly_coeff, poly2, self.parallelism = self.get_ecart_ligne(mask0)
+            mask0 = self.image_warper.warp(mask0)
+            self.position_ligne_1, self.position_ligne_2, poly_coeff, poly2, self.parallelism = self.get_ecart_ligne(
+                mask0)
             self.poly_coeff_square = poly_coeff[0] if poly_coeff is not None else None
 
             if resolution_obstacles is not None and byte_array_image_string_obstacle is not None:
                 mask1 = self.convert_image_to_numpy(byte_array_image_string_obstacle, resolution_obstacles)
+                mask1 = self.image_warper.warp(mask1)
                 self.obstacle_exists, self.position_obstacle, self.obstacle_position_lock, \
                 self.obstacle_position_unlock, self.obstacle_in_brake_zone = self.findObstacles(
                     mask1, poly2)
-        resolution, byte_array_image_string = self.simulator.get_gray_image(self.cam_handle, CAMERA_DELAY)
-        if resolution is None and byte_array_image_string is None:
-            return
-        mask0 = self.convert_image_to_numpy(byte_array_image_string, resolution)
-        mask0 = self.clean_mask(mask0)
-        mask0 = self.image_warper.warp(mask0)
-
-        self.position_ligne_1, self.position_ligne_2, poly_coeff = self.get_ecart_ligne(mask0)
-        if poly_coeff is not None:
-            self.poly_coeff_square = poly_coeff[0]
-        else:
-            self.poly_coeff_square = None
 
     def convert_image_to_numpy(self, byte_array_image_string, resolution):
         return np.flipud(np.fromstring(byte_array_image_string, dtype=np.uint8).reshape(resolution[::-1]))
@@ -188,7 +178,7 @@ class ImageAnalyzer:
 
         if poly2 is None:
             # Si on a perdu la ligne, on fait l'hypothese qu'elle est du meme cote que la derniere fois qu'on l'a vue
-            return self.position_ligne_1, self.position_ligne_2, None, None, None, None
+            return self.position_ligne_1, self.position_ligne_2, None, None, None
         else:
             # Calcule la position des points proches et lointains
             y_inference_1 = poly2(self.X_INFERENCE_POINT_1)

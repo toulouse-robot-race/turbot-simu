@@ -40,3 +40,9 @@ class Car:
 
     def gpioCleanUp(self):
         pass
+
+    def freine(self):
+        self.speedController.set_speed_target(0)
+
+    def isMotionLess(self):
+        return self.tachometer.get_delta_tacho() < 1
