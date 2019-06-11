@@ -71,6 +71,9 @@ class ImageAnalyzer:
     obstacle_position_unlock = True
     obstacle_position_lock = False
 
+    def __init__(self, simulator, cam_handle, image_warper):
+        self.image_warper = image_warper
+        self.cam_handle = cam_handle
     def __init__(self, simulator, line_cam_handle, obstacles_cam_handle):
         self.obstacles_cam_handle = obstacles_cam_handle
         self.line_cam_handle = line_cam_handle
@@ -92,6 +95,18 @@ class ImageAnalyzer:
                 self.obstacle_exists, self.position_obstacle, self.obstacle_position_lock, \
                 self.obstacle_position_unlock, self.obstacle_in_brake_zone = self.findObstacles(
                     mask1, poly2)
+        resolution, byte_array_image_string = self.simulator.get_gray_image(self.cam_handle, CAMERA_DELAY)
+        if resolution is None and byte_array_image_string is None:
+            return
+        mask0 = self.convert_image_to_numpy(byte_array_image_string, resolution)
+        mask0 = self.clean_mask(mask0)
+        mask0 = self.image_warper.warp(mask0)
+
+        self.position_ligne_1, self.position_ligne_2, poly_coeff = self.get_ecart_ligne(mask0)
+        if poly_coeff is not None:
+            self.poly_coeff_square = poly_coeff[0]
+        else:
+            self.poly_coeff_square = None
 
     def convert_image_to_numpy(self, byte_array_image_string, resolution):
         return np.flipud(np.fromstring(byte_array_image_string, dtype=np.uint8).reshape(resolution[::-1]))

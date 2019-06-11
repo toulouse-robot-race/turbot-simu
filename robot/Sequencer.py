@@ -25,9 +25,10 @@ class Sequencer:
     last_bouton = 1  # 1 = bouton relache, 0 = bouton appuye
     flag_appui_court = False  # Passe a True quand un appui court (3 secondes) a ete detecte
 
-    def __init__(self, car, time, asservissement, program):
+    def __init__(self, car, time, asservissement, image_warper, program):
         self.program = program
         self.car = car
+        self.image_warper = image_warper
         self.time = time
         self.asservissement = asservissement
 
@@ -116,6 +117,7 @@ class Sequencer:
                 print ("Nouveau cap : ", self.cap_target)
 
             # Indique a la classe d'asservissement si elle doit asservir, et selon quel algo
+            self.image_warper.enable_rotation(True)
             if instruction == 'ligneDroite':
                 self.asservissement.initLigneDroite()
             elif instruction == 'suiviImageCap':
@@ -123,6 +125,7 @@ class Sequencer:
             elif instruction == 'suiviImageRoues':
                 self.asservissement.initSuiviImageRoues()
             elif instruction == 'suiviImageLigneDroite':
+                self.image_warper.enable_rotation(False)
                 activationDistanceIntegrale = False
                 if 'activationDistanceIntegrale' in self.programmeCourant:
                     activationDistanceIntegrale = self.programmeCourant['activationDistanceIntegrale']

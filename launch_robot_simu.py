@@ -41,8 +41,16 @@ speed_controller = SpeedController(simulator=simulator,
 gyro = Gyro(simulator=simulator,
             gyro_name=gyro_name)
 
+
 tachometer = Tachometer(simulator=simulator,
                         base_car=handles['base_car'])
+
+image_warper = ImageWarper(tachometer=tachometer,
+                           gyro=gyro)
+
+image_analyzer = ImageAnalyzer(simulator=simulator,
+                               cam_handle=handles["cam"],
+                               image_warper=image_warper)
 
 car = Car(simulator=simulator,
           steering_handles=[handles["left_steering"], handles["right_steering"]],
@@ -58,6 +66,8 @@ asservissement = Asservissement(car=car,
 sequencer = Sequencer(car=car,
                       time=simu_time,
                       asservissement=asservissement,
+                      image_warper=image_warper,
+                      program=Programs.TRR)
                       program=Programs.DLVV)
 
 logger = Logger(simulator=simulator,
