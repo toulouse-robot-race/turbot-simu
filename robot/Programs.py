@@ -198,7 +198,7 @@ DLVV = [
     },
 
     {
-        'instruction': 'setTacho1',  # Memorise le tacho actuel
+        'instruction': 'setTacho',  # Memorise le tacho actuel
         'conditionFin': 'immediat'
     },
     {
@@ -207,7 +207,7 @@ DLVV = [
         'display': 'GO',
         'vitesse': 30,
         'vitesseEvitement': 16,
-        'conditionFin': 'tacho1',
+        'conditionFin': 'tacho',
         'tacho': 25000,
     },
     {
