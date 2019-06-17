@@ -91,8 +91,5 @@ simulator.start_simulation()
 while simu_time.time() < simulation_duration_seconds:
     start_step_time = time.time()
     [component.execute() for component in executable_components]
-    print("code execution time : %fs " % (time.time() - start_step_time))
-
     start_simulator_step_time = time.time()
     simulator.do_simulation_step()
-    print("simulator execution time : %fs " % (time.time() - start_simulator_step_time))

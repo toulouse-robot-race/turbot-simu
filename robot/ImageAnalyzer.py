@@ -193,7 +193,6 @@ class ImageAnalyzer:
             point_lointain = np.array([self.X_INFERENCE_POINT_1, y_inference_1])
             vecteur_ligne_de_fuite = middle_horizon - point_proche
             vecteur_ligne_blanche = point_lointain - point_proche
-            print(vecteur_ligne_de_fuite, vecteur_ligne_blanche)
             # Calcule le produit vectoriel P1P2 x ligne_de_fuite
             parallelism = np.cross(vecteur_ligne_blanche, vecteur_ligne_de_fuite) / (
                     np.linalg.norm(vecteur_ligne_de_fuite) * np.linalg.norm(vecteur_ligne_blanche))

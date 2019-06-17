@@ -289,7 +289,7 @@ class Asservissement:
             if self.marche_arriere_en_cours == 1:
                 self.car.freine()
                 # Verifie si la car est immobile
-                if self.car.isMotionless():
+                if self.car.isMotionLess():
                     # Memorise le tacho
                     self.tacho_marche_arriere = self.car.get_tacho()
                     # Tourne les roues du bon cote

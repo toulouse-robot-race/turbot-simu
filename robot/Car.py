@@ -46,3 +46,6 @@ class Car:
 
     def isMotionLess(self):
         return self.tachometer.get_delta_tacho() < 1
+
+    def reverse(self):
+        return self.speedController.set_speed_target(-10)
