@@ -58,7 +58,7 @@ class Asservissement:
     TACHO_MARCHE_ARRIERE_2 = 70  # Nombre de tours de tacho pour 1ere sequence de marche arriere evitement
 
     # Asservissement line angle
-    COEF_P_LINE_ANGLE = -30
+    COEF_P_LINE_ANGLE = -38
     COEF_P_LINE_OFFSET = 0.10
 
     # Autres constantes
