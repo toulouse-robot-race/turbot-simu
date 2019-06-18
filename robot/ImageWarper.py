@@ -64,14 +64,9 @@ class ImageWarper:
             cv2.imshow("rotation", rotation)
         else :
             rotation = translation
-
-        translation2 = cv2.warpAffine(rotation, translation_matrix, (width, height))
-        cv2.imshow("translation2", translation2)
-
-        perspective_matrix_inverse = cv2.getPerspectiveTransform(pts2, pts1)
-        perspective_inverse = cv2.warpPerspective(translation2, perspective_matrix_inverse, (320, 240))
-        cv2.imshow("persp corrigee", perspective_inverse)
-
+        print("actives rotations", actives_rotations)
+        warped = cv2.warpAffine(rotation, translation_matrix, (width, height))
+        cv2.imshow("translation2", warped)
         cv2.waitKey(0)
 
-        return perspective_inverse
+        return perspective

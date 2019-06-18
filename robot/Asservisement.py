@@ -1,4 +1,5 @@
 # encoding:utf-8
+import numpy as np
 
 
 class Asservissement:
@@ -56,6 +57,10 @@ class Asservissement:
     TACHO_MARCHE_ARRIERE_1 = 50  # Nombre de tours de tacho pour 1ere sequence de marche arriere evitement
     TACHO_MARCHE_ARRIERE_2 = 70  # Nombre de tours de tacho pour 1ere sequence de marche arriere evitement
 
+    # Asservissement line angle
+    COEF_P_LINE_ANGLE = -30
+    COEF_P_LINE_OFFSET = 0.10
+
     # Autres constantes
     DELTA_T_SUIVI_COURBES = 0.1
     COEFF_DERIVEE_TELEMETRE_COURBES = 0.8
@@ -66,6 +71,7 @@ class Asservissement:
     ligneDroite = False
     ligneDroiteTelemetre = False
     activationDistanceIntegrale = False
+    from_line_angle_and_offset = False
     suiviImage = False
     suiviImageCap = False
     suiviImageRoues = True
@@ -118,6 +124,7 @@ class Asservissement:
         self.marche_arriere_en_cours = 0
         self.tacho_marche_arriere = 0
         self.cote_marche_arriere = 0
+        self.from_line_angle_and_offset = False
 
         # A appeler lorsqu'on demarre un asservissement de ligne droite
 
@@ -133,6 +140,10 @@ class Asservissement:
         self.suiviImageCap = True
 
         # A appeler lorsqu'on demarre un asservissement de suivi de ligne par reconnaissance d'image (strategie position roues)
+
+    def init_from_line_angle_and_offset(self):
+        self.reset()
+        self.from_line_angle_and_offset = True
 
     def initSuiviImageRoues(self, offset=0.0):
         self.reset()
@@ -169,14 +180,14 @@ class Asservissement:
 
     def setCapTarget(self):
         target = self.car.get_cap()
-        print ('Cap Target : ', target)
+        print('Cap Target : ', target)
         self.capTarget = target
 
         # Ajoute deltaCap au cap a suivre
 
     def ajouteCap(self, deltaCap):
         self.capTarget = (self.capTarget + deltaCap) % 360
-        print ("Nouveau cap : ", self.capTarget)
+        print("Nouveau cap : ", self.capTarget)
 
     # Execute l'asservissement
     def execute(self):
@@ -186,7 +197,7 @@ class Asservissement:
             capASuivre = 0.0
 
             # Si on doit asservir selon la ligne droite ou faire un suivi par analyse d'image
-            if self.ligneDroite or self.suiviImage:
+            if self.ligneDroite or self.suiviImage or self.from_line_angle_and_offset:
 
                 ####################################
                 # LIGNE DROITE : calcul cap a suivre
@@ -209,23 +220,25 @@ class Asservissement:
                 if self.suiviImageRoues:
                     print("suivi image roues")
                     # Si suivi image sans cap (asservissement direct des roues)
-                    positionRoues, nouvellePositionRoues = self.calculePositionRouesFromImage()
+                    updated_wheel_pos = self.calculePositionRouesFromImage()
                 else:
-                    nouvellePositionRoues = True
                     erreurCap = (((self.car.get_cap() - capASuivre) + 180) % 360) - 180
-                    print ("Erreur cap : ", erreurCap)
+                    print("Erreur cap : ", erreurCap)
 
                     if self.suiviImageCap:
                         # Si suivi image lent
-                        positionRoues = self.calculePositionRouesFromCapForSuiviImageLent(erreurCap)
+                        updated_wheel_pos = self.calculePositionRouesFromCapForSuiviImageLent(erreurCap)
                     else:
                         # Si pas suivi image lent, on calcule le PID roues avec les termes integral et derivee
-                        positionRoues = self.calculePositionRouesFromCapStandard(erreurCap)
+                        updated_wheel_pos = self.calculePositionRouesFromCapStandard(erreurCap)
+
+                if self.from_line_angle_and_offset:
+                    updated_wheel_pos = self.compute_from_line_angle_and_offset()
 
                 # Envoi de la position des roues au servo
-                if nouvellePositionRoues:
-                    print ("Position roues : {:.0f}".format(positionRoues))
-                    self.car.tourne(positionRoues)
+                if updated_wheel_pos is not None:
+                    print("Position roues : {:.0f}".format(updated_wheel_pos))
+                    self.car.tourne(updated_wheel_pos)
 
     def calculeCapSuiviImageLigneDroite(self):
 
@@ -257,7 +270,7 @@ class Asservissement:
             maxVal = self.MAX_CUMUL_ERREUR_POSITION_LIGNE
             self.cumulErreurPositionLigne = max(min(self.cumulErreurPositionLigne, maxVal), -maxVal)
 
-            print ("Cumul erreur distance: ", self.cumulErreurPositionLigne)
+            print("Cumul erreur distance: ", self.cumulErreurPositionLigne)
             if self.activationDistanceIntegrale:
                 correctionIntegrale = self.cumulErreurPositionLigne * self.COEFF_CAP_IMAGE_LIGNE_DROITE_I
             else:
@@ -277,8 +290,21 @@ class Asservissement:
 
         return capASuivre
 
+    def compute_from_line_angle_and_offset(self):
+        coefs_poly_1_line = self.image_analyzer.getPolyCoeff1()
+        line_offset = self.image_analyzer.get_line_offset()
+        if coefs_poly_1_line is not None and line_offset is not None:
+            angle_line = np.arctan(coefs_poly_1_line[0])
+            return self.COEF_P_LINE_ANGLE * angle_line + self.COEF_P_LINE_OFFSET * line_offset
+        else:
+            return None
+
     def calculePositionRouesFromImage(self):
 
+        coef_poly_1 = self.image_analyzer.getPolyCoeff1()
+        print("coef poly 1", coef_poly_1)
+        if coef_poly_1 is not None:
+            print("angle", np.arctan(coef_poly_1[0]))
         # Si on a une sequence de marche arriere en cours
         if self.marche_arriere_en_cours > 0:
             # Initialise les variables de retour
@@ -297,7 +323,7 @@ class Asservissement:
                     nouvellePositionRoues = True
                     # Passe a la sequence suivante
                     self.marche_arriere_en_cours = 2
-                    print ("Arret termine, enclenchement marche arriere, tacho: ", self.tacho_marche_arriere)
+                    print("Arret termine, enclenchement marche arriere, tacho: ", self.tacho_marche_arriere)
 
             # Si on est en train de reculer, sequence 1
             if self.marche_arriere_en_cours == 2:
@@ -335,7 +361,7 @@ class Asservissement:
                     self.image_analyzer.unlockObstacle()
                     # Passe a la sequence suivante
                     self.marche_arriere_en_cours = 0
-                    print ("Fin de la sequence de marche arriere, reprise du programme")
+                    print("Fin de la sequence de marche arriere, reprise du programme")
                     self.car.avance(self.vitesse)
 
             # Laisse un peu de temps entre envoi servo et envoi VESC
@@ -440,14 +466,13 @@ class Asservissement:
                 nouvellePositionRoues = True
 
                 elapsedSinceLastImageMs = int((self.time.time() - last_image_time) * 1000)
-                print ("Position lignes: {:.2f} {:.2f} Position roues: {:.0f} Last image since: {:d}ms".format(
+                print("Position lignes: {:.2f} {:.2f} Position roues: {:.0f} Last image since: {:d}ms".format(
                     position_ligne1, position_ligne2, position_roues, elapsedSinceLastImageMs))
 
         else:
             position_roues = None
-            nouvellePositionRoues = False
 
-        return position_roues, nouvellePositionRoues
+        return position_roues
 
     def calculeCapSuiviImageLent(self):
         # N'execute le calcul que s'il y a une nouvelle image
@@ -480,7 +505,7 @@ class Asservissement:
             self.lastCapASuivreForImageAnalysis = capASuivre
 
             elapsedSinceLastImageMs = int(self.time.time() - last_image_time * 1000)
-            print (
+            print(
                 "Position lignes: {:.2f} {:.2f} cap_actuel: {:.0f} cap_a_suivre: {:.0f} Last image since: {:d}ms".format(
                     position_ligne1, position_ligne2, cap_actuel, capASuivre, elapsedSinceLastImageMs))
 
@@ -510,7 +535,7 @@ class Asservissement:
         self.cumulErreurCap = (self.cumulErreurCap / self.COEFF_AMORTISSEMENT_INTEGRAL) + erreurCap
         # Maintient le cumul des erreurs à une valeur raisonnable
         self.cumulErreurCap = max(min(self.cumulErreurCap, self.MAX_CUMUL_ERREUR_CAP), -self.MAX_CUMUL_ERREUR_CAP)
-        print ("Cumul erreur cap : ", self.cumulErreurCap, " time : ", self.time.time())
+        print("Cumul erreur cap : ", self.cumulErreurCap, " time : ", self.time.time())
         # Calcul de D
         correctionDerivee = -self.COEFF_DERIVEE * (erreurCap - self.lastErreurCap)
         self.lastErreurCap = erreurCap

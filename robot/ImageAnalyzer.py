@@ -70,6 +70,7 @@ class ImageAnalyzer:
     obstacle_in_brake_zone = False
     obstacle_position_unlock = True
     obstacle_position_lock = False
+    pixel_offset_line = None
 
     def __init__(self, simulator, line_cam_handle, obstacles_cam_handle, image_warper):
         self.obstacles_cam_handle = obstacles_cam_handle
@@ -86,17 +87,16 @@ class ImageAnalyzer:
         if resolution is not None and byte_array_image_string is not None:
             mask0 = self.convert_image_to_numpy(byte_array_image_string, resolution)
             mask0 = self.clean_mask(mask0)
-            mask0 = self.image_warper.warp(mask0)
-            self.position_ligne_1, self.position_ligne_2, poly_coeff, poly2, self.parallelism = self.get_ecart_ligne(
-                mask0)
-            self.poly_coeff_square = poly_coeff[0] if poly_coeff is not None else None
+            warped = self.image_warper.warp(mask0)
+            self.poly_1_interpol(warped)
+            self.compute_line_horizontal_offset(warped)
 
-            if resolution_obstacles is not None and byte_array_image_string_obstacle is not None:
-                mask1 = self.convert_image_to_numpy(byte_array_image_string_obstacle, resolution_obstacles)
-                mask1 = self.image_warper.warp(mask1)
-                self.obstacle_exists, self.position_obstacle, self.obstacle_position_lock, \
-                self.obstacle_position_unlock, self.obstacle_in_brake_zone = self.findObstacles(
-                    mask1, poly2)
+            # if resolution_obstacles is not None and byte_array_image_string_obstacle is not None:
+            #     mask1 = self.convert_image_to_numpy(byte_array_image_string_obstacle, resolution_obstacles)
+            #     mask1 = self.image_warper.warp(mask1, True)
+            #     self.obstacle_exists, self.position_obstacle, self.obstacle_position_lock, \
+            #     self.obstacle_position_unlock, self.obstacle_in_brake_zone = self.findObstacles(
+            #         mask1, poly2)
 
     def convert_image_to_numpy(self, byte_array_image_string, resolution):
         return np.flipud(np.fromstring(byte_array_image_string, dtype=np.uint8).reshape(resolution[::-1]))
@@ -153,6 +153,24 @@ class ImageAnalyzer:
             result = result / 255.
 
             return result
+
+    def poly_1_interpol(self, image):
+        nonzeros_indexes = np.nonzero((image > self.LINE_THRESHOLD).copy())
+        x = nonzeros_indexes[0]
+        y = nonzeros_indexes[1]
+        if len(x) < 2:
+            self.poly_coeff_1 = None
+        else:
+            self.poly_coeff_1 = np.polyfit(x, y, 1)
+
+    def compute_line_horizontal_offset(self, image):
+        nonzeros_indexes = np.nonzero((image > self.LINE_THRESHOLD).copy())
+        x = nonzeros_indexes[0]
+        y = nonzeros_indexes[1]
+        if len(x) == 0:
+            self.pixel_offset_line = None
+        else:
+            self.pixel_offset_line = y[-1] - 150
 
     # get_ecart_ligne
     def get_ecart_ligne(self, image):
@@ -335,3 +353,6 @@ class ImageAnalyzer:
 
     def unlockObstacle(self):
         self.position_obstacle = 0
+
+    def get_line_offset(self):
+        return self.pixel_offset_line

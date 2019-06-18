@@ -98,6 +98,7 @@ class Sequencer:
                     instruction == 'suiviLigne' or \
                     instruction == 'suiviImageLigneDroite' or \
                     instruction == 'suiviImageRoues' or \
+                    instruction == 'lineAngleOffset' or \
                     instruction == 'suiviImageCap':
                 vitesse = self.programmeCourant['vitesse']
                 print ("Vitesse : ", vitesse)
@@ -124,6 +125,9 @@ class Sequencer:
                 self.asservissement.initSuiviImageCap()
             elif instruction == 'suiviImageRoues':
                 self.asservissement.initSuiviImageRoues()
+            elif instruction == 'lineAngleOffset':
+                self.asservissement.init_from_line_angle_and_offset()
+                print("init simple line follow")
             elif instruction == 'suiviImageLigneDroite':
                 self.image_warper.enable_rotation(False)
                 activationDistanceIntegrale = False

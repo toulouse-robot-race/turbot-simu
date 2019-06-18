@@ -220,6 +220,30 @@ DLVV = [
 
 ]
 
+LINE_FOLLOW = [  {
+        'instruction': 'setCap',  # Cap asuivre = cap actuel
+        'conditionFin': 'immediat'
+    },
+
+    {
+        'instruction': 'setTacho',  # Memorise le tacho actuel
+        'conditionFin': 'immediat'
+    },
+    {
+        'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
+        'vitesse': 45,
+        'conditionFin': 'tacho',
+        'tacho': 25000,
+    },
+    {
+        'instruction': 'tourne',  # Arrêt avec roues a 0
+        'vitesse': 0,
+        'positionRoues': 0,
+        'conditionFin': 'duree',
+        'duree': 10,
+    }
+]
+
 HIPPODROME = [
     ############ TEST HIPPODROME
     {
