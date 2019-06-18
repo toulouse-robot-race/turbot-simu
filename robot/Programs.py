@@ -220,18 +220,18 @@ DLVV = [
 
 ]
 
-LINE_FOLLOW = [  {
+LINE_ANGLE_OFFSET = [
+    {
         'instruction': 'setCap',  # Cap asuivre = cap actuel
         'conditionFin': 'immediat'
     },
-
     {
         'instruction': 'setTacho',  # Memorise le tacho actuel
         'conditionFin': 'immediat'
     },
     {
         'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
-        'vitesse': 50,
+        'vitesse': 45,
         'conditionFin': 'tacho',
         'tacho': 25000,
     },

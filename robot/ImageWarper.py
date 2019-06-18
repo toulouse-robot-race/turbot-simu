@@ -22,10 +22,15 @@ class ImageWarper:
         self.rotations.append(rotation)
         self.translations.append(translation)
 
-        actives_rotations = self.rotations[-NB_IMAGES_DELAY:] if len(
-            self.rotations) >= NB_IMAGES_DELAY else self.rotations
-        actives_translations = self.translations[-NB_IMAGES_DELAY:] if len(
-            self.rotations) >= NB_IMAGES_DELAY else self.translations
+        if NB_IMAGES_DELAY == 0:
+            actives_rotations = []
+            actives_translations = []
+        else:
+            actives_rotations = self.rotations[-NB_IMAGES_DELAY:] if len(
+                self.rotations) >= NB_IMAGES_DELAY else self.rotations
+            actives_translations = self.translations[-NB_IMAGES_DELAY:] if len(
+                self.rotations) >= NB_IMAGES_DELAY else self.translations
+
         translation_to_apply = np.sum(actives_translations)
         rotation_to_apply = np.sum(actives_rotations)
 

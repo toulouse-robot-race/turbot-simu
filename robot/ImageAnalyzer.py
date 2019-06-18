@@ -167,10 +167,11 @@ class ImageAnalyzer:
         nonzeros_indexes = np.nonzero((image > self.LINE_THRESHOLD).copy())
         x = nonzeros_indexes[0]
         y = nonzeros_indexes[1]
-        if len(x) == 0:
+        if len(y) == 0:
             self.pixel_offset_line = None
         else:
-            self.pixel_offset_line = y[-1] - 150
+            self.pixel_offset_line = np.mean(y[-10:]) - 150
+        print("line offset", self.pixel_offset_line)
 
     # get_ecart_ligne
     def get_ecart_ligne(self, image):
