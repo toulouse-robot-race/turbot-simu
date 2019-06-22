@@ -43,6 +43,10 @@ class Simulator:
         angular_speed = self.get_object_float_parameter(joint, JOINT_VELOCITY_PARAMETER)
         return angular_speed if angular_speed is not None else 0
 
+    def get_joint_angular_speed(self, joint):
+        angular_speed = self.get_object_float_parameter(joint, JOINT_VELOCITY_PARAMETER)
+        return angular_speed if angular_speed is not None else 0
+
     simulation_time = 0
 
     def get_simulation_time(self):
@@ -111,6 +115,18 @@ class Simulator:
 
             self.client.simxGetObjectPosition(object_handle, -1, self.client.simxDefaultSubscriber(callback))
         return self.positions[object_handle]
+
+    joint_positions = {}
+
+    def get_joint_position(self, object_handle):
+        if object_handle not in self.joint_positions:
+            self.joint_positions[object_handle] = None
+
+            def callback(result):
+                self.joint_positions[object_handle] = result[1]
+
+            self.client.simxGetJointPosition(object_handle, self.client.simxDefaultSubscriber(callback))
+        return self.joint_positions[object_handle]
 
     orientations = {}
 

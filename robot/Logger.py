@@ -20,6 +20,8 @@ class Logger:
         print("tacho : %s" % self.tachometer.get_tacho())
         print("Simu time : %fs " % self.time.time())
         print("delta gyro", self.gyro.get_delta_cap())
+        print("delta tacho", self.tachometer.get_delta_tacho())
+        self.simulator.get_joint_position(self.handles["right_motor"])
         # print("orientation : %s" % str(self.simulator.get_object_orientation(self.handles["base_car"])))
 
 
