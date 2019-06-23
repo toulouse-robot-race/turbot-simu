@@ -12,6 +12,7 @@ class Logger:
         self.car = car
         self.speed_controller = speed_controller
         self.simulator = simulator
+        self.previous_joint_pos = 0
 
     def execute(self):
         self.log()
@@ -20,8 +21,12 @@ class Logger:
         print("tacho : %s" % self.tachometer.get_tacho())
         print("Simu time : %fs " % self.time.time())
         print("delta gyro", self.gyro.get_delta_cap())
-        print("delta tacho", self.tachometer.get_delta_tacho())
-        self.simulator.get_joint_position(self.handles["right_motor"])
-        # print("orientation : %s" % str(self.simulator.get_object_orientation(self.handles["base_car"])))
-
-
+        delta_tacho = self.tachometer.get_delta_tacho()
+        print("delta tacho", delta_tacho)
+        joint_pos = self.simulator.get_joint_position(self.handles["right_motor"])
+        if joint_pos is not None:
+            delta_joint_pos = joint_pos - self.previous_joint_pos
+            print("Delta joint pos", delta_joint_pos)
+            self.previous_joint_pos = joint_pos
+            if delta_tacho is not 0:
+                print("joint pos per tacho", delta_joint_pos / delta_tacho)

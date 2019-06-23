@@ -21,7 +21,7 @@ class Car:
         self.simulator.set_target_pos(self.steering_handles[1], pos_steering)
 
     def avance(self, speed):
-        self.speedController.set_speed_target(speed)
+        self.speedController.set_speed_percent(speed)
 
     def get_tacho(self):
         return self.tachometer.get_tacho()

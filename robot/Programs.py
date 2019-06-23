@@ -231,7 +231,7 @@ LINE_ANGLE_OFFSET = [
     },
     {
         'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
-        'vitesse': 45,
+        'vitesse': 100,
         'conditionFin': 'tacho',
         'tacho': 25000,
     },
@@ -255,7 +255,7 @@ CALIBRATE = [
     },
     {
         'instruction': 'ligneDroite',  # suiviImageLigneDroite ou suiviImageRoues
-        'vitesse': 0,
+        'vitesse': 50,
         'conditionFin': 'tacho',
         'tacho': 1000,
     },
