@@ -59,7 +59,7 @@ class Asservissement:
 
     # Asservissement line angle
     COEF_P_LINE_ANGLE = -38
-    COEF_P_LINE_OFFSET = 0.10
+    COEF_P_LINE_OFFSET = 0.20
 
     # Autres constantes
     DELTA_T_SUIVI_COURBES = 0.1

@@ -21,6 +21,7 @@ class Logger:
         print("tacho : %s" % self.tachometer.get_tacho())
         print("Simu time : %fs " % self.time.time())
         print("delta gyro", self.gyro.get_delta_cap())
+        print("car pos", self.simulator.get_object_position(self.handles["base_car"]))
         delta_tacho = self.tachometer.get_delta_tacho()
         print("delta tacho", delta_tacho)
         joint_pos = self.simulator.get_joint_position(self.handles["right_motor"])

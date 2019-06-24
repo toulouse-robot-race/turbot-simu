@@ -11,14 +11,15 @@ class Car:
         self.simulator = simulator
         self.speedController = speed_controller
 
-    def tourne(self, steering_percent):
-        # Apply exponential
-        sign = 1 if steering_percent > 0 else -1
-        steering_percent = sign * (abs(steering_percent) ** 1.2) * 0.7    # TODO calibrate according to real robot
+    def tourne(self, steering_input):
+        if steering_input < 10:
+            steering_radians_pos = STEERING_COEF * (steering_input * 0.25)
+        else:
+            steering_radians_pos = STEERING_COEF * (steering_input * 0.155 + 0.95)
 
-        pos_steering = steering_percent * STEERING_COEF
-        self.simulator.set_target_pos(self.steering_handles[0], pos_steering)
-        self.simulator.set_target_pos(self.steering_handles[1], pos_steering)
+        # pos_steering = steering_percent * STEERING_COEF
+        self.simulator.set_target_pos(self.steering_handles[0], steering_radians_pos)
+        self.simulator.set_target_pos(self.steering_handles[1], steering_radians_pos)
 
     def avance(self, speed):
         self.speedController.set_speed_percent(speed)
