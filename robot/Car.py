@@ -12,7 +12,7 @@ class Car:
         self.speedController = speed_controller
 
     def tourne(self, steering_input):
-        if steering_input < 10:
+        if -10 < steering_input < 10:
             steering_radians_pos = STEERING_COEF * (steering_input * 0.25)
         else:
             steering_radians_pos = STEERING_COEF * (steering_input * 0.155 + 0.95)

@@ -256,7 +256,7 @@ CALIBRATE = [
     {
         'instruction': 'tourne',  # suiviImageLigneDroite ou suiviImageRoues
         'vitesse': 20,
-        'positionRoues': 50,
+        'positionRoues': 40,
         'conditionFin': 'tacho',
         'tacho': 2000,
     },
