@@ -256,9 +256,9 @@ CALIBRATE = [
     {
         'instruction': 'tourne',  # suiviImageLigneDroite ou suiviImageRoues
         'vitesse': 20,
-        'positionRoues': 50,
+        'positionRoues': 10,
         'conditionFin': 'tacho',
-        'tacho': 2000,
+        'tacho': 50000,
     },
     {
         'instruction': 'tourne',  # Arrêt avec roues a 0

@@ -64,7 +64,7 @@ sequencer = Sequencer(car=car,
                       time=simu_time,
                       asservissement=asservissement,
                       image_warper=image_warper,
-                      program=Programs.LINE_ANGLE_OFFSET)
+                      program=Programs.CALIBRATE)
 
 logger = Logger(simulator=simulator,
                 time=simu_time,

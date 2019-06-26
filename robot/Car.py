@@ -1,3 +1,5 @@
+import numpy as np
+
 from robot.Config import STEERING_COEF
 
 
@@ -12,10 +14,10 @@ class Car:
         self.speedController = speed_controller
 
     def tourne(self, steering_input):
-        if steering_input < 10:
+        if -10 < steering_input < 10:
             steering_radians_pos = STEERING_COEF * (steering_input * 0.25)
         else:
-            steering_radians_pos = STEERING_COEF * (steering_input * 0.155 + 0.95)
+            steering_radians_pos = STEERING_COEF * (steering_input * 0.155 + np.sign(steering_input) * 0.95)
 
         # pos_steering = steering_percent * STEERING_COEF
         self.simulator.set_target_pos(self.steering_handles[0], steering_radians_pos)
