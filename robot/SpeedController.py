@@ -2,7 +2,7 @@ class SpeedController:
     def __init__(self, simulator, motor_handles, simulation_step_time):
         self.simulation_step_time = simulation_step_time
         self.motor_handles = motor_handles
-        self.max_speed = 50000 * 0.11 / 60  # In duty cycle mode, this could go up to 95000 (95%), or even a little more, close to 100%
+        self.max_speed = 100000 * 0.11 / 60  # In duty cycle mode, this could go up to 95000 (95%), or even a little more, close to 100%
         self.min_speed = 7000 * 0.11 / 60
         self.simulator = simulator
         self.previous_speed = 0

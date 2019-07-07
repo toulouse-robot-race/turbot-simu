@@ -58,8 +58,8 @@ class Asservissement:
     TACHO_MARCHE_ARRIERE_2 = 70  # Nombre de tours de tacho pour 1ere sequence de marche arriere evitement
 
     # Asservissement line angle
-    COEF_P_LINE_ANGLE = -38
-    COEF_P_LINE_OFFSET = 0.20
+    COEF_P_LINE_ANGLE = -50
+    COEF_P_LINE_OFFSET = 0.5
 
     # Autres constantes
     DELTA_T_SUIVI_COURBES = 0.1
@@ -97,6 +97,7 @@ class Asservissement:
     cumulErreurCap = 0.0
     cumulErreurBraquage = 0.0
     cumulErreurDistanceBordure = 0.0
+    additional_offset_line = 0
 
     def __init__(self, car, image_analyzer, time):
         self.car = car
@@ -125,6 +126,7 @@ class Asservissement:
         self.tacho_marche_arriere = 0
         self.cote_marche_arriere = 0
         self.from_line_angle_and_offset = False
+        self.additional_offset_line = 0
 
         # A appeler lorsqu'on demarre un asservissement de ligne droite
 
@@ -141,9 +143,10 @@ class Asservissement:
 
         # A appeler lorsqu'on demarre un asservissement de suivi de ligne par reconnaissance d'image (strategie position roues)
 
-    def init_from_line_angle_and_offset(self):
+    def init_from_line_angle_and_offset(self, additional_offset):
         self.reset()
         self.from_line_angle_and_offset = True
+        self.additional_offset_line = additional_offset
 
     def initSuiviImageRoues(self, offset=0.0):
         self.reset()
@@ -295,7 +298,8 @@ class Asservissement:
         line_offset = self.image_analyzer.get_line_offset()
         if coefs_poly_1_line is not None and line_offset is not None:
             angle_line = np.arctan(coefs_poly_1_line[0])
-            return self.COEF_P_LINE_ANGLE * angle_line + self.COEF_P_LINE_OFFSET * line_offset
+            return self.COEF_P_LINE_ANGLE * angle_line + self.COEF_P_LINE_OFFSET * (line_offset +
+                                                                                    self.additional_offset_line)
         else:
             return None
 

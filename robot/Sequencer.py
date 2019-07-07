@@ -126,7 +126,8 @@ class Sequencer:
             elif instruction == 'suiviImageRoues':
                 self.asservissement.initSuiviImageRoues()
             elif instruction == 'lineAngleOffset':
-                self.asservissement.init_from_line_angle_and_offset()
+                additional_offset = self.programmeCourant['offset'] if 'offset' in self.programmeCourant else 0
+                self.asservissement.init_from_line_angle_and_offset(additional_offset)
                 print("init simple line follow")
             elif instruction == 'suiviImageLigneDroite':
                 self.image_warper.enable_rotation(False)
