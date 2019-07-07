@@ -5,21 +5,23 @@ from robot.Config import TACHO_COEF, NB_IMAGES_DELAY
 
 PIXELS_METER = 161
 
+
 class ImageWarper:
-    def __init__(self, tachometer, gyro):
+    def __init__(self, tachometer, gyro, show_and_wait=False):
         self.tacho = tachometer
         self.gyro = gyro
         self.rotations = []
         self.translations = []
         self.rotation_enabled = True
+        self.show_and_wait = show_and_wait
 
     def enable_rotation(self, enabled):
         self.rotation_enabled = enabled
 
     def warp(self, image):
-        rotation = self.gyro.get_delta_cap()
+        final = self.gyro.get_delta_cap()
         translation = self.tacho.get_delta_tacho() / TACHO_COEF * PIXELS_METER
-        self.rotations.append(rotation)
+        self.rotations.append(final)
         self.translations.append(translation)
 
         if NB_IMAGES_DELAY == 0:
@@ -56,22 +58,22 @@ class ImageWarper:
 
         translation_matrix = np.float32([[1, 0, 0], [0, 1, translation_to_apply / 2]])
         rotation_matrix = cv2.getRotationMatrix2D((width / 2, height), rotation_to_apply, 1)
-        cv2.imshow("original", image)
+        # cv2.imshow("original", image)
 
         perspective = cv2.warpPerspective(image, perspective_matrix, (width, height))
-        cv2.imshow("perspective", perspective)
+        # cv2.imshow("perspective", perspective)
 
         translation = cv2.warpAffine(perspective, translation_matrix, (width, height))
-        cv2.imshow("translation1", translation)
+        # cv2.imshow("translation1", translation)
 
         if self.rotation_enabled:
-            rotation = cv2.warpAffine(translation, rotation_matrix, (width, height))
-            cv2.imshow("rotation", rotation)
-        else :
-            rotation = translation
-        print("actives rotations", actives_rotations)
-        warped = cv2.warpAffine(rotation, translation_matrix, (width, height))
-        cv2.imshow("translation2", warped)
-        cv2.waitKey(0)
+            final = cv2.warpAffine(translation, rotation_matrix, (width, height))
+            # cv2.imshow("rotation", rotation)
+        else:
+            final = translation
 
-        return rotation
+        if self.show_and_wait:
+            cv2.imshow("final", final)
+            cv2.waitKey(0)
+
+        return final

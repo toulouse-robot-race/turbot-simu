@@ -42,7 +42,8 @@ tachometer = Tachometer(simulator=simulator,
                         base_car=handles['base_car'])
 
 image_warper = ImageWarper(tachometer=tachometer,
-                           gyro=gyro)
+                           gyro=gyro,
+                           show_and_wait=True)
 
 image_analyzer = ImageAnalyzer(simulator=simulator,
                                line_cam_handle=handles["line_cam"],
