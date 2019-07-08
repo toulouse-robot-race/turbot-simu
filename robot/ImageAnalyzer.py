@@ -84,24 +84,20 @@ class ImageAnalyzer:
         resolution_obstacles, byte_array_image_string_obstacle = self.simulator.get_gray_image(
             self.obstacles_cam_handle, CAMERA_DELAY)
 
-        if resolution is not None and byte_array_image_string is not None:
-            mask0 = self.convert_image_to_numpy(byte_array_image_string, resolution)
-            mask0 = self.clean_mask(mask0)
-            warped = self.image_warper.warp(mask0)
+        if resolution is not None and byte_array_image_string is not None \
+                and resolution_obstacles is not None and byte_array_image_string_obstacle is not None:
+            mask_line = self.convert_image_to_numpy(byte_array_image_string, resolution)
+            mask_obstacles = self.convert_image_to_numpy(byte_array_image_string_obstacle, resolution_obstacles)
+            mask_obstacles = self.clean_mask_obstacle(mask_obstacles)
+            mask_line = self.remove_line_behind_obstacles(mask_line, mask_obstacles)
+            warped = self.image_warper.warp(mask_line)
             self.poly_1_interpol(warped)
             self.compute_line_horizontal_offset(warped)
-
-            # if resolution_obstacles is not None and byte_array_image_string_obstacle is not None:
-            #     mask1 = self.convert_image_to_numpy(byte_array_image_string_obstacle, resolution_obstacles)
-            #     mask1 = self.image_warper.warp(mask1, True)
-            #     self.obstacle_exists, self.position_obstacle, self.obstacle_position_lock, \
-            #     self.obstacle_position_unlock, self.obstacle_in_brake_zone = self.findObstacles(
-            #         mask1, poly2)
 
     def convert_image_to_numpy(self, byte_array_image_string, resolution):
         return np.flipud(np.fromstring(byte_array_image_string, dtype=np.uint8).reshape(resolution[::-1]))
 
-    def clean_mask(self, image):
+    def clean_mask_line(self, image):
 
         # Scale to openCV format: transform [0.,1.] to [0,255]
         int_mat = (image * 255).astype(np.uint8)
@@ -357,3 +353,9 @@ class ImageAnalyzer:
 
     def get_line_offset(self):
         return self.pixel_offset_line
+
+    def remove_line_behind_obstacles(self, mask_line, mask_obstacles):
+        return mask_line - mask_obstacles
+
+    def clean_mask_obstacle(self, mask_obstacles):
+        return np.clip(mask_obstacles, 0, 1) * 255
