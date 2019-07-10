@@ -58,8 +58,9 @@ class Asservissement:
     TACHO_MARCHE_ARRIERE_2 = 70  # Nombre de tours de tacho pour 1ere sequence de marche arriere evitement
 
     # Asservissement line angle
-    COEF_P_LINE_ANGLE = -50
-    COEF_P_LINE_OFFSET = 0.5
+    COEF_P_LINE_ANGLE = 50
+    COEF_P_LINE_OFFSET = 0.3
+    COEF_DISTANCE_AVOIDANCE = 1000
 
     # Autres constantes
     DELTA_T_SUIVI_COURBES = 0.1
@@ -295,11 +296,16 @@ class Asservissement:
 
     def compute_from_line_angle_and_offset(self):
         coefs_poly_1_line = self.image_analyzer.getPolyCoeff1()
+        distance_obstacle_line = self.image_analyzer.get_distance_obstacle_line()
+        obstacle_avoidance_additional_offset = self.COEF_DISTANCE_AVOIDANCE / distance_obstacle_line \
+            if distance_obstacle_line is not None else 0
         line_offset = self.image_analyzer.get_line_offset()
+        print("obstacle_avoidance_additional_offset", obstacle_avoidance_additional_offset)
         if coefs_poly_1_line is not None and line_offset is not None:
-            angle_line = np.arctan(coefs_poly_1_line[0])
-            return self.COEF_P_LINE_ANGLE * angle_line + self.COEF_P_LINE_OFFSET * (line_offset +
-                                                                                    self.additional_offset_line)
+            angle_line = -np.arctan(coefs_poly_1_line[0])
+            print("angle_line", angle_line)
+            return self.COEF_P_LINE_ANGLE * angle_line + self.COEF_P_LINE_OFFSET * (
+                    line_offset + self.additional_offset_line + obstacle_avoidance_additional_offset)
         else:
             return None
 

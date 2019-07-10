@@ -231,8 +231,7 @@ LINE_ANGLE_OFFSET = [
     },
     {
         'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
-        'vitesse': 30,
-        'offset': -50,
+        'vitesse': 40,
         'conditionFin': 'tacho',
         'tacho': 25000,
     },
