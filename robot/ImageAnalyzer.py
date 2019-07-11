@@ -192,7 +192,10 @@ class ImageAnalyzer:
             self.distance_obstacle_line = None
             return
 
-        self.distance_obstacle_line = np.mean(line_pixels_x_at_lowest_obstacle_pixels_y) - np.mean(lowest_obstacle_pixels_x)
+        distance_left_line = np.min(line_pixels_x_at_lowest_obstacle_pixels_y) - np.max(lowest_obstacle_pixels_x)
+        distance_right_line = np.max(line_pixels_x_at_lowest_obstacle_pixels_y) - np.min(lowest_obstacle_pixels_x)
+
+        self.distance_obstacle_line = min(distance_left_line, distance_right_line, key=abs)
 
     def getPositionLigne1(self):
         return self.position_ligne_1
