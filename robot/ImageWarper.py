@@ -37,7 +37,7 @@ class ImageWarper:
         rotation_to_apply = np.sum(actives_rotations)
 
         # Define a tetrahedron that will become rectangular and take all screen
-        h1 = 50
+        h1 = 45
         h2 = 240
         middle = 160
         horizon = 6

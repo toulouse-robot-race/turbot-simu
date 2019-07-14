@@ -58,9 +58,11 @@ class Asservissement:
     TACHO_MARCHE_ARRIERE_2 = 70  # Nombre de tours de tacho pour 1ere sequence de marche arriere evitement
 
     # Asservissement line angle
-    COEF_P_LINE_ANGLE = 60
-    COEF_P_LINE_OFFSET = 0.3
-    COEF_DISTANCE_AVOIDANCE = 500
+    COEF_P_LINE_ANGLE = 40
+    COEF_P_LINE_OFFSET = 0.2
+    RATION_ANGLE_OFFSET = 500
+    GAIN = 60
+    COEF_DISTANCE_AVOIDANCE = 400
 
     # Autres constantes
     DELTA_T_SUIVI_COURBES = 0.1
@@ -304,7 +306,7 @@ class Asservissement:
         if coefs_poly_1_line is not None and line_offset is not None:
             angle_line = -np.arctan(coefs_poly_1_line[0])
             print("angle_line", angle_line)
-            return self.COEF_P_LINE_ANGLE * angle_line + self.COEF_P_LINE_OFFSET * (
+            return self.GAIN * angle_line + self.GAIN / self.RATION_ANGLE_OFFSET * (
                     line_offset + self.additional_offset_line + obstacle_avoidance_additional_offset)
         else:
             return None

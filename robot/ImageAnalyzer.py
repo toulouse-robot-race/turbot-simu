@@ -43,6 +43,8 @@ class ImageAnalyzer:
     # Constant for computing parallelism
     MIDDLE_HORIZON_X = -25  # Hauteur de l'horizon (negatif = au-dessus de l'image)
 
+    IMAGE_CLIPPED_LENGHT = 150
+
     # Param�tres de classe
     position_consigne = 0.0
     logTimestampMemory = None
@@ -155,11 +157,11 @@ class ImageAnalyzer:
             return result
 
     def poly_1_interpol(self, image):
-        nonzeros_indexes = np.nonzero((image > self.LINE_THRESHOLD).copy())
+        clipped = image[self.IMAGE_CLIPPED_LENGHT:,:]
+        print(clipped.shape)
+        nonzeros_indexes = np.nonzero(clipped > self.LINE_THRESHOLD)
         y = nonzeros_indexes[0]
-        print("max y", np.max(y))
         x = nonzeros_indexes[1]
-        print(np.max(x))
         if len(x) < 2:
             self.poly_coeff_1 = None
         else:
