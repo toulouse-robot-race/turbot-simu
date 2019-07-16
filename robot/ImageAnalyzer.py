@@ -197,19 +197,38 @@ class ImageAnalyzer:
             self.distance_obstacle_line = None
             return
 
-        lowest_obstacle_pixels_y = np.max(obstacle_pixels_y)
-        lowest_obstacle_pixels_x = obstacle_pixels_x[np.where(obstacle_pixels_y >= lowest_obstacle_pixels_y - self.BOTTOM_OBSTACLE_WINDOW_HEIGHT)]
+        lowest_obstacle_y = np.max(obstacle_pixels_y)
+        lowest_obstacle_pixels_x = obstacle_pixels_x[np.where(obstacle_pixels_y >= lowest_obstacle_y - self.BOTTOM_OBSTACLE_WINDOW_HEIGHT)]
+        lowest_obstacle_pixels_y = obstacle_pixels_y[np.where(obstacle_pixels_y >= lowest_obstacle_y - self.BOTTOM_OBSTACLE_WINDOW_HEIGHT)]
 
-        line_pixels_x_at_lowest_obstacle_pixels_y = line_pixels_x[np.where(np.logical_and( (lowest_obstacle_pixels_y <= line_pixels_y), (line_pixels_y <= lowest_obstacle_pixels_y + self.LINE_WINDOW_HEIGHT_AT_OBSTACLE)))]  # TODO traiter le cas où il n'y a pas de pixels de ligne à la même hauteur que l'obstacle (aller chercher le y le plus proche où il y a des pixels de ligne)
-
-        if len(line_pixels_x_at_lowest_obstacle_pixels_y) == 0 or len(lowest_obstacle_pixels_x) == 0:
+        if len(line_pixels_x) == 0:
             self.distance_obstacle_line = None
             return
 
-        center_line = (np.max(line_pixels_x_at_lowest_obstacle_pixels_y) + np.min(line_pixels_x_at_lowest_obstacle_pixels_y)) / 2
+        low_left_obstacle_x = np.min(lowest_obstacle_pixels_x)
+        low_left_obstacle_y = lowest_obstacle_y
+        low_right_obstacle_x = np.max(lowest_obstacle_pixels_x)
+        low_right_obstacle_y = lowest_obstacle_y
 
-        distance_left_obstacle = np.min(lowest_obstacle_pixels_x) - center_line 
-        distance_right_obstacle =  np.max(lowest_obstacle_pixels_x) - center_line
+        # Find points on the line that are the closest to the bottom left and bottom right of the obstacle
+        idx_line_closest_to_left_obstacle = np.argmin(np.square(low_left_obstacle_x - line_pixels_x) + np.square(low_left_obstacle_y - line_pixels_y))
+        idx_line_closest_to_right_obstacle = np.argmin(np.square(low_right_obstacle_x - line_pixels_x) + np.square(low_right_obstacle_y - line_pixels_y))
+        x_line_closest_left = line_pixels_x[idx_line_closest_to_left_obstacle]
+        y_line_closest_left = line_pixels_y[idx_line_closest_to_left_obstacle]
+        x_line_closest_right = line_pixels_x[idx_line_closest_to_right_obstacle]
+        y_line_closest_right = line_pixels_y[idx_line_closest_to_right_obstacle]
+
+        # Compute distances
+        distance_left_obstacle = np.sqrt( (x_line_closest_left - low_left_obstacle_x) ** 2 + (y_line_closest_left - low_left_obstacle_y) ** 2 )
+        distance_right_obstacle = np.sqrt( (x_line_closest_right - low_right_obstacle_x) ** 2 + (y_line_closest_right - low_right_obstacle_y) ** 2 )
+
+        # Find position according to line
+        position_left_obstacle = np.sign(low_left_obstacle_x- x_line_closest_left)
+        position_right_obstacle = np.sign(low_right_obstacle_x - x_line_closest_right)
+
+        # Transform distance to signed distance
+        distance_left_obstacle *= position_left_obstacle
+        distance_right_obstacle *= position_right_obstacle
 
         self.side_avoidance = 1 if (abs(distance_left_obstacle) > abs(distance_right_obstacle)) else -1
         self.distance_obstacle_line = min(distance_left_obstacle, distance_right_obstacle, key=abs)
