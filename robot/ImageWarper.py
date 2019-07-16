@@ -62,10 +62,10 @@ class ImageWarper:
         # cv2.imshow("original", image)
 
         perspective = cv2.warpPerspective(image, perspective_matrix, (width, height))
-        cv2.imshow("perspective", perspective)
+        # cv2.imshow("perspective", perspective)
 
         translation = cv2.warpAffine(perspective, translation_matrix, (width, height))
-        cv2.imshow("translation1", translation)
+        # cv2.imshow("translation1", translation)
 
         if self.rotation_enabled:
             final = cv2.warpAffine(translation, rotation_matrix, (width, height))

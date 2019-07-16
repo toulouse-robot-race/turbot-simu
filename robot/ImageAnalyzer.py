@@ -74,6 +74,7 @@ class ImageAnalyzer:
     obstacle_position_lock = False
     pixel_offset_line = None
     distance_obstacle_line = None
+    side_avoidance = None
 
     def __init__(self, simulator, line_cam_handle, obstacles_cam_handle, image_warper):
         self.obstacles_cam_handle = obstacles_cam_handle
@@ -176,6 +177,9 @@ class ImageAnalyzer:
             self.pixel_offset_line = np.mean(x[-10:]) - 150
 
     def compute_obstacle_position(self, mask_line, mask_obstacles):
+        self.BOTTOM_OBSTACLE_WINDOW_HEIGHT = 5
+        self.LINE_WINDOW_HEIGHT_AT_OBSTACLE = 5
+
         obstacle_pixels_y, obstacle_pixels_x, = np.nonzero(mask_obstacles)
         line_pixels_y, line_pixels_x = np.nonzero(mask_line)
         print(line_pixels_x, line_pixels_y)
@@ -186,18 +190,21 @@ class ImageAnalyzer:
             return
 
         lowest_obstacle_pixels_y = np.max(obstacle_pixels_y)
-        lowest_obstacle_pixels_x = obstacle_pixels_x[np.where(obstacle_pixels_y == lowest_obstacle_pixels_y)]
+        lowest_obstacle_pixels_x = obstacle_pixels_x[np.where(obstacle_pixels_y >= lowest_obstacle_pixels_y - self.BOTTOM_OBSTACLE_WINDOW_HEIGHT)]
 
-        line_pixels_x_at_lowest_obstacle_pixels_y = line_pixels_x[np.where(line_pixels_y == lowest_obstacle_pixels_y)]
+        line_pixels_x_at_lowest_obstacle_pixels_y = line_pixels_x[np.where(np.logical_and( (lowest_obstacle_pixels_y <= line_pixels_y), (line_pixels_y <= lowest_obstacle_pixels_y + self.LINE_WINDOW_HEIGHT_AT_OBSTACLE)))]  # TODO traiter le cas où il n'y a pas de pixels de ligne à la même hauteur que l'obstacle (aller chercher le y le plus proche où il y a des pixels de ligne)
 
         if len(line_pixels_x_at_lowest_obstacle_pixels_y) == 0 or len(lowest_obstacle_pixels_x) == 0:
             self.distance_obstacle_line = None
             return
 
-        distance_left_line = np.min(line_pixels_x_at_lowest_obstacle_pixels_y) - np.max(lowest_obstacle_pixels_x)
-        distance_right_line = np.max(line_pixels_x_at_lowest_obstacle_pixels_y) - np.min(lowest_obstacle_pixels_x)
+        center_line = (np.max(line_pixels_x_at_lowest_obstacle_pixels_y) + np.min(line_pixels_x_at_lowest_obstacle_pixels_y)) / 2
 
-        self.distance_obstacle_line = min(distance_left_line, distance_right_line, key=abs)
+        distance_left_obstacle = np.min(lowest_obstacle_pixels_x) - center_line 
+        distance_right_obstacle =  np.max(lowest_obstacle_pixels_x) - center_line
+
+        self.side_avoidance = 1 if (abs(distance_left_obstacle) > abs(distance_right_obstacle)) else -1
+        self.distance_obstacle_line = min(distance_left_obstacle, distance_right_obstacle, key=abs)
 
     def getPositionLigne1(self):
         return self.position_ligne_1
