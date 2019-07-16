@@ -97,6 +97,14 @@ class ImageAnalyzer:
             mask_line = self.remove_line_behind_obstacles(mask_line, mask_obstacles)
             warped_line = self.image_warper.warp(mask_line)
             warped_obstacles = self.image_warper.warp(mask_obstacles)
+
+            # Display final mask for debug
+            mask_for_debug_display = np.zeros((warped_line.shape[0], warped_line.shape[1], 3))
+            mask_for_debug_display[..., 1] = warped_obstacles
+            mask_for_debug_display[..., 2] = warped_line
+            cv2.imshow('merged final', mask_for_debug_display)
+            cv2.waitKey(0)
+
             self.poly_1_interpol(warped_line)
             self.compute_line_horizontal_offset(warped_line)
             self.compute_obstacle_position(warped_line, warped_obstacles)

@@ -43,7 +43,7 @@ tachometer = Tachometer(simulator=simulator,
 
 image_warper = ImageWarper(tachometer=tachometer,
                            gyro=gyro,
-                           show_and_wait=True)
+                           show_and_wait=False)
 
 image_analyzer = ImageAnalyzer(simulator=simulator,
                                line_cam_handle=handles["line_cam"],
