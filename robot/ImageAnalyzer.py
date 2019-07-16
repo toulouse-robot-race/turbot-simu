@@ -43,7 +43,7 @@ class ImageAnalyzer:
     # Constant for computing parallelism
     MIDDLE_HORIZON_X = -25  # Hauteur de l'horizon (negatif = au-dessus de l'image)
 
-    IMAGE_CLIPPED_LENGHT = 150
+    IMAGE_CLIPPED_LENGHT = 300
 
     # Param�tres de classe
     position_consigne = 0.0

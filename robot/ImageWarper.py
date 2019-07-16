@@ -3,7 +3,7 @@ import numpy as np
 
 from robot.Config import TACHO_COEF, NB_IMAGES_DELAY
 
-PIXELS_METER = 161
+PIXELS_METER = 250
 
 
 class ImageWarper:
@@ -33,6 +33,7 @@ class ImageWarper:
             actives_translations = self.translations[-NB_IMAGES_DELAY:] if len(
                 self.rotations) >= NB_IMAGES_DELAY else self.translations
 
+        print("actives_translations", actives_translations)
         translation_to_apply = np.sum(actives_translations)
         rotation_to_apply = np.sum(actives_rotations)
 
@@ -56,15 +57,15 @@ class ImageWarper:
         pts2 = np.float32([[0, 0], [new_width, 0], [0, new_height], [new_width, new_height]])
         perspective_matrix = cv2.getPerspectiveTransform(pts1, pts2)
 
-        translation_matrix = np.float32([[1, 0, 0], [0, 1, translation_to_apply / 2]])
+        translation_matrix = np.float32([[1, 0, 0], [0, 1, translation_to_apply]])
         rotation_matrix = cv2.getRotationMatrix2D((width / 2, height), rotation_to_apply, 1)
         # cv2.imshow("original", image)
 
         perspective = cv2.warpPerspective(image, perspective_matrix, (width, height))
-        # cv2.imshow("perspective", perspective)
+        cv2.imshow("perspective", perspective)
 
         translation = cv2.warpAffine(perspective, translation_matrix, (width, height))
-        # cv2.imshow("translation1", translation)
+        cv2.imshow("translation1", translation)
 
         if self.rotation_enabled:
             final = cv2.warpAffine(translation, rotation_matrix, (width, height))

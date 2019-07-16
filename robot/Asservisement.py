@@ -299,6 +299,7 @@ class Asservissement:
     def compute_from_line_angle_and_offset(self):
         coefs_poly_1_line = self.image_analyzer.getPolyCoeff1()
         distance_obstacle_line = self.image_analyzer.get_distance_obstacle_line()
+        print("distance_obstacle_line", distance_obstacle_line)
         obstacle_avoidance_additional_offset = self.COEF_DISTANCE_AVOIDANCE / distance_obstacle_line \
             if distance_obstacle_line is not None else 0
         line_offset = self.image_analyzer.get_line_offset()
