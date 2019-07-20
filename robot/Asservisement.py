@@ -249,13 +249,13 @@ class Asservissement(Component):
     def calculeCapSuiviImageLigneDroite(self):
 
         # N'execute le calcul que s'il y a une nouvelle image
-        if self.image_analyzer.isThereANewImage():
+        if self.image_analyzer.new_image_arrived:
 
             # Initialise le cap a suivre en fonction de la cible fixee initialement
             capASuivre = self.capTarget
 
             # Recale le cap a suivre en fonction de l'erreur mesuree sur la ligne
-            position_ligne1 = self.image_analyzer.getPositionLigne1()
+            position_ligne1 = self.image_analyzer.position_ligne_1
             # position_ligne2 = self.imageAnalysis.getPositionLigne2()
 
             print("Position ligne: ", position_ligne1)
@@ -297,8 +297,9 @@ class Asservissement(Component):
         return capASuivre
 
     def compute_from_line_angle_and_offset(self):
-        coefs_poly_1_line = self.image_analyzer.getPolyCoeff1()
-        distance_obstacle_line = self.image_analyzer.get_distance_obstacle_line()
+        self.image_analyzer.analyze()
+        coefs_poly_1_line = self.image_analyzer.poly_coeff_1
+        distance_obstacle_line = self.image_analyzer.distance_obstacle_line
         if distance_obstacle_line is None or abs(distance_obstacle_line) > self.WIDTH_HALF_CORRIDOR:
             obstacle_avoidance_additional_offset = 0
         else:
@@ -306,7 +307,7 @@ class Asservissement(Component):
             coeff_avoidance = self.COEFF_AVOIDANCE_SAME_SIDE if (np.sign(distance_obstacle_line) == np.sign(side_avoidance)) \
                 else self.COEFF_AVOIDANCE_OTHER_SIDE
             obstacle_avoidance_additional_offset = (coeff_avoidance * distance_obstacle_line) + (self.ROBOT_WIDTH_AVOIDANCE * side_avoidance)
-        line_offset = self.image_analyzer.get_line_offset()
+        line_offset = self.image_analyzer.pixel_offset_line
         print("obstacle_avoidance_additional_offset", obstacle_avoidance_additional_offset, " distance obstacle: ", distance_obstacle_line)
         if coefs_poly_1_line is not None and line_offset is not None:
             angle_line = -np.arctan(coefs_poly_1_line[0])
@@ -318,17 +319,17 @@ class Asservissement(Component):
 
     def calculeCapSuiviImageLent(self):
         # N'execute le calcul que s'il y a une nouvelle image
-        if self.image_analyzer.isThereANewImage():
+        if self.image_analyzer.new_image_arrived:
             cap_actuel = self.car.get_cap()
             last_image_time = self.image_analyzer.last_execution_time
 
             # Calcule l'ecart de trajectoire par analyse d'image
-            poly_coeff_square = self.image_analyzer.getPolyCoeffSquare()
+            poly_coeff_square = self.image_analyzer.poly_coeff_square
             if poly_coeff_square is None:
                 # TODO voir ce qu'il faut faire. En attendant on met a zero
                 poly_coeff_square = 0
-            position_ligne1 = self.image_analyzer.getPositionLigne1()
-            position_ligne2 = self.image_analyzer.getPositionLigne2()
+            position_ligne1 = self.image_analyzer.position_ligne_1
+            position_ligne2 = self.image_analyzer.position_ligne_2
             # Calcule la position des roues
             braquage_courbure = min(self.MAX_SUIVI_COURBURE_P, max(-self.MAX_SUIVI_COURBURE_P,
                                                                    self.COEFF_SUIVI_IMAGE_COURBURE_P * poly_coeff_square))

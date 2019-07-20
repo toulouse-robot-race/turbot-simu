@@ -2,10 +2,7 @@
 import cv2
 import numpy as np
 
-from robot.Component import Component
-
-
-class ImageAnalyzer(Component):
+class ImageAnalyzer:
     # Constantes
     MODEL_FILENAME = 'deep_learning_models/craie_quarter_filters_6.h5'
     DELAY_EXECUTION = 0.07
@@ -24,6 +21,7 @@ class ImageAnalyzer(Component):
     MIN_AREA_TO_KEEP = 100.  # if max_area if less than this, reject all image
     MIN_THRESHOLD_CONTOUR = 10
     MAX_VALUE_CONTOUR = 255
+
 
     # Constants for obstacle detection
     MIN_X_TO_CONSIDER_OBSTACLE_EXISTS = 45  # If obstacle is low enough in image, consider it as existing
@@ -44,6 +42,9 @@ class ImageAnalyzer(Component):
     MIDDLE_HORIZON_X = -25  # Hauteur de l'horizon (negatif = au-dessus de l'image)
 
     IMAGE_CLIPPED_LENGHT = 300
+    BOTTOM_OBSTACLE_WINDOW_HEIGHT = 5
+    LINE_WINDOW_HEIGHT_AT_OBSTACLE = 5
+
 
     # Param�tres de classe
     position_consigne = 0.0
@@ -81,7 +82,7 @@ class ImageAnalyzer(Component):
         self.image_warper = image_warper
         self.show_and_wait = show_and_wait
 
-    def execute(self):
+    def analyze(self):
         mask_line, mask_obstacles = self.car.get_images()
         if mask_line is not None and mask_obstacles is not None:
             mask_line = self.clean_mask_line(mask_line)
@@ -175,8 +176,6 @@ class ImageAnalyzer(Component):
             self.pixel_offset_line = np.mean(x[-10:]) - 150
 
     def compute_obstacle_position(self, mask_line, mask_obstacles):
-        self.BOTTOM_OBSTACLE_WINDOW_HEIGHT = 5
-        self.LINE_WINDOW_HEIGHT_AT_OBSTACLE = 5
 
         obstacle_pixels_y, obstacle_pixels_x, = np.nonzero(mask_obstacles)
         line_pixels_y, line_pixels_x = np.nonzero(mask_line)
@@ -189,8 +188,6 @@ class ImageAnalyzer(Component):
 
         lowest_obstacle_y = np.max(obstacle_pixels_y)
         lowest_obstacle_pixels_x = obstacle_pixels_x[
-            np.where(obstacle_pixels_y >= lowest_obstacle_y - self.BOTTOM_OBSTACLE_WINDOW_HEIGHT)]
-        lowest_obstacle_pixels_y = obstacle_pixels_y[
             np.where(obstacle_pixels_y >= lowest_obstacle_y - self.BOTTOM_OBSTACLE_WINDOW_HEIGHT)]
 
         if len(line_pixels_x) == 0:
@@ -228,49 +225,6 @@ class ImageAnalyzer(Component):
 
         self.side_avoidance = 1 if (abs(distance_left_obstacle) > abs(distance_right_obstacle)) else -1
         self.distance_obstacle_line = min(distance_left_obstacle, distance_right_obstacle, key=abs)
-
-    def getPositionLigne1(self):
-        return self.position_ligne_1
-
-    def getPositionLigne2(self):
-        return self.position_ligne_2
-
-    def getPolyCoeffSquare(self):
-        return self.poly_coeff_square
-
-    # Tells if a new image has arrived
-    def isThereANewImage(self):
-        return True
-
-    def getPolyCoeff1(self):
-        return self.poly_coeff_1
-
-    def getPolyCoeffConst(self):
-        return self.poly_coeff_const
-
-    def getObstacleExists(self):
-        return self.obstacle_exists
-
-    def getPositionObstacle(self):
-        return self.position_obstacle
-
-    def getParallelism(self):
-        return self.parallelism
-
-    def getObstacleInBrakeZone(self):
-        return self.obstacle_in_brake_zone
-
-    def getStartDetected(self):
-        pass
-
-    def unlockObstacle(self):
-        self.position_obstacle = 0
-
-    def get_line_offset(self):
-        return self.pixel_offset_line
-
-    def get_distance_obstacle_line(self):
-        return self.distance_obstacle_line
 
     def remove_line_behind_obstacles(self, mask_line, mask_obstacles):
         diff = mask_line - mask_obstacles
