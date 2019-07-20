@@ -1,9 +1,10 @@
 import numpy as np
 
+from robot.Component import Component
 from robot.Config import TACHO_COEF
 
 
-class Tachometer:
+class Tachometer(Component):
 
     def __init__(self, simulator, base_car):
         self.delta_tacho = 0

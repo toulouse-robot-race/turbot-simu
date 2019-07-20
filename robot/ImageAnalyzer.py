@@ -2,8 +2,10 @@
 import cv2
 import numpy as np
 
+from robot.Component import Component
 
-class ImageAnalyzer:
+
+class ImageAnalyzer(Component):
     # Constantes
     MODEL_FILENAME = 'deep_learning_models/craie_quarter_filters_6.h5'
     DELAY_EXECUTION = 0.07

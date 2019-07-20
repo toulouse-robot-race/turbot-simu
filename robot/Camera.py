@@ -1,9 +1,10 @@
 import numpy as np
 
+from robot.Component import Component
 from robot.Config import CAMERA_DELAY
 
 
-class Camera:
+class Camera(Component):
 
     def __init__(self, simulator, line_cam_handle, obstacles_cam_handle):
         self.line_cam_handle = line_cam_handle

@@ -1,4 +1,7 @@
-class SpeedController:
+from robot.Component import Component
+
+
+class SpeedController(Component):
     def __init__(self, simulator, motor_handles, simulation_step_time):
         self.simulation_step_time = simulation_step_time
         self.motor_handles = motor_handles

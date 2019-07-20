@@ -1,4 +1,7 @@
-class Logger:
+from robot.Component import Component
+
+
+class Logger(Component):
 
     def __init__(self, simulator, image_analyzer,
                  car, asservissement, sequencer, handles):

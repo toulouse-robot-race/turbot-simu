@@ -1,7 +1,8 @@
+from robot.Component import Component
 from robot.Config import GYRO_COEF
 
 
-class Gyro:
+class Gyro(Component):
     def __init__(self, simulator, gyro_name):
         self.gyro_name = gyro_name
         self.simulator = simulator

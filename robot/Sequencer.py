@@ -3,8 +3,10 @@
 # Librairies tierces
 import os
 
+from robot.Component import Component
 
-class Sequencer:
+
+class Sequencer(Component):
     # Durees d'appui sur le bouton poussoir
     DUREE_APPUI_COURT_REDEMARRAGE = 2  # Nombre de secondes d'appui sur le poussoir pour reinitialiser le programme
     DUREE_APPUI_LONG_SHUTDOWN = 10  # Nombre de secondes d'appui sur le poussoir pour eteindre le raspberry

@@ -1,8 +1,10 @@
 # encoding:utf-8
 import numpy as np
 
+from robot.Component import Component
 
-class Asservissement:
+
+class Asservissement(Component):
     # PID
     # Le coeff proportionnel reel depend de la vitesse
     COEFF_PROPORTIONNEL_POUR_VITESSE_NOMINALE = 0.3  # 0.3 lors des essais post TRR2017
