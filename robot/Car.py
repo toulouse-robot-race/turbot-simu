@@ -5,7 +5,9 @@ from robot.Config import STEERING_COEF
 
 class Car:
 
-    def __init__(self, simulator, steering_handles, motors_handles, speed_controller, tachometer, gyro):
+    def __init__(self, simulator, steering_handles, motors_handles, speed_controller, tachometer, gyro, camera, time):
+        self.camera = camera
+        self.time = time
         self.gyro = gyro
         self.tachometer = tachometer
         self.motors_handles = motors_handles
@@ -29,8 +31,23 @@ class Car:
     def get_tacho(self):
         return self.tachometer.get_tacho()
 
+    def get_delta_tacho(self):
+        return self.tachometer.get_delta_tacho()
+
     def get_cap(self):
         return self.gyro.get_cap()
+
+    def get_delta_cap(self):
+        return self.gyro.get_delta_cap()
+
+    def get_time(self):
+        return self.time.time()
+
+    def get_images(self):
+        return self.camera.mask_line, self.camera.mask_obstacles
+
+    def sleep(self, delay):
+        return self.time.sleep(delay)
 
     def has_gyro_data(self):
         return True

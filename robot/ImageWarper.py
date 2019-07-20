@@ -7,9 +7,8 @@ PIXELS_METER = 250
 
 
 class ImageWarper:
-    def __init__(self, tachometer, gyro, show_and_wait=False):
-        self.tacho = tachometer
-        self.gyro = gyro
+    def __init__(self, car, show_and_wait=False):
+        self.car = car
         self.rotations = []
         self.translations = []
         self.rotation_enabled = True
@@ -19,8 +18,8 @@ class ImageWarper:
         self.rotation_enabled = enabled
 
     def warp(self, image):
-        final = self.gyro.get_delta_cap()
-        translation = self.tacho.get_delta_tacho() / TACHO_COEF * PIXELS_METER
+        final = self.car.get_delta_cap()
+        translation = self.car.get_delta_tacho() / TACHO_COEF * PIXELS_METER
         self.rotations.append(final)
         self.translations.append(translation)
 

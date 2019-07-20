@@ -2,6 +2,7 @@ import time
 
 from robot import Programs
 from robot.Asservisement import Asservissement
+from robot.Camera import Camera
 from robot.Car import Car
 from robot.Gyro import Gyro
 from robot.ImageAnalyzer import ImageAnalyzer
@@ -41,46 +42,46 @@ gyro = Gyro(simulator=simulator,
 tachometer = Tachometer(simulator=simulator,
                         base_car=handles['base_car'])
 
-image_warper = ImageWarper(tachometer=tachometer,
-                           gyro=gyro,
-                           show_and_wait=False)
 
-image_analyzer = ImageAnalyzer(simulator=simulator,
-                               line_cam_handle=handles["line_cam"],
-                               obstacles_cam_handle=handles["obstacles_cam"],
-                               image_warper=image_warper)
+camera = Camera(simulator=simulator,
+                line_cam_handle=handles["line_cam"],
+                obstacles_cam_handle=handles["obstacles_cam"])
 
 car = Car(simulator=simulator,
           steering_handles=[handles["left_steering"], handles["right_steering"]],
           motors_handles=[handles["left_motor"], handles["right_motor"]],
           speed_controller=speed_controller,
           tachometer=tachometer,
-          gyro=gyro)
+          gyro=gyro,
+          camera=camera,
+          time=simu_time)
+
+
+image_warper = ImageWarper(car=car,show_and_wait=True)
+
+image_analyzer = ImageAnalyzer(car=car,
+                               image_warper=image_warper,
+                               show_and_wait=False)
 
 asservissement = Asservissement(car=car,
-                                image_analyzer=image_analyzer,
-                                time=simu_time)
+                                image_analyzer=image_analyzer)
 
 sequencer = Sequencer(car=car,
-                      time=simu_time,
                       asservissement=asservissement,
                       image_warper=image_warper,
                       program=Programs.LINE_ANGLE_OFFSET)
 
 logger = Logger(simulator=simulator,
-                time=simu_time,
                 image_analyzer=image_analyzer,
-                speed_controller=speed_controller,
                 car=car,
-                gyro=gyro,
                 asservissement=asservissement,
                 sequencer=sequencer,
-                handles=handles,
-                tachometer=tachometer)
+                handles=handles)
 
 # Order matter, components will be executed one by one
 executable_components = [gyro,
                          tachometer,
+                         camera,
                          image_analyzer,
                          sequencer,
                          asservissement,

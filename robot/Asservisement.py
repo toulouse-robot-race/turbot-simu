@@ -105,11 +105,10 @@ class Asservissement:
     cumulErreurDistanceBordure = 0.0
     additional_offset_line = 0
 
-    def __init__(self, car, image_analyzer, time):
+    def __init__(self, car, image_analyzer):
         self.car = car
         self.image_analyzer = image_analyzer
-        self.time = time
-        self.timeLastCalculSuiviCourbe = time.time()
+        self.timeLastCalculSuiviCourbe = self.car.get_time()
 
     def reset(self):
         self.ligneDroite = False
@@ -385,7 +384,7 @@ class Asservissement:
                     self.car.avance(self.vitesse)
 
             # Laisse un peu de temps entre envoi servo et envoi VESC
-            self.time.sleep(0.1)
+            self.car.sleep(0.1)
             return position_roues, nouvellePositionRoues
 
             # N'execute le calcul que s'il y a une nouvelle image
@@ -485,7 +484,7 @@ class Asservissement:
 
                 nouvellePositionRoues = True
 
-                elapsedSinceLastImageMs = int((self.time.time() - last_image_time) * 1000)
+                elapsedSinceLastImageMs = int((self.car.get_time() - last_image_time) * 1000)
                 print("Position lignes: {:.2f} {:.2f} Position roues: {:.0f} Last image since: {:d}ms".format(
                     position_ligne1, position_ligne2, position_roues, elapsedSinceLastImageMs))
 
@@ -524,7 +523,7 @@ class Asservissement:
             capASuivre = cap_actuel + ecart_total
             self.lastCapASuivreForImageAnalysis = capASuivre
 
-            elapsedSinceLastImageMs = int(self.time.time() - last_image_time * 1000)
+            elapsedSinceLastImageMs = int(self.car.get_time() - last_image_time * 1000)
             print(
                 "Position lignes: {:.2f} {:.2f} cap_actuel: {:.0f} cap_a_suivre: {:.0f} Last image since: {:d}ms".format(
                     position_ligne1, position_ligne2, cap_actuel, capASuivre, elapsedSinceLastImageMs))
@@ -555,7 +554,7 @@ class Asservissement:
         self.cumulErreurCap = (self.cumulErreurCap / self.COEFF_AMORTISSEMENT_INTEGRAL) + erreurCap
         # Maintient le cumul des erreurs à une valeur raisonnable
         self.cumulErreurCap = max(min(self.cumulErreurCap, self.MAX_CUMUL_ERREUR_CAP), -self.MAX_CUMUL_ERREUR_CAP)
-        print("Cumul erreur cap : ", self.cumulErreurCap, " time : ", self.time.time())
+        print("Cumul erreur cap : ", self.cumulErreurCap, " time : ", self.car.get_time())
         # Calcul de D
         correctionDerivee = -self.COEFF_DERIVEE * (erreurCap - self.lastErreurCap)
         self.lastErreurCap = erreurCap

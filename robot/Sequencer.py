@@ -25,19 +25,18 @@ class Sequencer:
     last_bouton = 1  # 1 = bouton relache, 0 = bouton appuye
     flag_appui_court = False  # Passe a True quand un appui court (3 secondes) a ete detecte
 
-    def __init__(self, car, time, asservissement, image_warper, program):
+    def __init__(self, car, asservissement, image_warper, program):
         self.program = program
         self.car = car
         self.image_warper = image_warper
-        self.time = time
         self.asservissement = asservissement
 
     def execute(self):
 
         # Fait clignoter la led
         if self.led_clignote:
-            if self.time.time() > self.timer_led + self.vitesse_clignote_led:
-                self.timer_led = self.time.time()
+            if self.car.get_time() > self.timer_led + self.vitesse_clignote_led:
+                self.timer_led = self.car.get_time()
                 self.last_led = 0 if self.last_led else 1
                 self.car.setLed(self.last_led)
         else:
@@ -46,16 +45,16 @@ class Sequencer:
         # Verifie appui court (3 sec) ou long (10 sec) sur bouton
         if self.car.getBoutonPoussoir() == 0:
             if self.last_bouton == 1:
-                self.timer_bouton = self.time.time()
+                self.timer_bouton = self.car.get_time()
             else:
-                if self.time.time() > self.timer_bouton + self.DUREE_APPUI_COURT_REDEMARRAGE:
+                if self.car.get_time() > self.timer_bouton + self.DUREE_APPUI_COURT_REDEMARRAGE:
                     # Arrete la car
                     self.car.avance(0)
                     self.car.tourne(0)
                     self.vitesse_clignote_led = 0.3
                     self.led_clignote = True
                     self.flag_appui_court = True
-                if self.time.time() > self.timer_bouton + self.DUREE_APPUI_LONG_SHUTDOWN:
+                if self.car.get_time() > self.timer_bouton + self.DUREE_APPUI_LONG_SHUTDOWN:
                     # Appui long: shutdown Raspberry Pi
                     os.system('sudo shutdown -h now')
                     pass
@@ -78,7 +77,7 @@ class Sequencer:
             self.programmeCourant = self.program[self.sequence]
             instruction = self.programmeCourant['instruction']
             print ("********** Nouvelle instruction *********** ", instruction)
-            self.timeDebut = self.time.time()
+            self.timeDebut = self.car.get_time()
             self.debut = False
             self.asservissement.cumulErreurCap = 0
 
@@ -152,7 +151,7 @@ class Sequencer:
             if self.checkDeltaCapAtteint(capFinalMini, capFinalMaxi):
                 finSequence = True
         elif conditionFin == 'duree':
-            if (self.time.time() - self.timeDebut) > self.programmeCourant['duree']:
+            if (self.car.get_time() - self.timeDebut) > self.programmeCourant['duree']:
                 finSequence = True
         elif conditionFin == 'tacho':
             print(self.car.get_tacho())
