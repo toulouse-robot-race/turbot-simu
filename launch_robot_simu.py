@@ -11,6 +11,7 @@ from robot.Logger import Logger
 from robot.Sequencer import Sequencer
 from robot.Simulator import Simulator
 from robot.SpeedController import SpeedController
+from robot.SteeringController import SteeringController
 from robot.Tachometer import Tachometer
 from robot.Time import Time
 
@@ -32,6 +33,9 @@ gyro_name = "gyroZ"
 
 simu_time = Time(simulator)
 
+steering_controller = SteeringController(simulator=simulator,
+                                         steering_handles=[handles["left_steering"], handles["right_steering"]])
+
 speed_controller = SpeedController(simulator=simulator,
                                    motor_handles=[handles["left_motor"], handles["right_motor"]],
                                    simulation_step_time=simulator.get_simulation_time_step())
@@ -48,7 +52,7 @@ camera = Camera(simulator=simulator,
                 obstacles_cam_handle=handles["obstacles_cam"])
 
 car = Car(simulator=simulator,
-          steering_handles=[handles["left_steering"], handles["right_steering"]],
+          steering_controller=steering_controller,
           motors_handles=[handles["left_motor"], handles["right_motor"]],
           speed_controller=speed_controller,
           tachometer=tachometer,
@@ -85,6 +89,7 @@ executable_components = [gyro,
                          sequencer,
                          asservissement,
                          speed_controller,
+                         steering_controller,
                          logger]
 
 simulator.start_simulation()

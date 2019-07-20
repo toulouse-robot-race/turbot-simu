@@ -1,31 +1,19 @@
-import numpy as np
-
-from robot.Config import STEERING_COEF
-
-
 class Car:
 
-    def __init__(self, simulator, steering_handles, motors_handles, speed_controller, tachometer, gyro, camera, time):
+    def __init__(self, simulator, steering_controller, motors_handles, speed_controller, tachometer, gyro, camera, time):
+        self.steering_controller = steering_controller
         self.camera = camera
         self.time = time
         self.gyro = gyro
         self.tachometer = tachometer
         self.motors_handles = motors_handles
-        self.steering_handles = steering_handles
         self.simulator = simulator
         self.speedController = speed_controller
 
-    def tourne(self, steering_input):
-        if -10 < steering_input < 10:
-            steering_radians_pos = STEERING_COEF * (steering_input * 0.25)
-        else:
-            steering_radians_pos = STEERING_COEF * (steering_input * 0.155 + np.sign(steering_input) * 0.95)
+    def turn(self, steering_input):
+        self.steering_controller.steering = steering_input
 
-        # pos_steering = steering_percent * STEERING_COEF
-        self.simulator.set_target_pos(self.steering_handles[0], steering_radians_pos)
-        self.simulator.set_target_pos(self.steering_handles[1], steering_radians_pos)
-
-    def avance(self, speed):
+    def forward(self, speed):
         self.speedController.set_speed_percent(speed)
 
     def get_tacho(self):

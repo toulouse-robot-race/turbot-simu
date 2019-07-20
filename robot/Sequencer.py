@@ -51,8 +51,8 @@ class Sequencer(Component):
             else:
                 if self.car.get_time() > self.timer_bouton + self.DUREE_APPUI_COURT_REDEMARRAGE:
                     # Arrete la car
-                    self.car.avance(0)
-                    self.car.tourne(0)
+                    self.car.forward(0)
+                    self.car.turn(0)
                     self.vitesse_clignote_led = 0.3
                     self.led_clignote = True
                     self.flag_appui_court = True
@@ -103,14 +103,14 @@ class Sequencer(Component):
                     instruction == 'suiviImageCap':
                 vitesse = self.programmeCourant['vitesse']
                 print ("Vitesse : ", vitesse)
-                self.car.avance(vitesse)
+                self.car.forward(vitesse)
                 self.asservissement.setVitesse(vitesse)
 
             # Positionne les roues pour l'instruction 'tourne'
             if instruction == 'tourne':
                 positionRoues = self.programmeCourant['positionRoues']
                 print ("Position roues : ", positionRoues)
-                self.car.tourne(positionRoues)
+                self.car.turn(positionRoues)
 
             # Ajoute une valeur a capTarget pour l'instruction 'ajouteCap'
             if instruction == 'ajouteCap':

@@ -64,10 +64,10 @@ class Asservissement(Component):
     COEF_P_LINE_OFFSET = 0.2
     RATION_ANGLE_OFFSET = 300
     GAIN = 60
-    WIDTH_HALF_CORRIDOR = 50 # Width in pixels in which we avoid obstacles (if obstacle is not in corridor, we do not avoid it)
-    ROBOT_WIDTH_AVOIDANCE = 40 # Offset to take into account the width of the robot when avoiding obstacles
-    COEFF_AVOIDANCE_SAME_SIDE = 1.5 # Quand l'obstacle est sur la ligne, on s'ecarte un peu plus, avec une marge supplémentaire
-    COEFF_AVOIDANCE_OTHER_SIDE = 0.5 # Quand l'obstacle n'est pas sur la ligne, on s'ecarte un peu moins que la largeur qui separe l'obstacle de la ligne
+    WIDTH_HALF_CORRIDOR = 50  # Width in pixels in which we avoid obstacles (if obstacle is not in corridor, we do not avoid it)
+    ROBOT_WIDTH_AVOIDANCE = 40  # Offset to take into account the width of the robot when avoiding obstacles
+    COEFF_AVOIDANCE_SAME_SIDE = 1.5  # Quand l'obstacle est sur la ligne, on s'ecarte un peu plus, avec une marge supplémentaire
+    COEFF_AVOIDANCE_OTHER_SIDE = 0.5  # Quand l'obstacle n'est pas sur la ligne, on s'ecarte un peu moins que la largeur qui separe l'obstacle de la ligne
 
     # Autres constantes
     DELTA_T_SUIVI_COURBES = 0.1
@@ -244,7 +244,7 @@ class Asservissement(Component):
                 # Envoi de la position des roues au servo
                 if updated_wheel_pos is not None:
                     print("Position roues : {:.0f}".format(updated_wheel_pos))
-                    self.car.tourne(updated_wheel_pos)
+                    self.car.turn(updated_wheel_pos)
 
     def calculeCapSuiviImageLigneDroite(self):
 
@@ -304,11 +304,14 @@ class Asservissement(Component):
             obstacle_avoidance_additional_offset = 0
         else:
             side_avoidance = self.image_analyzer.side_avoidance
-            coeff_avoidance = self.COEFF_AVOIDANCE_SAME_SIDE if (np.sign(distance_obstacle_line) == np.sign(side_avoidance)) \
+            coeff_avoidance = self.COEFF_AVOIDANCE_SAME_SIDE if (
+                        np.sign(distance_obstacle_line) == np.sign(side_avoidance)) \
                 else self.COEFF_AVOIDANCE_OTHER_SIDE
-            obstacle_avoidance_additional_offset = (coeff_avoidance * distance_obstacle_line) + (self.ROBOT_WIDTH_AVOIDANCE * side_avoidance)
+            obstacle_avoidance_additional_offset = (coeff_avoidance * distance_obstacle_line) + (
+                        self.ROBOT_WIDTH_AVOIDANCE * side_avoidance)
         line_offset = self.image_analyzer.pixel_offset_line
-        print("obstacle_avoidance_additional_offset", obstacle_avoidance_additional_offset, " distance obstacle: ", distance_obstacle_line)
+        print("obstacle_avoidance_additional_offset", obstacle_avoidance_additional_offset, " distance obstacle: ",
+              distance_obstacle_line)
         if coefs_poly_1_line is not None and line_offset is not None:
             angle_line = -np.arctan(coefs_poly_1_line[0])
             print("angle_line", angle_line)

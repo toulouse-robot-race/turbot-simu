@@ -2,6 +2,7 @@
 import cv2
 import numpy as np
 
+
 class ImageAnalyzer:
     # Constantes
     MODEL_FILENAME = 'deep_learning_models/craie_quarter_filters_6.h5'
@@ -21,7 +22,6 @@ class ImageAnalyzer:
     MIN_AREA_TO_KEEP = 100.  # if max_area if less than this, reject all image
     MIN_THRESHOLD_CONTOUR = 10
     MAX_VALUE_CONTOUR = 255
-
 
     # Constants for obstacle detection
     MIN_X_TO_CONSIDER_OBSTACLE_EXISTS = 45  # If obstacle is low enough in image, consider it as existing
@@ -45,8 +45,7 @@ class ImageAnalyzer:
     BOTTOM_OBSTACLE_WINDOW_HEIGHT = 5
     LINE_WINDOW_HEIGHT_AT_OBSTACLE = 5
 
-
-    # Param�tres de classe
+    # Param�tres de class
     position_consigne = 0.0
     logTimestampMemory = None
     logImageMemory = None
