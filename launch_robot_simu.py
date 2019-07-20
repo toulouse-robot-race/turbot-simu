@@ -57,11 +57,11 @@ car = Car(simulator=simulator,
           time=simu_time)
 
 
-image_warper = ImageWarper(car=car,show_and_wait=True)
+image_warper = ImageWarper(car=car)
 
 image_analyzer = ImageAnalyzer(car=car,
                                image_warper=image_warper,
-                               show_and_wait=False)
+                               show_and_wait=True)
 
 asservissement = Asservissement(car=car,
                                 image_analyzer=image_analyzer)

@@ -225,20 +225,16 @@ class Asservissement:
                 ###############################
                 # Calcule la position des roues
                 ###############################
-                if self.suiviImageRoues:
-                    print("suivi image roues")
-                    # Si suivi image sans cap (asservissement direct des roues)
-                    updated_wheel_pos = self.calculePositionRouesFromImage()
-                else:
-                    erreurCap = (((self.car.get_cap() - capASuivre) + 180) % 360) - 180
-                    print("Erreur cap : ", erreurCap)
 
-                    if self.suiviImageCap:
-                        # Si suivi image lent
-                        updated_wheel_pos = self.calculePositionRouesFromCapForSuiviImageLent(erreurCap)
-                    else:
-                        # Si pas suivi image lent, on calcule le PID roues avec les termes integral et derivee
-                        updated_wheel_pos = self.calculePositionRouesFromCapStandard(erreurCap)
+                erreurCap = (((self.car.get_cap() - capASuivre) + 180) % 360) - 180
+                print("Erreur cap : ", erreurCap)
+
+                if self.suiviImageCap:
+                    # Si suivi image lent
+                    updated_wheel_pos = self.calculePositionRouesFromCapForSuiviImageLent(erreurCap)
+                else:
+                    # Si pas suivi image lent, on calcule le PID roues avec les termes integral et derivee
+                    updated_wheel_pos = self.calculePositionRouesFromCapStandard(erreurCap)
 
                 if self.from_line_angle_and_offset:
                     updated_wheel_pos = self.compute_from_line_angle_and_offset()
@@ -317,181 +313,6 @@ class Asservissement:
                     line_offset + self.additional_offset_line + obstacle_avoidance_additional_offset)
         else:
             return None
-
-    def calculePositionRouesFromImage(self):
-
-        coef_poly_1 = self.image_analyzer.getPolyCoeff1()
-        print("coef poly 1", coef_poly_1)
-        if coef_poly_1 is not None:
-            print("angle", np.arctan(coef_poly_1[0]))
-        # Si on a une sequence de marche arriere en cours
-        if self.marche_arriere_en_cours > 0:
-            # Initialise les variables de retour
-            position_roues = None
-            nouvellePositionRoues = False
-
-            # Si on est en train de freiner
-            if self.marche_arriere_en_cours == 1:
-                self.car.freine()
-                # Verifie si la car est immobile
-                if self.car.isMotionLess():
-                    # Memorise le tacho
-                    self.tacho_marche_arriere = self.car.get_tacho()
-                    # Tourne les roues du bon cote
-                    position_roues = -0 if self.cote_marche_arriere > 0 else 0
-                    nouvellePositionRoues = True
-                    # Passe a la sequence suivante
-                    self.marche_arriere_en_cours = 2
-                    print("Arret termine, enclenchement marche arriere, tacho: ", self.tacho_marche_arriere)
-
-            # Si on est en train de reculer, sequence 1
-            if self.marche_arriere_en_cours == 2:
-                print("En cours de marche arriere branche 1")
-                # Marche arriere
-                self.car.reverse()
-                # Verifie si on a assez recule
-                print(self.tacho_marche_arriere - self.car.get_tacho())
-                if self.tacho_marche_arriere - self.car.get_tacho() > self.TACHO_MARCHE_ARRIERE_2:
-                    # Memorise le tacho
-                    self.tacho_marche_arriere = self.car.get_tacho()
-                    # Tourne les roues du bon cote
-                    position_roues = 0 if self.cote_marche_arriere > 0 else -0
-                    nouvellePositionRoues = True
-                    # Passe a la sequence suivante
-                    self.marche_arriere_en_cours = 3
-
-            # Si on est en train de reculer, sequence 2
-            if self.marche_arriere_en_cours == 3:
-                print("En cours de marche arriere branche 2")
-                # Marche arriere
-                self.car.reverse()
-                # Verifie si on a assez recule
-                print(self.tacho_marche_arriere - self.car.get_tacho())
-                if self.tacho_marche_arriere - self.car.get_tacho() > self.TACHO_MARCHE_ARRIERE_2:
-                    # Passe a la sequence suivante
-                    self.marche_arriere_en_cours = 4
-
-            # Fin de la sequence de recul, on freine
-            if self.marche_arriere_en_cours == 4:
-                self.car.freine()
-                # Verifie si la car est immobile
-                if self.car.estImmobile():
-                    # Unlocke la position de l'obstacle
-                    self.image_analyzer.unlockObstacle()
-                    # Passe a la sequence suivante
-                    self.marche_arriere_en_cours = 0
-                    print("Fin de la sequence de marche arriere, reprise du programme")
-                    self.car.avance(self.vitesse)
-
-            # Laisse un peu de temps entre envoi servo et envoi VESC
-            self.car.sleep(0.1)
-            return position_roues, nouvellePositionRoues
-
-            # N'execute le calcul que s'il y a une nouvelle image
-        if self.image_analyzer.isThereANewImage():
-            last_image_time = self.image_analyzer.last_execution_time
-
-            # Verifie s'il faut engager une sequence de marche arriere
-            if self.image_analyzer.getObstacleInBrakeZone() and self.obstacleEnabled:
-                self.marche_arriere_en_cours = 1
-                self.car.freine()
-                self.cote_marche_arriere = self.image_analyzer.getPositionObstacle()
-                position_roues = None
-                nouvellePositionRoues = False
-                return position_roues, nouvellePositionRoues
-
-                # Calcule l'ecart de trajectoire par analyse d'image
-            poly_coeff_square = self.image_analyzer.getPolyCoeffSquare()
-            position_ligne1 = self.image_analyzer.getPositionLigne1()
-            position_ligne2 = self.image_analyzer.getPositionLigne2()
-            parallelisme = self.image_analyzer.getParallelism()
-
-            if poly_coeff_square is None or position_ligne1 is None:
-                # On n'a pas de ligne detectee, on maintient la position roues precedente (TODO trouver une autre strategie ?)
-                position_roues = None
-                nouvellePositionRoues = False
-
-            else:
-                # Set coeff d'asservissement par defaut
-                coeff_parallelisme_P = self.COEFF_SUIVI_IMAGE_PARALLELISME_P_SPEED
-                coeff_p2_p = self.COEFF_SUIVI_IMAGE_ROUES_P2_SPEED
-                coeff_p2_i = self.COEFF_SUIVI_IMAGE_ROUES_I2_SPEED
-
-                # Verifie s'il faut ralentir a cause d'un obstacle
-                if self.vitesseEvitement is not None and self.obstacleEnabled:
-                    if self.image_analyzer.getObstacleExists():
-                        # Set vitesse d'evitement
-                        self.car.avance(self.vitesseEvitement)
-                        # Set coeff d'asservissement evitement
-                        coeff_parallelisme_P = self.COEFF_SUIVI_IMAGE_PARALLELISME_P_EVITEMENT
-                        coeff_p2_p = self.COEFF_SUIVI_IMAGE_ROUES_P2_EVITEMENT
-                        coeff_p2_i = self.COEFF_SUIVI_IMAGE_ROUES_I2_EVITEMENT
-                    else:
-                        # Set vitesse rapide
-                        self.car.avance(self.vitesse)
-
-                # Verifie s'il faut s'ecarter a cause d'un obstacle
-                # Recupere la position de l'obstacle, qui a ete soit mesuree soit lockee en memoire
-                position_obstacle = self.image_analyzer.getPositionObstacle()
-                if position_obstacle == 0:
-                    self.offset = self.offset_hors_evitement
-                    self.offset_progressif = True
-                    if self.last_position_obstacle != 0:
-                        # Reinitialise l'erreur integrale
-                        self.cumulErreurPositionLigne = 0.
-                elif position_obstacle > 0 and self.obstacleEnabled:
-                    self.offset = self.OFFSET_ECART_GAUCHE
-                    self.offset_progressif = False
-                    if self.last_position_obstacle <= 0:
-                        # Si on vient de commencer l'evitement, met l'erreur integrale au max pour aider a tourner
-                        self.cumulErreurPositionLigne = self.COEFF_SUIVI_IMAGES_ROUES_MAX_ERREUR_I
-                elif position_obstacle < 0 and self.obstacleEnabled:
-                    self.offset = self.OFFSET_ECART_DROITE
-                    self.offset_progressif = False
-                    if self.last_position_obstacle >= 0:
-                        # Si on vient de commencer l'evitement, met l'erreur integrale au max pour aider a tourner
-                        self.cumulErreurPositionLigne = -self.COEFF_SUIVI_IMAGES_ROUES_MAX_ERREUR_I
-
-                if self.offset_progressif:
-                    # Fait tendre progressivement l'offset courant vers la cible
-                    steps_progression_offset = 10
-                    self.currentOffset += (self.offset - self.currentOffset) / steps_progression_offset
-                else:
-                    # Pas de progressivite de l'offset, on y va direct !
-                    self.currentOffset = self.offset
-                print("Offset: ", self.currentOffset)
-
-                offset = self.currentOffset
-
-                # Calcul roues parallelisme
-                braquage_parallelisme = coeff_parallelisme_P * parallelisme
-                # Calcul roues position ligne Proportionnel
-                braquage_position_ligne_2_p = coeff_p2_p * (position_ligne2 + offset)
-                # Calcul roues position ligne Integral
-                self.cumulErreurPositionLigne += position_ligne2 + offset
-                self.cumulErreurPositionLigne = max(-self.COEFF_SUIVI_IMAGES_ROUES_MAX_ERREUR_I,
-                                                    min(self.COEFF_SUIVI_IMAGES_ROUES_MAX_ERREUR_I,
-                                                        self.cumulErreurPositionLigne))
-                braquage_position_ligne_2_i = coeff_p2_i * self.cumulErreurPositionLigne
-                # TOTAL
-                braquage_total = braquage_parallelisme + braquage_position_ligne_2_p + braquage_position_ligne_2_i
-                position_roues = min(max(braquage_total, -100), 100)
-
-                print(
-                    "Braquage total P: {:.0f} Braquage parallelisme: {:.0f} Braquage ecart 2 P: {:.0f} Braquage ecart 2 I: {:.0f}".format(
-                        braquage_total, braquage_parallelisme, braquage_position_ligne_2_p,
-                        braquage_position_ligne_2_i))
-
-                nouvellePositionRoues = True
-
-                elapsedSinceLastImageMs = int((self.car.get_time() - last_image_time) * 1000)
-                print("Position lignes: {:.2f} {:.2f} Position roues: {:.0f} Last image since: {:d}ms".format(
-                    position_ligne1, position_ligne2, position_roues, elapsedSinceLastImageMs))
-
-        else:
-            position_roues = None
-
-        return position_roues
 
     def calculeCapSuiviImageLent(self):
         # N'execute le calcul que s'il y a une nouvelle image
