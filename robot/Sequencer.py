@@ -1,7 +1,6 @@
 # encoding:utf-8
 
 # Librairies tierces
-import os
 
 from robot.Component import Component
 
@@ -14,9 +13,9 @@ class Sequencer(Component):
     tacho = 0
     cap_target = 0.0
     sequence = 0
-    debut = True
-    timeDebut = 0
-    programmeCourant = {}
+    start_sequence = True
+    time_start = 0
+    current_program = {}
 
     timer_led = 0
     vitesse_clignote_led = 10
@@ -34,8 +33,19 @@ class Sequencer(Component):
         self.asservissement = asservissement
 
     def execute(self):
-
         # Fait clignoter la led
+        self.handle_led()
+
+        if self.start_sequence:
+            self.handle_start_sequence()
+        else:
+            # Partie qui s'execute en boucle tant que la condition de fin n'est pas remplie
+            pass
+
+        if self.check_end_sequence():
+            self.handle_end_sequence()
+
+    def handle_led(self):
         if self.led_clignote:
             if self.car.get_time() > self.timer_led + self.vitesse_clignote_led:
                 self.timer_led = self.car.get_time()
@@ -44,155 +54,123 @@ class Sequencer(Component):
         else:
             self.car.setLed(1)
 
-        # Verifie appui court (3 sec) ou long (10 sec) sur bouton
-        if self.car.getBoutonPoussoir() == 0:
-            if self.last_bouton == 1:
-                self.timer_bouton = self.car.get_time()
-            else:
-                if self.car.get_time() > self.timer_bouton + self.DUREE_APPUI_COURT_REDEMARRAGE:
-                    # Arrete la car
-                    self.car.forward(0)
-                    self.car.turn(0)
-                    self.vitesse_clignote_led = 0.3
-                    self.led_clignote = True
-                    self.flag_appui_court = True
-                if self.car.get_time() > self.timer_bouton + self.DUREE_APPUI_LONG_SHUTDOWN:
-                    # Appui long: shutdown Raspberry Pi
-                    os.system('sudo shutdown -h now')
-                    pass
-            self.last_bouton = 0
+    def handle_start_sequence(self):
+
+        # Premiere execution de l'instruction courante
+        self.current_program = self.program[self.sequence]
+        instruction = self.current_program['instruction']
+        print("********** Nouvelle instruction *********** ", instruction)
+        self.time_start = self.car.get_time()
+        self.start_sequence = False
+        self.asservissement.cumulErreurCap = 0
+
+        # Fait du cap courant le cap a suivre
+        if instruction == 'setCap':
+            target = self.car.get_cap()
+            self.cap_target = target
+            self.asservissement.setCapTarget()
+
+        if instruction == 'setTacho':
+            self.tacho = self.car.get_tacho()
+
+        # Programme la vitesse de la car
+        if instruction == 'ligneDroite' or \
+                instruction == 'tourne' or \
+                instruction == 'suiviLigne' or \
+                instruction == 'suiviImageLigneDroite' or \
+                instruction == 'suiviImageRoues' or \
+                instruction == 'lineAngleOffset' or \
+                instruction == 'suiviImageCap':
+            vitesse = self.current_program['vitesse']
+            self.car.forward(vitesse)
+            self.asservissement.setVitesse(vitesse)
+
+        # Positionne les roues pour l'instruction 'tourne'
+        if instruction == 'tourne':
+            steering = self.current_program['positionRoues']
+            self.car.turn(steering)
+
+        # Ajoute une valeur a capTarget pour l'instruction 'ajouteCap'
+        if instruction == 'ajouteCap':
+            self.cap_target = (self.cap_target + self.current_program['cap']) % 360
+            self.asservissement.ajouteCap(self.current_program['cap'])
+
+        # Indique a la classe d'asservissement si elle doit asservir, et selon quel algo
+        self.image_warper.enable_rotation(True)
+        if instruction == 'ligneDroite':
+            self.asservissement.initLigneDroite()
+        elif instruction == 'suiviImageCap':
+            self.asservissement.initSuiviImageCap()
+        elif instruction == 'suiviImageRoues':
+            self.asservissement.initSuiviImageRoues()
+        elif instruction == 'lineAngleOffset':
+            additional_offset = self.current_program['offset'] if 'offset' in self.current_program else 0
+            self.asservissement.init_from_line_angle_and_offset(additional_offset)
+        elif instruction == 'suiviImageLigneDroite':
+            self.image_warper.enable_rotation(False)
+            activation_distance_integrale = False
+            if 'activationDistanceIntegrale' in self.current_program:
+                activation_distance_integrale = self.current_program['activationDistanceIntegrale']
+            self.asservissement.initSuiviImageLigneDroite(activation_distance_integrale)
         else:
-            self.last_bouton = 1
-            if self.flag_appui_court:
-                # Si on a detecte un appui court avant la relache du bouton
-                self.flag_appui_court = False
-                # Retourne a la sequence du debut
-                for i in range(len(self.program)):
-                    if 'label' in self.program[i]:
-                        if self.program[i]['label'] == 'attendBouton':
-                            # On a trouve la prochaine sequence
-                            self.sequence = i
-                            self.debut = True
+            self.asservissement.annuleLigneDroite()
 
-        if self.debut:
-            # Premiere execution de l'instruction courante
-            self.programmeCourant = self.program[self.sequence]
-            instruction = self.programmeCourant['instruction']
-            print ("********** Nouvelle instruction *********** ", instruction)
-            self.timeDebut = self.car.get_time()
-            self.debut = False
-            self.asservissement.cumulErreurCap = 0
-
-            # Fait du cap courant le cap a suivre
-            if instruction == 'setCap':
-                target = self.car.get_cap()
-                print ('Cap Target : ', target)
-                self.cap_target = target
-                self.asservissement.setCapTarget()
-
-            if instruction == 'setTacho':
-                self.tacho = self.car.get_tacho()
-
-            # Programme la vitesse de la car
-            if instruction == 'ligneDroite' or \
-                    instruction == 'tourne' or \
-                    instruction == 'suiviLigne' or \
-                    instruction == 'suiviImageLigneDroite' or \
-                    instruction == 'suiviImageRoues' or \
-                    instruction == 'lineAngleOffset' or \
-                    instruction == 'suiviImageCap':
-                vitesse = self.programmeCourant['vitesse']
-                print ("Vitesse : ", vitesse)
-                self.car.forward(vitesse)
-                self.asservissement.setVitesse(vitesse)
-
-            # Positionne les roues pour l'instruction 'tourne'
-            if instruction == 'tourne':
-                positionRoues = self.programmeCourant['positionRoues']
-                print ("Position roues : ", positionRoues)
-                self.car.turn(positionRoues)
-
-            # Ajoute une valeur a capTarget pour l'instruction 'ajouteCap'
-            if instruction == 'ajouteCap':
-                self.cap_target = (self.cap_target + self.programmeCourant['cap']) % 360
-                self.asservissement.ajouteCap(self.programmeCourant['cap'])
-                print ("Nouveau cap : ", self.cap_target)
-
-            # Indique a la classe d'asservissement si elle doit asservir, et selon quel algo
-            self.image_warper.enable_rotation(True)
-            if instruction == 'ligneDroite':
-                self.asservissement.initLigneDroite()
-            elif instruction == 'suiviImageCap':
-                self.asservissement.initSuiviImageCap()
-            elif instruction == 'suiviImageRoues':
-                self.asservissement.initSuiviImageRoues()
-            elif instruction == 'lineAngleOffset':
-                additional_offset = self.programmeCourant['offset'] if 'offset' in self.programmeCourant else 0
-                self.asservissement.init_from_line_angle_and_offset(additional_offset)
-                print("init simple line follow")
-            elif instruction == 'suiviImageLigneDroite':
-                self.image_warper.enable_rotation(False)
-                activationDistanceIntegrale = False
-                if 'activationDistanceIntegrale' in self.programmeCourant:
-                    activationDistanceIntegrale = self.programmeCourant['activationDistanceIntegrale']
-                self.asservissement.initSuiviImageLigneDroite(activationDistanceIntegrale)
-            else:
-                self.asservissement.annuleLigneDroite()
-        else:
-            # Partie qui s'execute en boucle tant que la condition de fin n'est pas remplie
-            pass
-
+    def check_end_sequence(self):
         # Verifie s'il faut passer a l'instruction suivante
-        finSequence = False  # Initialise finSequence
+        end_sequence = False  # Initialise finSequence
         # Recupere la condition de fin
-        conditionFin = self.programmeCourant['conditionFin']
+        end_condition = self.current_program['conditionFin']
         # Verifie si la condition de fin est atteinte
-        if conditionFin == 'cap':
-            capFinalMini = self.programmeCourant['capFinalMini']
-            capFinalMaxi = self.programmeCourant['capFinalMaxi']
-            if self.checkDeltaCapAtteint(capFinalMini, capFinalMaxi):
-                finSequence = True
-        elif conditionFin == 'duree':
-            if (self.car.get_time() - self.timeDebut) > self.programmeCourant['duree']:
-                finSequence = True
-        elif conditionFin == 'tacho':
+        if end_condition == 'cap':
+            final_cap_mini = self.current_program['capFinalMini']
+            cap_final_maxi = self.current_program['capFinalMaxi']
+            if self.check_delta_cap_reached(final_cap_mini, cap_final_maxi):
+                end_sequence = True
+        elif end_condition == 'duree':
+            if (self.car.get_time() - self.time_start) > self.current_program['duree']:
+                end_sequence = True
+        elif end_condition == 'tacho':
             print(self.car.get_tacho())
-            if self.car.get_tacho() > (self.tacho + self.programmeCourant['tacho']):
-                finSequence = True
-        elif conditionFin == 'immediat':
-            finSequence = True
-        elif conditionFin == 'attendBouton':
+            if self.car.get_tacho() > (self.tacho + self.current_program['tacho']):
+                end_sequence = True
+        elif end_condition == 'immediat':
+            end_sequence = True
+        elif end_condition == 'attendBouton':
             self.vitesse_clignote_led = 0.3
             self.led_clignote = True
             if self.car.getBoutonPoussoir() == 0:
                 self.led_clignote = False
-                finSequence = True
+                end_sequence = True
+        return end_sequence
 
-        if finSequence:
-            # Si le champ nextLabel est defini, alors il faut chercher le prochain element par son label
-            if 'nextLabel' in self.programmeCourant:
-                nextLabel = self.programmeCourant['nextLabel']
-                for i in range(len(self.program)):
-                    if 'label' in self.program[i]:
-                        if self.program[i]['label'] == nextLabel:
-                            # On a trouve la prochaine sequence
-                            self.sequence = i
-            else:
-                # Si le champ nextLabel n'est pas defini, on passe simplement a l'element suivant
-                self.sequence += 1
-            self.debut = True
+    def handle_end_sequence(self):
+        # Si le champ nextLabel est defini, alors il faut chercher le prochain element par son label
+        if 'nextLabel' in self.current_program:
+            next_label = self.current_program['nextLabel']
+            for i in range(len(self.program)):
+                if 'label' in self.program[i]:
+                    if self.program[i]['label'] == next_label:
+                        # On a trouve la prochaine sequence
+                        self.sequence = i
+        else:
+            # Si le champ nextLabel n'est pas defini, on passe simplement a l'element suivant
+            self.sequence += 1
+        self.start_sequence = True
 
-    def checkDeltaCapAtteint(self, capFinalMini, capFinalMaxi):
-        absoluteCapMini = (self.cap_target + capFinalMini) % 360
-        absoluteCapMaxi = (self.cap_target + capFinalMaxi) % 360
+    def check_delta_cap_reached(self, final_cap_min, final_cap_max):
 
-        ecartCapMini = (((self.car.get_cap() - absoluteCapMini) + 180) % 360) - 180
-        ecartCapMaxi = (((self.car.get_cap() - absoluteCapMaxi) + 180) % 360) - 180
+        absolute_cap_mini = (self.cap_target + final_cap_min) % 360
+        absolute_cap_maxi = (self.cap_target + final_cap_max) % 360
 
-        if (ecartCapMini > 0 and ecartCapMaxi < 0):
-            print ("--------------- Fin de virage ----------------")
-            print ("CapTarget : ", self.cap_target, "Cap : ", self.car.get_cap(), " Ecart cap mini : ", ecartCapMini,
-                   " Ecart cap maxi : ", ecartCapMaxi)
-            print ("----------------------------------------------")
+        gap_cap_mini = (((self.car.get_cap() - absolute_cap_mini) + 180) % 360) - 180
+        gap_cap_maxi = (((self.car.get_cap() - absolute_cap_maxi) + 180) % 360) - 180
 
-        return (ecartCapMini > 0 and ecartCapMaxi < 0)
+        turn_over = (gap_cap_mini > 0 and gap_cap_maxi < 0)
+
+        if turn_over:
+            print("--------------- Fin de virage ----------------")
+            print("CapTarget : ", self.cap_target, "Cap : ", self.car.get_cap(), " Ecart cap mini : ", gap_cap_mini,
+                  " Ecart cap maxi : ", gap_cap_maxi)
+            print("----------------------------------------------")
+
+        return turn_over

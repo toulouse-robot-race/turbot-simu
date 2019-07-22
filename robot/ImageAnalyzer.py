@@ -3,6 +3,15 @@ import cv2
 import numpy as np
 
 
+def remove_line_behind_obstacles(mask_line, mask_obstacles):
+    diff = mask_line - mask_obstacles
+    return (diff == 255) * diff
+
+
+def clean_mask_obstacle(mask_obstacles):
+    return np.clip(mask_obstacles, 0, 1) * 255
+
+
 class ImageAnalyzer:
     # Constantes
     MODEL_FILENAME = 'deep_learning_models/craie_quarter_filters_6.h5'
@@ -25,7 +34,8 @@ class ImageAnalyzer:
 
     # Constants for obstacle detection
     MIN_X_TO_CONSIDER_OBSTACLE_EXISTS = 45  # If obstacle is low enough in image, consider it as existing
-    MIN_X_TO_COMPUTE_OBSTACLE_SIDE_ETROIT = 45  # If obstacle is low enough in image, we can compute its side (only between Y_SIDE_GAUCHE and Y_SIDE_DROITE)
+    MIN_X_TO_COMPUTE_OBSTACLE_SIDE_ETROIT = 45  # If obstacle is low enough in image, we can compute its side (only
+    # between Y_SIDE_GAUCHE and Y_SIDE_DROITE)
     MIN_X_TO_COMPUTE_OBSTACLE_SIDE_LARGE = 90  # If obstacle is low enough in image, we can compute its side (all width)
     Y_SIDE_GAUCHE = 110  # Left border of "etroit zone" (for computing obstacle side etroit)
     Y_SIDE_DROITE = WIDTH - Y_SIDE_GAUCHE  # Right border of "etroit zone"
@@ -85,8 +95,8 @@ class ImageAnalyzer:
         mask_line, mask_obstacles = self.car.get_images()
         if mask_line is not None and mask_obstacles is not None:
             mask_line = self.clean_mask_line(mask_line)
-            mask_obstacles = self.clean_mask_obstacle(mask_obstacles)
-            mask_line = self.remove_line_behind_obstacles(mask_line, mask_obstacles)
+            mask_obstacles = clean_mask_obstacle(mask_obstacles)
+            mask_line = remove_line_behind_obstacles(mask_line, mask_obstacles)
             warped_line = self.image_warper.warp(mask_line)
             warped_obstacles = self.image_warper.warp(mask_obstacles)
 
@@ -224,10 +234,3 @@ class ImageAnalyzer:
 
         self.side_avoidance = 1 if (abs(distance_left_obstacle) > abs(distance_right_obstacle)) else -1
         self.distance_obstacle_line = min(distance_left_obstacle, distance_right_obstacle, key=abs)
-
-    def remove_line_behind_obstacles(self, mask_line, mask_obstacles):
-        diff = mask_line - mask_obstacles
-        return (diff == 255) * diff
-
-    def clean_mask_obstacle(self, mask_obstacles):
-        return np.clip(mask_obstacles, 0, 1) * 255
