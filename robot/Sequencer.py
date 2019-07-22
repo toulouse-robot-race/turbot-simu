@@ -96,7 +96,6 @@ class Sequencer(Component):
             self.asservissement.ajouteCap(self.current_program['cap'])
 
         # Indique a la classe d'asservissement si elle doit asservir, et selon quel algo
-        self.image_warper.enable_rotation(True)
         if instruction == 'ligneDroite':
             self.asservissement.initLigneDroite()
         elif instruction == 'suiviImageCap':

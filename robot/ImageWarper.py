@@ -7,15 +7,12 @@ PIXELS_METER = 250
 
 
 class ImageWarper:
-    def __init__(self, car, show_and_wait=False):
+    def __init__(self, car, show_and_wait=False, rotation_enabled=True):
         self.car = car
         self.rotations = []
         self.translations = []
-        self.rotation_enabled = True
+        self.rotation_enabled = rotation_enabled
         self.show_and_wait = show_and_wait
-
-    def enable_rotation(self, enabled):
-        self.rotation_enabled = enabled
 
     def warp(self, image):
         final = self.car.get_delta_cap()
