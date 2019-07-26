@@ -4,16 +4,16 @@ from robot import Programs
 from robot.Asservisement import Asservissement
 from robot.Camera import Camera
 from robot.Car import Car
-from robot.Gyro import Gyro
 from robot.ImageAnalyzer import ImageAnalyzer
 from robot.ImageWarper import ImageWarper
 from robot.Logger import Logger
 from robot.Sequencer import Sequencer
-from robot.Simulator import Simulator
-from robot.SpeedController import SpeedController
-from robot.SteeringController import SteeringController
-from robot.Tachometer import Tachometer
-from robot.Time import Time
+from robot.simu.Gyro import Gyro
+from robot.simu.Simulator import Simulator
+from robot.simu.SpeedController import SpeedController
+from robot.simu.SteeringController import SteeringController
+from robot.simu.Tachometer import Tachometer
+from robot.simu.Time import Time
 
 simulation_duration_seconds = 50
 
