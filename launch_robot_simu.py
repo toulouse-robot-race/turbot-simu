@@ -2,13 +2,13 @@ import time
 
 from robot import Programs
 from robot.Asservisement import Asservissement
-from robot.Camera import Camera
-from robot.Car import Car
 from robot.ImageAnalyzer import ImageAnalyzer
 from robot.ImageWarper import ImageWarper
 from robot.Logger import Logger
 from robot.Sequencer import Sequencer
+from robot.simu.Camera import Camera
 from robot.simu.Gyro import Gyro
+from robot.simu.SimuCar import SimuCar
 from robot.simu.Simulator import Simulator
 from robot.simu.SpeedController import SpeedController
 from robot.simu.SteeringController import SteeringController
@@ -51,14 +51,14 @@ camera = Camera(simulator=simulator,
                 line_cam_handle=handles["line_cam"],
                 obstacles_cam_handle=handles["obstacles_cam"])
 
-car = Car(simulator=simulator,
-          steering_controller=steering_controller,
-          motors_handles=[handles["left_motor"], handles["right_motor"]],
-          speed_controller=speed_controller,
-          tachometer=tachometer,
-          gyro=gyro,
-          camera=camera,
-          time=simu_time)
+car = SimuCar(simulator=simulator,
+              steering_controller=steering_controller,
+              motors_handles=[handles["left_motor"], handles["right_motor"]],
+              speed_controller=speed_controller,
+              tachometer=tachometer,
+              gyro=gyro,
+              camera=camera,
+              time=simu_time)
 
 
 image_warper = ImageWarper(car=car)

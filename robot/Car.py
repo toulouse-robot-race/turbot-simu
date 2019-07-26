@@ -1,4 +1,7 @@
-class Car:
+from abc import ABC, abstractmethod
+
+
+class Car(ABC):
 
     def __init__(self, steering_controller, motors_handles, speed_controller, tachometer, gyro, camera, time):
         self.steering_controller = steering_controller
@@ -36,23 +39,38 @@ class Car:
     def sleep(self, delay):
         return self.time.sleep(delay)
 
-    def has_gyro_data(self):
-        return True
+    @abstractmethod
+    def set_led(self, etat):
+        pass
 
+    @abstractmethod
+    def set_chenillard(self, etat):
+        pass
+
+    @abstractmethod
+    def has_gyro_data(self):
+        pass
+
+    @abstractmethod
     def setLed(self, etat):
         pass
 
-    def getBoutonPoussoir(self):
-        return 1
+    @abstractmethod
+    def get_push_button(self):
+        pass
 
+    @abstractmethod
     def gpioCleanUp(self):
         pass
 
+    @abstractmethod
     def freine(self):
-        self.speedController.set_speed_target(0)
+        pass
 
+    @abstractmethod
     def isMotionLess(self):
-        return self.tachometer.get_delta_tacho() < 1
+        pass
 
+    @abstractmethod
     def reverse(self):
-        return self.speedController.set_speed_target(-10)
+        pass
