@@ -11,6 +11,10 @@ RAM_DISK_DIR = "./"
 
 INFERENCE_DISABLE_FILE = "inference.disable"
 
+MASK_LINE_FILE = "mask_line"
+
+MASK_OBSTACLE_FILE = "mask_line"
+
 CAM_HANDLE = 1
 
 # Load model
@@ -35,6 +39,6 @@ while True:
     mask_obstacles = predicted_masks[:, :, 1]
 
     # Save mask in ram disk files
-    np.save("mask_line", mask_line)
-    np.save("mask_obstacles", mask_obstacles)
+    np.save(MASK_LINE_FILE, mask_line)
+    np.save(MASK_OBSTACLE_FILE, mask_obstacles)
 
