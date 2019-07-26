@@ -12,9 +12,6 @@ class SimuCar(Car):
     def has_gyro_data(self):
         return True
 
-    def setLed(self, etat):
-        pass
-
     def get_push_button(self):
         pass
 

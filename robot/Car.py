@@ -52,10 +52,6 @@ class Car(ABC):
         pass
 
     @abstractmethod
-    def setLed(self, etat):
-        pass
-
-    @abstractmethod
     def get_push_button(self):
         pass
 
