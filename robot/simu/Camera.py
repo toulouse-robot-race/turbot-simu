@@ -1,7 +1,7 @@
 import numpy as np
 
 from robot.Component import Component
-from robot.Config import CAMERA_DELAY
+from robot.simu.Config import CAMERA_DELAY
 
 
 class Camera(Component):

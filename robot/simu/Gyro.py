@@ -1,5 +1,5 @@
 from robot.Component import Component
-from robot.Config import GYRO_COEF
+from robot.simu.Config import GYRO_COEF
 
 
 class Gyro(Component):

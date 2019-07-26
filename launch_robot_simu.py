@@ -7,6 +7,7 @@ from robot.ImageWarper import ImageWarper
 from robot.Logger import Logger
 from robot.Sequencer import Sequencer
 from robot.simu.Camera import Camera
+from robot.simu.Config import NB_IMAGES_DELAY, TACHO_COEF
 from robot.simu.Gyro import Gyro
 from robot.simu.SimuCar import SimuCar
 from robot.simu.Simulator import Simulator
@@ -46,13 +47,11 @@ gyro = Gyro(simulator=simulator,
 tachometer = Tachometer(simulator=simulator,
                         base_car=handles['base_car'])
 
-
 camera = Camera(simulator=simulator,
                 line_cam_handle=handles["line_cam"],
                 obstacles_cam_handle=handles["obstacles_cam"])
 
-car = SimuCar(simulator=simulator,
-              steering_controller=steering_controller,
+car = SimuCar(steering_controller=steering_controller,
               motors_handles=[handles["left_motor"], handles["right_motor"]],
               speed_controller=speed_controller,
               tachometer=tachometer,
@@ -60,8 +59,7 @@ car = SimuCar(simulator=simulator,
               camera=camera,
               time=simu_time)
 
-
-image_warper = ImageWarper(car=car)
+image_warper = ImageWarper(car=car, nb_images_delay=NB_IMAGES_DELAY, tacho_coef=TACHO_COEF)
 
 image_analyzer = ImageAnalyzer(car=car,
                                image_warper=image_warper,

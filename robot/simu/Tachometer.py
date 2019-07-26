@@ -1,7 +1,7 @@
 import numpy as np
 
 from robot.Component import Component
-from robot.Config import TACHO_COEF
+from robot.simu.Config import TACHO_COEF
 
 
 class Tachometer(Component):
