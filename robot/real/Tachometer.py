@@ -3,9 +3,9 @@ from robot.Component import Component
 
 class Tachometer(Component):
 
-    def __init__(self, speed_controller):
+    def __init__(self, vesc):
+        self.vesc = vesc
         self.delta_tacho = 0
-        self.speed_controller = speed_controller
         self.tacho = 0
         self.previous_pos = None
 
@@ -13,7 +13,7 @@ class Tachometer(Component):
         self.compute_tacho()
 
     def compute_tacho(self):
-        next_tacho = self.speed_controller.get_tacho()
+        next_tacho = self.vesc.request_data()[0]
         self.delta_tacho = next_tacho - self.tacho
         self.tacho = next_tacho
 
