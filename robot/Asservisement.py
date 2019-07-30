@@ -300,6 +300,7 @@ class Asservissement(Component):
         self.image_analyzer.analyze()
         coefs_poly_1_line = self.image_analyzer.poly_coeff_1
         distance_obstacle_line = self.image_analyzer.distance_obstacle_line
+        
         if distance_obstacle_line is None or abs(distance_obstacle_line) > self.WIDTH_HALF_CORRIDOR:
             obstacle_avoidance_additional_offset = 0
         else:
@@ -310,11 +311,9 @@ class Asservissement(Component):
             obstacle_avoidance_additional_offset = (coeff_avoidance * distance_obstacle_line) + (
                         self.ROBOT_WIDTH_AVOIDANCE * side_avoidance)
         line_offset = self.image_analyzer.pixel_offset_line
-        print("obstacle_avoidance_additional_offset", obstacle_avoidance_additional_offset, " distance obstacle: ",
-              distance_obstacle_line)
+
         if coefs_poly_1_line is not None and line_offset is not None:
             angle_line = -np.arctan(coefs_poly_1_line[0])
-            print("angle_line", angle_line)
             return self.GAIN * angle_line + self.GAIN / self.RATION_ANGLE_OFFSET * (
                     line_offset + self.additional_offset_line + obstacle_avoidance_additional_offset)
         else:

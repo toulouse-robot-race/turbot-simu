@@ -4,11 +4,10 @@ from robot.Component import Component
 class Logger(Component):
 
     def __init__(self, simulator, image_analyzer,
-                 car, asservissement, sequencer, handles):
+                 car, sequencer, handles):
         self.handles = handles
         self.image_analyzer = image_analyzer
         self.sequencer = sequencer
-        self.asservissement = asservissement
         self.car = car
         self.simulator = simulator
         self.previous_joint_pos = 0

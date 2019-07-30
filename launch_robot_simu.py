@@ -1,7 +1,6 @@
 import time
 
 from robot import Programs
-from robot.Asservisement import Asservissement
 from robot.ImageAnalyzer import ImageAnalyzer
 from robot.ImageWarper import ImageWarper
 from robot.Logger import Logger
@@ -15,6 +14,7 @@ from robot.simu.SpeedController import SpeedController
 from robot.simu.SteeringController import SteeringController
 from robot.simu.Tachometer import Tachometer
 from robot.simu.Time import Time
+from robot.strategy.StrategyFactory import StrategyFactory
 
 simulation_duration_seconds = 50
 
@@ -65,18 +65,16 @@ image_analyzer = ImageAnalyzer(car=car,
                                image_warper=image_warper,
                                show_and_wait=True)
 
-asservissement = Asservissement(car=car,
-                                image_analyzer=image_analyzer)
+
+strategy_factory = StrategyFactory(image_analyzer)
 
 sequencer = Sequencer(car=car,
-                      asservissement=asservissement,
-                      image_warper=image_warper,
-                      program=Programs.LINE_ANGLE_OFFSET)
+                      program=Programs.LINE_ANGLE_OFFSET,
+                      strategy_factory=strategy_factory)
 
 logger = Logger(simulator=simulator,
                 image_analyzer=image_analyzer,
                 car=car,
-                asservissement=asservissement,
                 sequencer=sequencer,
                 handles=handles)
 
@@ -85,7 +83,6 @@ executable_components = [gyro,
                          tachometer,
                          camera,
                          sequencer,
-                         asservissement,
                          speed_controller,
                          steering_controller,
                          logger]
