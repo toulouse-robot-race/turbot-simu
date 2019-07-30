@@ -1,7 +1,4 @@
 # encoding:utf-8
-
-# Librairies tierces
-
 from robot.Component import Component
 
 
@@ -57,6 +54,31 @@ class Sequencer(Component):
         else:
             self.car.set_led(1)
 
+    def set_cap(self):
+        target = self.car.get_cap()
+        self.cap_target = target
+
+    def add_cap(self):
+        self.cap_target = (self.cap_target + self.current_program['cap']) % 360
+
+    def set_tacho(self):
+        self.tacho = self.car.get_tacho()
+
+    def turn(self):
+        steering = self.current_program['positionRoues']
+        self.car.turn(steering)
+
+    def forward(self):
+        vitesse = self.current_program['vitesse']
+        self.car.forward(vitesse)
+
+    def passs(self):
+        pass
+
+    def init_lao(self):
+        additional_offset = self.current_program['offset'] if 'offset' in self.current_program else 0
+        self.strategy = self.strategy_factory.create_lao(additional_offset)
+
     def handle_start_sequence(self):
 
         # Premiere execution de l'instruction courante
@@ -64,50 +86,26 @@ class Sequencer(Component):
         instruction = self.current_program['instruction']
         print("********** Nouvelle instruction *********** ", instruction)
         self.time_start = self.car.get_time()
-        self.start_sequence = False
+        self.strategy = None
 
-        # Fait du cap courant le cap a suivre
-        if instruction == 'setCap':
-            target = self.car.get_cap()
-            self.cap_target = target
+        # Applique l'instruction
+        instractions_actions = {
+            'setCap': self.set_cap,
+            'setTacho': self.set_tacho,
+            'ajouteCap': self.add_cap,
+            'tourne': self.turn,
+            'lineAngleOffset': self.init_lao
+        }
+        if instruction not in instractions_actions.keys():
+            raise Exception("Instruction " + instruction + "does not exist")
+        instractions_actions[instruction]()
 
-        if instruction == 'setTacho':
-            self.tacho = self.car.get_tacho()
-
-        # Positionne les roues pour l'instruction 'tourne'
-        if instruction == 'tourne':
-            steering = self.current_program['positionRoues']
-            self.car.turn(steering)
-
-        # Ajoute une valeur a capTarget pour l'instruction 'ajouteCap'
-        if instruction == 'ajouteCap':
-            self.cap_target = (self.cap_target + self.current_program['cap']) % 360
-
-        # Programme la vitesse de la car
+        # Programme la vitesse de la voiture
         if 'vitesse' in self.current_program:
             vitesse = self.current_program['vitesse']
             self.car.forward(vitesse)
 
-        # Set steering algo
-        if instruction == 'ligneDroite':
-            pass
-            # self.strategy = LigneDroite()
-        elif instruction == 'suiviImageCap':
-            pass
-            # self.strategy = SuiviImageCap()
-        elif instruction == 'suiviImageRoues':
-            pass
-            # self.strategy = SuiviImageRoues()
-        elif instruction == 'lineAngleOffset':
-            additional_offset = self.current_program['offset'] if 'offset' in self.current_program else 0
-            self.strategy = self.strategy_factory.create_lao()
-        elif instruction == 'suiviImageLigneDroite':
-            activation_distance_integrale = False
-            if 'activationDistanceIntegrale' in self.current_program:
-                activation_distance_integrale = self.current_program['activationDistanceIntegrale']
-                # self.strategy = SuiviImageLigneDroite()
-        else:
-            self.strategy = None
+        self.start_sequence = False
 
     def check_end_sequence(self):
         # Verifie s'il faut passer a l'instruction suivante
