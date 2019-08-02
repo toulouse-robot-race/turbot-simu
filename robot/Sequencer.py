@@ -107,32 +107,44 @@ class Sequencer(Component):
 
         self.start_sequence = False
 
+    def check_cap(self):
+        final_cap_mini = self.current_program['capFinalMini']
+        cap_final_maxi = self.current_program['capFinalMaxi']
+        return self.check_delta_cap_reached(final_cap_mini, cap_final_maxi)
+
+    def check_delay(self):
+        return (self.car.get_time() - self.time_start) > self.current_program['duree']
+
+    def check_tacho(self):
+        return self.car.get_tacho() > (self.tacho + self.current_program['tacho'])
+
+    def end_now(self):
+        return True
+
+    def check_button(self):
+        self.vitesse_clignote_led = 0.3
+        self.led_clignote = True
+        button_value = self.car.get_push_button() == 0
+        if button_value:
+            self.led_clignote = False
+        return button_value
+
     def check_end_sequence(self):
-        # Verifie s'il faut passer a l'instruction suivante
-        end_sequence = False  # Initialise finSequence
         # Recupere la condition de fin
         end_condition = self.current_program['conditionFin']
+
         # Verifie si la condition de fin est atteinte
-        if end_condition == 'cap':
-            final_cap_mini = self.current_program['capFinalMini']
-            cap_final_maxi = self.current_program['capFinalMaxi']
-            if self.check_delta_cap_reached(final_cap_mini, cap_final_maxi):
-                end_sequence = True
-        elif end_condition == 'duree':
-            if (self.car.get_time() - self.time_start) > self.current_program['duree']:
-                end_sequence = True
-        elif end_condition == 'tacho':
-            if self.car.get_tacho() > (self.tacho + self.current_program['tacho']):
-                end_sequence = True
-        elif end_condition == 'immediat':
-            end_sequence = True
-        elif end_condition == 'attendBouton':
-            self.vitesse_clignote_led = 0.3
-            self.led_clignote = True
-            if self.car.getBoutonPoussoir() == 0:
-                self.led_clignote = False
-                end_sequence = True
-        return end_sequence
+        end_conditions_check = {
+            'cap': self.check_cap,
+            'duree': self.check_delay,
+            'tacho': self.check_tacho,
+            'immediat': self.end_now,
+            'attendBouton': self.check_button
+        }
+
+        if end_condition not in end_conditions_check.keys():
+            raise Exception("End condition " + end_condition + "does not exist")
+        return end_conditions_check[end_condition]()
 
     def handle_end_sequence(self):
         # Si le champ nextLabel est defini, alors il faut chercher le prochain element par son label
