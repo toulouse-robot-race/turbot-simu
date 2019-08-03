@@ -6,12 +6,12 @@ from robot.Component import Component
 
 class Asservissement(Component):
     # PID
-    # Le coeff proportionnel reel depend de la vitesse
+    # Le coeff proportionnel reel depend de la speed
     COEFF_PROPORTIONNEL_POUR_VITESSE_NOMINALE = 0.3  # 0.3 lors des essais post TRR2017
     COEFF_PROPORTIONNEL_POUR_VITESSE_MIN = 2.0  # 2.0 lors des essais post TRR2017
     COEFF_PROPORTIONNEL_IMAGE_POUR_VITESSE_NOMINALE = 1.0  # 0.3 lors des essais post TRR2017
     COEFF_PROPORTIONNEL_IMAGE_POUR_VITESSE_MIN = 2.0  # 2.0 lors des essais post TRR2018
-    VITESSE_NOMINALE = 100  # 45 lors des manches de la TRR2017 (surtout pas mettre 45, mettre la vitesse max utilisee, sinon le coeff prop peut devenir negatif ! Teste en 2017 apres la course, stable a vitesse 75.)
+    VITESSE_NOMINALE = 100  # 45 lors des manches de la TRR2017 (surtout pas mettre 45, mettre la speed max utilisee, sinon le coeff prop peut devenir negatif ! Teste en 2017 apres la course, stable a speed 75.)
     VITESSE_MIN = 20  # 25 lors des manches de la TRR2017
 
     # COEFF_INTEGRAL = 0.0
@@ -171,12 +171,12 @@ class Asservissement(Component):
         self.suiviImageLigneDroite = True
         self.activationDistanceIntegrale = activationDistanceIntegrale
 
-        # A appeler lorsqu'on modifie la vitesse (permet au coefficient P d'etre plus eleve quand on roule moins vite)
+        # A appeler lorsqu'on modifie la speed (permet au coefficient P d'etre plus eleve quand on roule moins vite)
 
     def setVitesse(self, vitesse):
         self.vitesse = vitesse
 
-        # A appeler lorsqu'on veut fixer une vitesse d'evitement d'obstacle plus faible que la vitesse standard
+        # A appeler lorsqu'on veut fixer une speed d'evitement d'obstacle plus faible que la speed standard
 
     def setVitesseEvitement(self, vitesseEvitement):
         self.vitesseEvitement = vitesseEvitement
@@ -300,7 +300,7 @@ class Asservissement(Component):
         self.image_analyzer.analyze()
         coefs_poly_1_line = self.image_analyzer.poly_coeff_1
         distance_obstacle_line = self.image_analyzer.distance_obstacle_line
-        
+
         if distance_obstacle_line is None or abs(distance_obstacle_line) > self.WIDTH_HALF_CORRIDOR:
             obstacle_avoidance_additional_offset = 0
         else:

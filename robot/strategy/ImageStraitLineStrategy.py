@@ -9,10 +9,12 @@ class ImageStraitLineStrategy(Strategy):
     MAX_CUMUL_ERREUR_POSITION_LIGNE = 8.0
     MAX_CORRECTION_CAP_IMAGE_LIGNE_DROITE = 10.0
 
-    def __init__(self, image_analyzer, integral_enabled=False):
+    def __init__(self, image_analyzer, cap_target, integral_enabled=False):
         self.integral_enabled = integral_enabled
-        self.cap_target = None
+        self.cap_target = cap_target
         self.image_analyzer = image_analyzer
+        self.cumulErreurPositionLigne = 0.0
+        self.lastCapASuivreForImageAnalysis = 0.0
 
     def compute_steering(self):
         # N'execute le calcul que s'il y a une nouvelle image
@@ -23,9 +25,7 @@ class ImageStraitLineStrategy(Strategy):
 
             # Recale le cap a suivre en fonction de l'erreur mesuree sur la ligne
             position_ligne1 = self.image_analyzer.position_ligne_1
-            # position_ligne2 = self.imageAnalysis.getPositionLigne2()
 
-            print("Position ligne: ", position_ligne1)
 
             # Calcul de la correction proportionnelle
             if position_ligne1 is None:
@@ -33,7 +33,6 @@ class ImageStraitLineStrategy(Strategy):
             else:
                 erreurDistance = position_ligne1
             correctionProportionnelle = erreurDistance * self.COEFF_CAP_IMAGE_LIGNE_DROITE_P
-            print("Correction Proportionnelle: ", correctionProportionnelle)
 
             # Calcul de la correction integrale
             maxVal = self.MAX_ERREUR_FOR_CUMUL_POSITION_LIGNE
@@ -43,13 +42,11 @@ class ImageStraitLineStrategy(Strategy):
             maxVal = self.MAX_CUMUL_ERREUR_POSITION_LIGNE
             self.cumulErreurPositionLigne = max(min(self.cumulErreurPositionLigne, maxVal), -maxVal)
 
-            print("Cumul erreur distance: ", self.cumulErreurPositionLigne)
             if self.integral_enabled:
                 correctionIntegrale = self.cumulErreurPositionLigne * self.COEFF_CAP_IMAGE_LIGNE_DROITE_I
             else:
                 correctionIntegrale = 0
 
-            print("Correction integrale: ", correctionIntegrale)
 
             correctionCap = max(
                 min(correctionProportionnelle + correctionIntegrale, self.MAX_CORRECTION_CAP_IMAGE_LIGNE_DROITE),

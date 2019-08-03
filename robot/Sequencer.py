@@ -69,7 +69,7 @@ class Sequencer(Component):
         self.car.turn(steering)
 
     def forward(self):
-        vitesse = self.current_program['vitesse']
+        vitesse = self.current_program['speed']
         self.car.forward(vitesse)
 
     def passs(self):
@@ -78,6 +78,9 @@ class Sequencer(Component):
     def init_lao(self):
         additional_offset = self.current_program['offset'] if 'offset' in self.current_program else 0
         self.strategy = self.strategy_factory.create_lao(additional_offset)
+
+    def init_cap_standard(self):
+        self.strategy = self.strategy_factory.create_cap_standard(self.cap_target, self.current_program['speed'])
 
     def handle_start_sequence(self):
 
@@ -94,15 +97,16 @@ class Sequencer(Component):
             'setTacho': self.set_tacho,
             'ajouteCap': self.add_cap,
             'tourne': self.turn,
-            'lineAngleOffset': self.init_lao
+            'lineAngleOffset': self.init_lao,
+            'ligneDroite': self.init_cap_standard,
         }
         if instruction not in instractions_actions.keys():
-            raise Exception("Instruction " + instruction + "does not exist")
+            raise Exception("Instruction " + instruction + " does not exist")
         instractions_actions[instruction]()
 
-        # Programme la vitesse de la voiture
-        if 'vitesse' in self.current_program:
-            vitesse = self.current_program['vitesse']
+        # Programme la speed de la voiture
+        if 'speed' in self.current_program:
+            vitesse = self.current_program['speed']
             self.car.forward(vitesse)
 
         self.start_sequence = False

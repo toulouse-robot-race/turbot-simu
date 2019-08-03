@@ -66,10 +66,10 @@ image_analyzer = ImageAnalyzer(car=car,
                                show_and_wait=True)
 
 
-strategy_factory = StrategyFactory(image_analyzer)
+strategy_factory = StrategyFactory(car, image_analyzer)
 
 sequencer = Sequencer(car=car,
-                      program=Programs.LINE_ANGLE_OFFSET,
+                      program=Programs.TRR_2019,
                       strategy_factory=strategy_factory)
 
 logger = Logger(simulator=simulator,
