@@ -6,7 +6,7 @@ BRAKE_CURRENT = 15000
 
 class Vesc:
 
-    def __init__(self, serial_device, enabled=True):
+    def __init__(self, serial_device="/dev/ttyACM0", enabled=True):
         self.enabled = enabled
         self.serial = serial.Serial(serial_device, baudrate=115200, timeout=0.05)
 

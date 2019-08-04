@@ -1,6 +1,7 @@
 import time
 
 from robot.Component import Component
+from robot.real.Vesc import Vesc
 
 
 class SpeedController(Component):
@@ -91,3 +92,10 @@ class SpeedController(Component):
 
     def send_speed_command(self):
         self.vesc.send_speed_command(self.speed)
+
+
+if __name__ == '__main__':
+    vesc = Vesc()
+    speedController = SpeedController(vesc)
+    speedController.set_speed_percent(10)
+    time.sleep(5)
