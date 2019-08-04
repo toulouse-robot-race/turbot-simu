@@ -36,24 +36,21 @@ class SpeedController(Component):
         self.send_speed_command()
 
     def update_speed(self):
-        # Compute time elapsed since last update
-        # Update execution time
-        # Compute new speed
-        if (self.speed_target - self.deceleration_step) <= self.speed <= (self.speed_target + self.acceleration_step):
-            # If we are close to speed_target, set speed to speed_target
-            self.speed = self.speed_target
-        elif self.speed < self.speed_target:
+
+        if self.speed < self.speed_target:
             # If we must accelerate
             self.speed += self.acceleration_step
             # If we have not reached min_speed, set to min_speed
-            if self.speed < self.min_speed:
-                self.speed = self.min_speed
+            if self.speed > self.speed_target:
+                self.speed = self.speed_target
+
         elif self.speed > self.speed_target:
             # If we must decelerate
             self.speed -= self.deceleration_step
-            # If we have already decelerated to min_speed, set speed to zero
-            if self.speed < self.min_speed:
-                self.speed = 0
+
+            if self.speed < self.speed_target:
+                self.speed = self.speed_target
+
         # Send command to VESC
         self.send_speed_command()
 

@@ -24,7 +24,7 @@ class SpeedController(Component):
         self.min_deceleration_step = 0
         self.acceleration_step = self.max_acceleration_step
         self.deceleration_step = self.max_deceleration_step
-        self.last_execution_time = 0.
+        self.last_execution_time = None
         self.tachometer = None
         self.rpm = 0
 
@@ -59,33 +59,27 @@ class SpeedController(Component):
     def execute(self):
         if not self.enabled:
             return
-
-        # If it is time to update
-        if (time.time() - self.last_execution_time) > self.DELAY_BETWEEN_EXECUTIONS:
-            # Update speed
-            self.update_speed()
+        self.update_speed()
 
     def update_speed(self):
         # Compute time elapsed since last update
-        delta_t = time.time() - self.last_execution_time
+        delta_t = time.time() - self.last_execution_time if self.last_execution_time is not None else 1
         # Update execution time
         self.last_execution_time = time.time()
-        # Compute new speed
-        if (self.speed_target - self.deceleration_step) <= self.speed <= (self.speed_target + self.acceleration_step):
-            # If we are close to speed_target, set speed to speed_target
-            self.speed = self.speed_target
-        elif self.speed < self.speed_target:
+
+        if self.speed < self.speed_target:
             # If we must accelerate
             self.speed += self.acceleration_step * delta_t
-            # If we have not reached min_speed, set to min_speed
-            if self.speed < self.min_speed:
-                self.speed = self.min_speed
+
+            if self.speed > self.speed_target:
+                self.speed = self.speed_target
+
         elif self.speed > self.speed_target:
             # If we must decelerate
             self.speed -= self.deceleration_step * delta_t
-            # If we have already decelerated to min_speed, set speed to zero
-            if self.speed < self.min_speed:
-                self.speed = 0
+
+            if self.speed < self.speed_target:
+                self.speed = self.speed_target
 
         # Send command to VESC
         self.send_speed_command()
@@ -97,5 +91,12 @@ class SpeedController(Component):
 if __name__ == '__main__':
     vesc = Vesc()
     speedController = SpeedController(vesc)
-    speedController.set_speed_percent(10)
+    speedController.set_speed_percent(60)
+    for i in range(3):
+        speedController.execute()
+        time.sleep(1)
+    speedController.set_speed_percent(20)
+    for i in range(3):
+        speedController.execute()
+        time.sleep(1)
     time.sleep(5)
