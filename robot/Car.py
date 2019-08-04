@@ -3,13 +3,12 @@ from abc import ABC, abstractmethod
 
 class Car(ABC):
 
-    def __init__(self, steering_controller, motors_handles, speed_controller, tachometer, gyro, camera, time):
+    def __init__(self, steering_controller, speed_controller, tachometer, gyro, camera, time):
         self.steering_controller = steering_controller
         self.camera = camera
         self.time = time
         self.gyro = gyro
         self.tachometer = tachometer
-        self.motors_handles = motors_handles
         self.speedController = speed_controller
 
     def turn(self, steering_input):

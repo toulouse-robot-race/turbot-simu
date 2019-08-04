@@ -8,18 +8,16 @@ class RealCar(Car):
     def __init__(self, steering_controller, motors_handles, speed_controller, tachometer, gyro, camera, time, arduino):
         super().__init__(steering_controller, motors_handles, speed_controller, tachometer, gyro, camera, time)
         self.arduino = arduino
+        self.led_state = False
+        self.chenillard_state = False
 
-    def set_led(self, etat):
-        if self.led_state != etat:
-            st = "*\n{:d}\n".format(etat)
-            self.arduino.ser.write(bytes(st, 'utf-8'))
-            self.led_state = etat
+    def set_led(self, state: bool):
+        if self.led_state != state:
+            self.arduino.set_led(state)
 
-    def set_chenillard(self, etat):
-        if self.chenillard_state != etat:
-            st = "/\n{:d}\n".format(etat)
-            self.arduino.ser.write(bytes(st, 'utf-8'))
-            self.chenillard_state = etat
+    def set_chenillard(self, state: bool):
+        if self.chenillard_state != state:
+            self.arduino.set_chenillard(state)
 
     def has_gyro_data(self):
         return self.arduino.nouvelleDonneeGyro
