@@ -9,7 +9,7 @@ class Gyro(Component):
     delta_gyro = float(0)
 
     def execute(self):
-        next_gyro = self.arduino.getCap()
+        next_gyro = self.arduino.get_cap()
         self.delta_gyro = next_gyro - self.gyro
         self.gyro = next_gyro
 
