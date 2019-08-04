@@ -12,7 +12,7 @@ class Car(ABC):
         self.speedController = speed_controller
 
     def turn(self, steering_input):
-        self.steering_controller.steering = steering_input
+        self.steering_controller.set_steering(steering_input)
 
     def forward(self, speed):
         self.speedController.set_speed_percent(speed)
