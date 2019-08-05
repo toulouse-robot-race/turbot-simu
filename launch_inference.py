@@ -3,7 +3,10 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+import tensorflow as tf
 from keras.models import load_model
+
+from robot.real.Camera import Camera
 
 MODEL_FILENAME = 'deep_learning/models/grs_furby_with_data_augmentation.h5'
 
@@ -17,6 +20,12 @@ MASK_OBSTACLE_FILE = "mask_line"
 
 CAM_HANDLE = 1
 
+# Bug fix for tensorflow on TX2
+# See here: https://devtalk.nvidia.com/default/topic/1030875/jetson-tx2/gpu-sync-failed-in-tx2-when-running-tensorflow/
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+session = tf.Session(config=config)
+
 # Load model
 seq = load_model(MODEL_FILENAME)
 
@@ -24,6 +33,8 @@ seq = load_model(MODEL_FILENAME)
 stream = cv2.VideoCapture(CAM_HANDLE)
 stream.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
 stream.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+
+cam = Camera(MASK_LINE_FILE, MASK_OBSTACLE_FILE)
 
 while True:
     # Check if inference is enabled
@@ -38,10 +49,13 @@ while True:
     mask_line = predicted_masks[:, :, 0]
     mask_obstacles = predicted_masks[:, :, 1]
 
-    cv2.imshow('mask line', mask_line)
-    cv2.waitKey(0)
-
     # Save mask in ram disk files
     np.save(MASK_LINE_FILE, mask_line)
     np.save(MASK_OBSTACLE_FILE, mask_obstacles)
+
+    cam.execute()
+
+    cv2.imshow("mask line", cam.mask_line)
+    cv2.waitKey(1)
+
 
