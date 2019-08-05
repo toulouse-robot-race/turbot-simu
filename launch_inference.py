@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 from keras.models import load_model
 
-MODEL_FILENAME = 'deep_learning_models/final_race_model_5_3.h5'
+MODEL_FILENAME = 'deep_learning/models/grs_furby_with_data_augmentation.h5'
 
 RAM_DISK_DIR = "./"
 
@@ -37,6 +37,9 @@ while True:
     predicted_masks = seq.predict(frame[np.newaxis, :, :, :])[0, ...]
     mask_line = predicted_masks[:, :, 0]
     mask_obstacles = predicted_masks[:, :, 1]
+
+    cv2.imshow('mask line', mask_line)
+    cv2.waitKey(0)
 
     # Save mask in ram disk files
     np.save(MASK_LINE_FILE, mask_line)
