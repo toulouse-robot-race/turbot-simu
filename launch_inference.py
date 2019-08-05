@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import time
 from pathlib import Path
 
@@ -10,13 +11,13 @@ from robot.real.Camera import Camera
 
 MODEL_FILENAME = 'deep_learning/models/grs_furby_with_data_augmentation.h5'
 
-RAM_DISK_DIR = "./"
+RAM_DISK_DIR = "/tmp_ram"
 
 INFERENCE_DISABLE_FILE = "inference.disable"
 
-MASK_LINE_FILE = "mask_line.npy"
+MASK_LINE_FILE = RAM_DISK_DIR + "/mask_line.npy"
 
-MASK_OBSTACLE_FILE = "mask_line.npy"
+MASK_OBSTACLE_FILE = RAM_DISK_DIR + "/mask_line.npy"
 
 CAM_HANDLE = 1
 
@@ -36,7 +37,10 @@ stream.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 
 cam = Camera(MASK_LINE_FILE, MASK_OBSTACLE_FILE)
 
+
 while True:
+    begin_time = time.time()
+
     # Check if inference is enabled
     if Path(INFERENCE_DISABLE_FILE).is_file():
         time.sleep(0.1)
@@ -49,11 +53,21 @@ while True:
     mask_line = predicted_masks[:, :, 0]
     mask_obstacles = predicted_masks[:, :, 1]
 
+    prediction_time = time.time()
+
     # Save mask in ram disk files
     np.save(MASK_LINE_FILE, mask_line)
     np.save(MASK_OBSTACLE_FILE, mask_obstacles)
 
+    saving_time = time.time()
+
     cam.execute()
+
+    reading_time = time.time()
+
+    print("prediction_time", prediction_time - begin_time)
+    print("saving_time", saving_time - prediction_time)
+    print("reading_time", reading_time - saving_time)
 
     cv2.imshow("mask line", cam.mask_line)
     cv2.waitKey(1)
