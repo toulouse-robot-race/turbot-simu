@@ -17,7 +17,7 @@ INFERENCE_DISABLE_FILE = "inference.disable"
 
 MASK_LINE_FILE = RAM_DISK_DIR + "/mask_line.npy"
 
-MASK_OBSTACLE_FILE = RAM_DISK_DIR + "/mask_line.npy"
+MASK_OBSTACLE_FILE = RAM_DISK_DIR + "/mask_obstacle.npy"
 
 CAM_HANDLE = 1
 
@@ -37,7 +37,6 @@ stream.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 
 cam = Camera(MASK_LINE_FILE, MASK_OBSTACLE_FILE)
 
-
 while True:
     begin_time = time.time()
 
@@ -51,13 +50,16 @@ while True:
     # Process inference
     predicted_masks = seq.predict(frame[np.newaxis, :, :, :])[0, ...]
     mask_line = predicted_masks[:, :, 0]
-    mask_obstacles = predicted_masks[:, :, 1]
+    mask_obstacle = predicted_masks[:, :, 1]
 
     prediction_time = time.time()
 
+    mask_line = mask_line > 0.1
+    mask_obstacle = mask_obstacle > 0.1
+
     # Save mask in ram disk files
     np.save(MASK_LINE_FILE, mask_line)
-    np.save(MASK_OBSTACLE_FILE, mask_obstacles)
+    np.save(MASK_OBSTACLE_FILE, mask_obstacle)
 
     saving_time = time.time()
 
@@ -69,7 +71,5 @@ while True:
     print("saving_time", saving_time - prediction_time)
     print("reading_time", reading_time - saving_time)
 
-    cv2.imshow("mask line", cam.mask_line)
+    cv2.imshow("mask obstacle", cam.mask_obstacle)
     cv2.waitKey(1)
-
-
