@@ -14,9 +14,9 @@ RAM_DISK_DIR = "./"
 
 INFERENCE_DISABLE_FILE = "inference.disable"
 
-MASK_LINE_FILE = "mask_line"
+MASK_LINE_FILE = "mask_line.npy"
 
-MASK_OBSTACLE_FILE = "mask_line"
+MASK_OBSTACLE_FILE = "mask_line.npy"
 
 CAM_HANDLE = 1
 
