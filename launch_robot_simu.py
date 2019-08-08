@@ -3,11 +3,11 @@ import time
 from robot import Programs
 from robot.ImageAnalyzer import ImageAnalyzer
 from robot.ImageWarper import ImageWarper
-from robot.Logger import Logger
 from robot.Sequencer import Sequencer
 from robot.simu.Camera import Camera
 from robot.simu.Config import NB_IMAGES_DELAY, TACHO_COEF
 from robot.simu.Gyro import Gyro
+from robot.simu.Logger import Logger
 from robot.simu.SimuCar import SimuCar
 from robot.simu.Simulator import Simulator
 from robot.simu.SpeedController import SpeedController
@@ -52,7 +52,6 @@ camera = Camera(simulator=simulator,
                 obstacles_cam_handle=handles["obstacles_cam"])
 
 car = SimuCar(steering_controller=steering_controller,
-              motors_handles=[handles["left_motor"], handles["right_motor"]],
               speed_controller=speed_controller,
               tachometer=tachometer,
               gyro=gyro,

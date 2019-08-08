@@ -1,8 +1,9 @@
 from robot.Component import Component
+from robot.real import Arduino
 
 
 class Gyro(Component):
-    def __init__(self, arduino):
+    def __init__(self, arduino: Arduino):
         self.arduino = arduino
 
     gyro = float(0)

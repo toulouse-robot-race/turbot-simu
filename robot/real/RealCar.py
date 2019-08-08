@@ -5,8 +5,8 @@ class RealCar(Car):
 
     RPM_MAX_VOITURE_IMMOBILE = 200  # RPM en dessous duquel on considère la voiture immobile
 
-    def __init__(self, steering_controller, motors_handles, speed_controller, tachometer, gyro, camera, time, arduino):
-        super().__init__(steering_controller, motors_handles, speed_controller, tachometer, gyro, camera, time)
+    def __init__(self, steering_controller, speed_controller, tachometer, gyro, camera, time, arduino):
+        super().__init__(steering_controller, speed_controller, tachometer, gyro, camera, time)
         self.arduino = arduino
         self.led_state = False
         self.chenillard_state = False
