@@ -47,6 +47,10 @@ class Car(ABC):
         pass
 
     @abstractmethod
+    def send_display(self, string):
+        pass
+
+    @abstractmethod
     def has_gyro_data(self):
         pass
 

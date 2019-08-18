@@ -208,7 +208,7 @@ class Arduino(Component):
         if len(string) > 8:
             print("cannot send string %s, too long" % string)
             return
-        st = "%\n{:s}\n".format(string.ljust(8))
+        st = "%\n{:s}\n".format(string. ljust(8))
         self.ser.write(bytes(st, 'utf-8'))
 
     def set_led(self, state):

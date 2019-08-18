@@ -3,6 +3,9 @@ from robot.Car import Car
 
 class SimuCar(Car):
 
+    def send_display(self, string):
+        pass
+
     def set_led(self, etat):
         pass
 

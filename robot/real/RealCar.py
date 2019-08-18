@@ -37,3 +37,6 @@ class RealCar(Car):
 
     def reverse(self):
         self.speedController.set_reverse()
+
+    def send_display(self, string):
+        self.arduino.send_display(string)
