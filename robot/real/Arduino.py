@@ -199,10 +199,9 @@ class Arduino(Component):
             print("Probleme de parsing des donnees recues de l'arduino")
             self.sequence = -1
 
+
     def send_pwm(self, pwm_steering):
         steering_pwm_mess = '#\n{:d}\n{:d}\n'.format(pwm_steering, 90)
-        print("Sending to serial:")
-        print(steering_pwm_mess)
         self.ser.write(bytes(steering_pwm_mess, 'utf-8'))
 
     def send_display(self, string):
