@@ -20,9 +20,9 @@ MASK_LINE_FILE = RAM_DISK_DIR + "/mask_line.npy"
 
 MASK_OBSTACLE_FILE = RAM_DISK_DIR + "/mask_obstacle.npy"
 
-MASK_OBSTACLE_FILE_TMP = MASK_OBSTACLE_FILE + ".tmp"
+MASK_OBSTACLE_FILE_TMP = RAM_DISK_DIR + "/mask_obstacle.tmp.npy"
 
-MASK_LINE_FILE_TMP = MASK_LINE_FILE + ".tmp"
+MASK_LINE_FILE_TMP = RAM_DISK_DIR + "/mask_line.tmp.npy"
 
 CAM_HANDLE = 1
 
@@ -68,16 +68,3 @@ while True:
 
     os.rename(MASK_LINE_FILE_TMP, MASK_LINE_FILE)
     os.rename(MASK_OBSTACLE_FILE_TMP, MASK_OBSTACLE_FILE)
-
-    saving_time = time.time()
-
-    cam.execute()
-
-    reading_time = time.time()
-
-    print("prediction_time", prediction_time - begin_time)
-    print("saving_time", saving_time - prediction_time)
-    print("reading_time", reading_time - saving_time)
-
-    cv2.imshow("mask obstacle", cam.mask_obstacle)
-    cv2.waitKey(1)
