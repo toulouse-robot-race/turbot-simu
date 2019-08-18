@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import time
 from pathlib import Path
 
@@ -18,6 +19,10 @@ INFERENCE_DISABLE_FILE = "inference.disable"
 MASK_LINE_FILE = RAM_DISK_DIR + "/mask_line.npy"
 
 MASK_OBSTACLE_FILE = RAM_DISK_DIR + "/mask_obstacle.npy"
+
+MASK_OBSTACLE_FILE_TMP = MASK_OBSTACLE_FILE + ".tmp"
+
+MASK_LINE_FILE_TMP = MASK_LINE_FILE + ".tmp"
 
 CAM_HANDLE = 1
 
@@ -58,8 +63,11 @@ while True:
     mask_obstacle = mask_obstacle > 0.1
 
     # Save mask in ram disk files
-    np.save(MASK_LINE_FILE, mask_line)
-    np.save(MASK_OBSTACLE_FILE, mask_obstacle)
+    np.save(MASK_LINE_FILE_TMP, mask_line)
+    np.save(MASK_OBSTACLE_FILE_TMP, mask_obstacle)
+
+    os.rename(MASK_LINE_FILE_TMP, MASK_LINE_FILE)
+    os.rename(MASK_OBSTACLE_FILE_TMP, MASK_OBSTACLE_FILE)
 
     saving_time = time.time()
 

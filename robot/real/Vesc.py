@@ -6,30 +6,39 @@ BRAKE_CURRENT = 15000
 
 class Vesc:
 
-    def __init__(self, serial_device="/dev/ttyACM0", enabled=True):
+    def __init__(self, serial_device: str, enabled=True):
         self.enabled = enabled
-        self.serial = serial.Serial(serial_device, baudrate=115200, timeout=0.05)
+        if enabled:
+            self.serial = serial.Serial(serial_device, baudrate=115200, timeout=0.05)
 
     tachometer = 0
+
     rpm = 0
 
     # Send speed command to VESC
     def send_speed_command(self, speed):
-        # noinspection PyArgumentList
+        if not self.enabled:
+            return
+
+            # noinspection PyArgumentList
         msg = pyvesc.SetDutyCycle(int(speed))
         packet = pyvesc.encode(msg)
-        if self.enabled:
-            self.serial.write(packet)
+        self.serial.write(packet)
 
     # Send brake commande to VESC
     def send_brake_command(self):
-        # noinspection PyArgumentList
+        if not self.enabled:
+            return
+
+            # noinspection PyArgumentList
         msg = pyvesc.SetCurrentBrake(BRAKE_CURRENT)
         packet = pyvesc.encode(msg)
-        if self.enabled:
-            self.serial.write(packet)
+        self.serial.write(packet)
 
     def request_data(self):
+        if not self.enabled:
+            return [0,0]
+
         # Request data from VESC
         self.serial.write(pyvesc.encode_request(pyvesc.GetValues))
 

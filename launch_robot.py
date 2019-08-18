@@ -1,4 +1,6 @@
+#!/usr/bin/env python3
 import time
+from pathlib import Path
 
 from robot import Programs
 from robot.ImageAnalyzer import ImageAnalyzer
@@ -23,11 +25,15 @@ MASK_LINE_FILE = RAM_DISK_DIR + "/mask_line.npy"
 
 MASK_OBSTACLE_FILE = RAM_DISK_DIR + "/mask_obstacle.npy"
 
+if not Path(MASK_OBSTACLE_FILE).is_file() or not Path(MASK_LINE_FILE).is_file():
+    raise Exception("Inference is not launched")
+
 real_time = Time()
 
 arduino = Arduino()
 
-vesc = Vesc()
+vesc = Vesc(serial_device="/dev/ttyACM0",
+            enabled=False)
 
 steering_controller = SteeringController(arduino=arduino)
 
