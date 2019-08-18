@@ -3,7 +3,7 @@ TRR_2019 = [{
     'instruction': 'setCap',  # Cap asuivre = cap actuel
     'chenillard': True,
     'conditionFin': 'immediat'
-    },
+},
     {
         'instruction': 'setTacho',  # Memorise le tacho actuel
         'conditionFin': 'immediat'
@@ -519,6 +519,14 @@ HIPPODROME = [
 
 TEST = [
     {
+        'label': 'attendBouton',
+        'instruction': 'tourne',  # Attend l'appui sur le bouton
+        'display': 'WAITB',
+        'positionRoues': 0,
+        'vitesse': 0,
+        'conditionFin': 'attendBouton'
+    },
+    {
         'instruction': 'tourne',  # Puis finit le virage 180°
         'positionRoues': 10,
         'conditionFin': 'duree',
@@ -543,4 +551,3 @@ TEST = [
         'duree': 10,
     }
 ]
-
