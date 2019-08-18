@@ -522,25 +522,25 @@ TEST = [
         'instruction': 'tourne',  # Puis finit le virage 180°
         'positionRoues': 10,
         'conditionFin': 'duree',
-        'tacho': 10,
+        'duree': 10,
     },
     {
         'instruction': 'tourne',  # Puis finit le virage 180°
         'positionRoues': -10,
         'conditionFin': 'duree',
-        'tacho': 10,
+        'duree': 10,
     },
     {
         'instruction': 'tourne',  # Puis finit le virage 180°
         'positionRoues': 20,
         'conditionFin': 'duree',
-        'tacho': 10,
+        'duree': 10,
     },
     {
         'instruction': 'tourne',  # Puis finit le virage 180°
         'positionRoues': -20,
         'conditionFin': 'duree',
-        'tacho': 10,
+        'duree': 10,
     }
 ]
 
