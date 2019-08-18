@@ -11,6 +11,7 @@ class Camera(Component):
         self.mask_obstacle_file_path = mask_obstacle_file_path
         self.mask_line_file_path = mask_line_file_path
 
+
     mask_line = None
 
     mask_obstacle = None
