@@ -1,13 +1,13 @@
 # encoding:utf-8
 
-import logging
-import sys
 import time
 from collections import deque
 
 import serial
 
 # Constantes
+from robot.Component import Component
+
 DELTA_T_RECALAGE_CAP = 1.0  # Nombre de secondes entre chaque recalage de cap
 VITESSE_EN_CM_PAR_SECONDE = 100  # TODO A calculer dynamiquement et a deplacer dans une autre classe TODO
 COEFF_CORRECTION_ERREUR_CAP = 0.3  # Vitesse de correction de l'erreur du gyro, quand on la mesure avec les telemetres dans la ligne droite
@@ -15,7 +15,9 @@ MAX_ELIMINATION_MESURE_ULTRASON = 70  # Nombre de cm mesure par telemetre1 au-de
 MAX_ELIMINATION_MESURE_LIDAR = 100  # Nombre de cm mesure par lidar au-dela desquels on ne le prend plus en compte
 
 
-class Arduino:
+class Arduino(Component):
+
+
     capteurGauche = -1
     capteurDroit = -1
     gyroX = 0.0
@@ -123,6 +125,9 @@ class Arduino:
         return False
 
     testTime = 0
+
+    def execute(self):
+        self.litDonnees()
 
     # Lit les donnees transmises par l'Arduino
     def litDonnees(self):

@@ -68,7 +68,8 @@ sequencer = Sequencer(car=car,
 
 
 # Order matter, components will be executed one by one
-executable_components = [gyro,
+executable_components = [arduino,
+                         gyro,
                          tachometer,
                          camera,
                          sequencer,
