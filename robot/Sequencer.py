@@ -1,4 +1,6 @@
 # encoding:utf-8
+import json
+
 from robot.Component import Component
 
 
@@ -87,7 +89,8 @@ class Sequencer(Component):
         # Premiere execution de l'instruction courante
         self.current_program = self.program[self.sequence]
         instruction = self.current_program['instruction']
-        print("********** Nouvelle instruction *********** ", instruction)
+        print("********** Nouvelle instruction *********** ")
+        print(print(json.dumps(self.current_program, indent = 4)))
         self.time_start = self.car.get_time()
         self.strategy = None
 
