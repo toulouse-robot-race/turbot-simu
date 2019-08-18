@@ -111,6 +111,10 @@ class Sequencer(Component):
         if 'speed' in self.current_program:
             vitesse = self.current_program['speed']
             self.car.forward(vitesse)
+        if 'display' in self.current_program:
+            self.car.sendDisplay(self.current_program['display'])
+        if 'chenillard' in self.current_program:
+            self.car.setChenillard(1 if self.current_program['chenillard'] else 0)
 
         self.start_sequence = False
 
