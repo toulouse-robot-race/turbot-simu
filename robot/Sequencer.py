@@ -154,7 +154,7 @@ class Sequencer(Component):
             'tacho': self.check_tacho,
             'immediat': self.end_now,
             'attendBouton': self.check_button,
-            'attendreGyroStable': self.check_gyro_stable()
+            'attendreGyroStable': self.check_gyro_stable
         }
 
         if end_condition not in end_conditions_check.keys():
