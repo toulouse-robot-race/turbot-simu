@@ -543,27 +543,27 @@ TEST = [
         'positionRoues': 10,
         'vitesse': 0,
         'conditionFin': 'duree',
-        'duree': 10,
+        'duree': 1,
     },
     {
         'instruction': 'tourne',
         'positionRoues': -10,
         'vitesse': 0,
         'conditionFin': 'duree',
-        'duree': 10,
+        'duree': 1,
     },
     {
         'instruction': 'tourne',
         'positionRoues': 20,
         'vitesse': 0,
         'conditionFin': 'duree',
-        'duree': 10,
+        'duree': 1,
     },
     {
         'instruction': 'tourne',
         'positionRoues': -20,
         'vitesse': 0,
         'conditionFin': 'duree',
-        'duree': 10,
+        'duree': 1,
     }
 ]
