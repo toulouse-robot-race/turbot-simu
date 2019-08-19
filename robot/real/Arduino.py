@@ -53,7 +53,7 @@ class Arduino(Component):
     # Variable pour savoir si le telemetre a envoye une nouvelle donnee, reinitialisee dans l'asservissement apres log
     nouvelleDonneeTelemetre1 = False
 
-    button = 1  # 1 relaché , 0 appuyé
+    button = 1  # 1 relachÃ© , 0 appuyÃ©
 
     # A appeler au debut de chaque nouvelle instruction pour annuler le recalage de cap precedent
     def annuleRecalageCap(self):
@@ -155,14 +155,14 @@ class Arduino(Component):
                     self.sequence = 0
                     self.typeCapteur = 5
                 elif data == '+':
-                    # Boutton appuyé
+                    # Boutton appuyÃ©
                     self.button = 0
                 elif data == '-':
-                    # Boutton relaché
+                    # Boutton relachÃ©
                     self.button = 1
                 elif data == '!':
                     # Boutton d'arret d'urgence
-                    raise KeyboardInterrupt("Boutton d'arret d'urgence appuyé")
+                    raise KeyboardInterrupt("Boutton d'arret d'urgence appuyÃ©")
 
                     # Lecture des capteurs de ligne
                 elif self.typeCapteur == 1:
@@ -188,7 +188,7 @@ class Arduino(Component):
                         self.gyroY = float(data)
                         self.sequence += 1
                     elif self.sequence == 2:
-                        # Recupere le troisième element de la transmission
+                        # Recupere le troisiÃ¨me element de la transmission
                         self.gyroZ = float(data)
                         self.nouvelleDonneeGyro = True
                         self.nouvelleDonneeLastGyro = True
@@ -217,14 +217,21 @@ class Arduino(Component):
     def set_chenillard(self, state: bool):
         if not type(state) == bool:
             raise Exception("Chenillard state expect bool")
-        st = "/\n{:d}\n".format(1 if state else 0)
+        st = "=\n{:d}\n".format(1 if state else 0)
         self.ser.write(bytes(st, 'utf-8'))
 
 
 if __name__ == '__main__':
     arduino = Arduino()
+    time.sleep(1)
     arduino.send_display("WAITB")
-    time.sleep(10)
+    time.sleep(1)
+    arduino.set_chenillard(True)
+    time.sleep(1)
+    arduino.send_display("GO")
+    time.sleep(1)
+    arduino.set_chenillard(False)
+    time.sleep(1)
     while True:
         arduino.litDonnees()
         print("cap : %f" % arduino.get_cap())
