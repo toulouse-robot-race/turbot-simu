@@ -33,4 +33,4 @@ class SteeringController(Component):
                             self.duty_cycle_debattement_direction) + trim_pwm + self.duty_cycle_direction_neutre)
         self.arduino.send_pwm(pwm_steering)
 
-        self.previous_steering = pwm_steering
+        self.previous_steering = self.steering
