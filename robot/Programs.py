@@ -519,7 +519,12 @@ HIPPODROME = [
 
 TEST = [
     {
-        'instruction': 'attendreGyroStable',  # Attend stabilisation du gyro
+        'label': 'waitGyroStable',  # Attend stabilisation du gyro
+        'instruction': 'tourne',
+        'display': 'WAITB',
+        'chenillard': False,
+        'positionRoues': 0,
+        'vitesse': 0,
         'conditionFin': 'attendreGyroStable'
     },
     {
