@@ -519,33 +519,40 @@ HIPPODROME = [
 
 TEST = [
     {
+        'instruction': 'attendreGyroStable',  # Attend stabilisation du gyro
+        'conditionFin': 'attendreGyroStable'
+    },
+    {
         'label': 'attendBouton',
         'instruction': 'tourne',  # Attend l'appui sur le bouton
         'display': 'WAITB',
+        'chenillard': False,
         'positionRoues': 0,
         'vitesse': 0,
         'conditionFin': 'attendBouton'
     },
     {
-        'instruction': 'tourne',  # Puis finit le virage 180°
+        'instruction': 'tourne',
+        'display': 'GO',
+        'chenillard': True,
         'positionRoues': 10,
         'conditionFin': 'duree',
         'duree': 10,
     },
     {
-        'instruction': 'tourne',  # Puis finit le virage 180°
+        'instruction': 'tourne',
         'positionRoues': -10,
         'conditionFin': 'duree',
         'duree': 10,
     },
     {
-        'instruction': 'tourne',  # Puis finit le virage 180°
+        'instruction': 'tourne',
         'positionRoues': 20,
         'conditionFin': 'duree',
         'duree': 10,
     },
     {
-        'instruction': 'tourne',  # Puis finit le virage 180°
+        'instruction': 'tourne',
         'positionRoues': -20,
         'conditionFin': 'duree',
         'duree': 10,
