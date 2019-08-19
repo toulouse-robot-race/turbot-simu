@@ -55,6 +55,10 @@ class Car(ABC):
         pass
 
     @abstractmethod
+    def check_gyro_stable(self):
+        pass
+
+    @abstractmethod
     def get_push_button(self):
         pass
 

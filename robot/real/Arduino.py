@@ -226,6 +226,8 @@ class Arduino(Component):
 
 if __name__ == '__main__':
     arduino = Arduino()
+    arduino.send_display("WAITB")
+    time.sleep(10)
     while True:
         arduino.litDonnees()
         print("cap : %f" % arduino.get_cap())

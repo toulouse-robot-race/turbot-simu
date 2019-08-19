@@ -140,6 +140,9 @@ class Sequencer(Component):
             self.led_clignote = False
         return button_value
 
+    def check_gyro_stable(self):
+        return self.car.check_gyro_stable()
+
     def check_end_sequence(self):
         # Recupere la condition de fin
         end_condition = self.current_program['conditionFin']
@@ -150,7 +153,8 @@ class Sequencer(Component):
             'duree': self.check_delay,
             'tacho': self.check_tacho,
             'immediat': self.end_now,
-            'attendBouton': self.check_button
+            'attendBouton': self.check_button,
+            'attendreGyroStable': self.check_gyro_stable()
         }
 
         if end_condition not in end_conditions_check.keys():

@@ -22,6 +22,9 @@ class RealCar(Car):
     def has_gyro_data(self):
         return self.arduino.nouvelleDonneeGyro
 
+    def check_gyro_stable(self):
+        return self.arduino.checkGyroStable()
+
     def get_push_button(self):
         return self.arduino.button
 
