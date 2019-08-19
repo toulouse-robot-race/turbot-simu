@@ -76,8 +76,9 @@ executable_components = [arduino,
                          speed_controller,
                          steering_controller]
 
-
+# Time needed by the serials connections to get ready
+time.sleep(1)
 while True:
-    start_step_time = time.time()
     [component.execute() for component in executable_components]
-    start_simulator_step_time = time.time()
+    # Time needed by arduino to receive next command
+    time.sleep(0.005)
