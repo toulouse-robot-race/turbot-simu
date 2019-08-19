@@ -39,11 +39,11 @@ class Car(ABC):
         return self.time.sleep(delay)
 
     @abstractmethod
-    def set_led(self, etat):
+    def set_led(self, etat: bool):
         pass
 
     @abstractmethod
-    def set_chenillard(self, etat):
+    def set_chenillard(self, etat: bool):
         pass
 
     @abstractmethod

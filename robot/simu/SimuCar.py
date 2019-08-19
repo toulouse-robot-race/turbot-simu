@@ -6,10 +6,10 @@ class SimuCar(Car):
     def send_display(self, string):
         pass
 
-    def set_led(self, etat):
+    def set_led(self, etat: bool):
         pass
 
-    def set_chenillard(self, etat):
+    def set_chenillard(self, etat: bool):
         pass
 
     def has_gyro_data(self):

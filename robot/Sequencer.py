@@ -114,7 +114,7 @@ class Sequencer(Component):
         if 'display' in self.current_program:
             self.car.send_display(self.current_program['display'])
         if 'chenillard' in self.current_program:
-            self.car.set_chenillard(1 if self.current_program['chenillard'] else 0)
+            self.car.set_chenillard(self.current_program['chenillard'])
 
         self.start_sequence = False
 
