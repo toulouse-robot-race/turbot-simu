@@ -89,7 +89,7 @@ class SpeedController(Component):
 
 
 if __name__ == '__main__':
-    vesc = Vesc()
+    vesc = Vesc("/dev/ttyACM0")
     speedController = SpeedController(vesc)
     speedController.set_speed_percent(60)
     for i in range(3):

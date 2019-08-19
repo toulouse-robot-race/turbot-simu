@@ -32,12 +32,12 @@ real_time = Time()
 
 arduino = Arduino()
 
-vesc = Vesc(serial_device="/dev/ttyACM0",
-            enabled=False)
+vesc = Vesc(serial_device="/dev/ttyACM0")
 
 steering_controller = SteeringController(arduino=arduino)
 
-speed_controller = SpeedController(vesc=vesc)
+speed_controller = SpeedController(vesc=vesc,
+                                   enable=False)
 
 gyro = Gyro(arduino=arduino)
 
