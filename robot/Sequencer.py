@@ -51,10 +51,10 @@ class Sequencer(Component):
         if self.led_clignote:
             if self.car.get_time() > self.timer_led + self.vitesse_clignote_led:
                 self.timer_led = self.car.get_time()
-                self.last_led = 0 if self.last_led else 1
+                self.last_led = False if self.last_led else True
                 self.car.set_led(self.last_led)
         else:
-            self.car.set_led(1)
+            self.car.set_led(True)
 
     def set_cap(self):
         target = self.car.get_cap()
