@@ -541,24 +541,28 @@ TEST = [
         'display': 'GO',
         'chenillard': True,
         'positionRoues': 10,
+        'vitesse': 0,
         'conditionFin': 'duree',
         'duree': 10,
     },
     {
         'instruction': 'tourne',
         'positionRoues': -10,
+        'vitesse': 0,
         'conditionFin': 'duree',
         'duree': 10,
     },
     {
         'instruction': 'tourne',
         'positionRoues': 20,
+        'vitesse': 0,
         'conditionFin': 'duree',
         'duree': 10,
     },
     {
         'instruction': 'tourne',
         'positionRoues': -20,
+        'vitesse': 0,
         'conditionFin': 'duree',
         'duree': 10,
     }
