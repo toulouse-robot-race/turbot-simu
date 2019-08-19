@@ -13,12 +13,17 @@ class SteeringController(Component):
 
     steering = 0
 
+    previous_steering = 0
+
     def set_steering(self, steering):
         if not -100 < steering < 100:
             raise Exception("steering must be between -100 and 100, was ", steering)
         self.steering = steering
 
     def execute(self):
+        if abs(self.previous_steering - self.steering) < 1:
+            return
+
         # Applique une exponentielle
         sign = 1 if self.steering > 0 else -1
         direction = sign * (abs(self.steering) ** 0.7) * 4
@@ -27,3 +32,5 @@ class SteeringController(Component):
                                     direction / self.echelle_debattement_direction) *
                             self.duty_cycle_debattement_direction) + trim_pwm + self.duty_cycle_direction_neutre)
         self.arduino.send_pwm(pwm_steering)
+
+        self.previous_steering = pwm_steering
