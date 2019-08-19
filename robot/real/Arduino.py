@@ -16,8 +16,6 @@ MAX_ELIMINATION_MESURE_LIDAR = 100  # Nombre de cm mesure par lidar au-dela desq
 
 
 class Arduino(Component):
-
-
     capteurGauche = -1
     capteurDroit = -1
     gyroX = 0.0
@@ -199,7 +197,6 @@ class Arduino(Component):
             print("Probleme de parsing des donnees recues de l'arduino")
             self.sequence = -1
 
-
     def send_pwm(self, pwm_steering):
         steering_pwm_mess = '#\n{:d}\n{:d}\n'.format(pwm_steering, 90)
         self.ser.write(bytes(steering_pwm_mess, 'utf-8'))
@@ -208,19 +205,19 @@ class Arduino(Component):
         if len(string) > 8:
             print("cannot send string %s, too long" % string)
             return
-        st = "%\n{:s}\n".format(string. ljust(8))
+        st = "%\n{:s}\n".format(string.ljust(8))
         self.ser.write(bytes(st, 'utf-8'))
 
-    def set_led(self, state):
-        if state == bool:
+    def set_led(self, state: bool):
+        if not type(state) == bool:
             raise Exception("Led state expect bool")
-        st = "*\n{:d}\n".format(state)
+        st = "*\n{:d}\n".format(1 if state else 0)
         self.ser.write(bytes(st, 'utf-8'))
 
-    def set_chenillard(self, state):
-        if state == bool:
+    def set_chenillard(self, state: bool):
+        if not type(state) == bool:
             raise Exception("Chenillard state expect bool")
-        st = "/\n{:d}\n".format(state)
+        st = "/\n{:d}\n".format(1 if state else 0)
         self.ser.write(bytes(st, 'utf-8'))
 
 
@@ -232,4 +229,3 @@ if __name__ == '__main__':
         arduino.litDonnees()
         print("cap : %f" % arduino.get_cap())
         time.sleep(0.5)
-
