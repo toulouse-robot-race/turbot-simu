@@ -3,6 +3,9 @@ from robot.Car import Car
 
 class SimuCar(Car):
 
+    def check_gyro_stable(self):
+        return True
+
     def send_display(self, string):
         pass
 
