@@ -1,17 +1,20 @@
 import time
 
 from robot import Programs
-from robot.Asservisement import Asservissement
-from robot.Car import Car
-from robot.Gyro import Gyro
 from robot.ImageAnalyzer import ImageAnalyzer
 from robot.ImageWarper import ImageWarper
-from robot.Logger import Logger
 from robot.Sequencer import Sequencer
-from robot.Simulator import Simulator
-from robot.SpeedController import SpeedController
-from robot.Tachometer import Tachometer
-from robot.Time import Time
+from robot.simu.Camera import Camera
+from robot.simu.Config import NB_IMAGES_DELAY, TACHO_COEF
+from robot.simu.Gyro import Gyro
+from robot.simu.Logger import Logger
+from robot.simu.SimuCar import SimuCar
+from robot.simu.Simulator import Simulator
+from robot.simu.SpeedController import SpeedController
+from robot.simu.SteeringController import SteeringController
+from robot.simu.Tachometer import Tachometer
+from robot.simu.Time import Time
+from robot.strategy.StrategyFactory import StrategyFactory
 
 simulation_duration_seconds = 50
 
@@ -31,6 +34,9 @@ gyro_name = "gyroZ"
 
 simu_time = Time(simulator)
 
+steering_controller = SteeringController(simulator=simulator,
+                                         steering_handles=[handles["left_steering"], handles["right_steering"]])
+
 speed_controller = SpeedController(simulator=simulator,
                                    motor_handles=[handles["left_motor"], handles["right_motor"]],
                                    simulation_step_time=simulator.get_simulation_time_step())
@@ -41,50 +47,43 @@ gyro = Gyro(simulator=simulator,
 tachometer = Tachometer(simulator=simulator,
                         base_car=handles['base_car'])
 
-image_warper = ImageWarper(tachometer=tachometer,
-                           gyro=gyro,
-                           show_and_wait=False)
+camera = Camera(simulator=simulator,
+                line_cam_handle=handles["line_cam"],
+                obstacles_cam_handle=handles["obstacles_cam"])
 
-image_analyzer = ImageAnalyzer(simulator=simulator,
-                               line_cam_handle=handles["line_cam"],
-                               obstacles_cam_handle=handles["obstacles_cam"],
-                               image_warper=image_warper)
+car = SimuCar(steering_controller=steering_controller,
+              speed_controller=speed_controller,
+              tachometer=tachometer,
+              gyro=gyro,
+              camera=camera,
+              time=simu_time)
 
-car = Car(simulator=simulator,
-          steering_handles=[handles["left_steering"], handles["right_steering"]],
-          motors_handles=[handles["left_motor"], handles["right_motor"]],
-          speed_controller=speed_controller,
-          tachometer=tachometer,
-          gyro=gyro)
+image_warper = ImageWarper(car=car, nb_images_delay=NB_IMAGES_DELAY, tacho_coef=TACHO_COEF)
 
-asservissement = Asservissement(car=car,
-                                image_analyzer=image_analyzer,
-                                time=simu_time)
+image_analyzer = ImageAnalyzer(car=car,
+                               image_warper=image_warper,
+                               show_and_wait=True)
+
+
+strategy_factory = StrategyFactory(car, image_analyzer)
 
 sequencer = Sequencer(car=car,
-                      time=simu_time,
-                      asservissement=asservissement,
-                      image_warper=image_warper,
-                      program=Programs.LINE_ANGLE_OFFSET)
+                      program=Programs.TRR_2019,
+                      strategy_factory=strategy_factory)
 
 logger = Logger(simulator=simulator,
-                time=simu_time,
                 image_analyzer=image_analyzer,
-                speed_controller=speed_controller,
                 car=car,
-                gyro=gyro,
-                asservissement=asservissement,
                 sequencer=sequencer,
-                handles=handles,
-                tachometer=tachometer)
+                handles=handles)
 
 # Order matter, components will be executed one by one
 executable_components = [gyro,
                          tachometer,
-                         image_analyzer,
+                         camera,
                          sequencer,
-                         asservissement,
                          speed_controller,
+                         steering_controller,
                          logger]
 
 simulator.start_simulation()

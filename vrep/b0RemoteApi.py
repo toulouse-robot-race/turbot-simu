@@ -3,10 +3,12 @@
 # and the server counterpart to lua/b0RemoteApiServer.lua
 # -------------------------------------------------------
 
-import msgpack
 import random
 import string
-from robot import Time
+
+import msgpack
+
+from robot.simu import Time
 from vrep import b0
 
 

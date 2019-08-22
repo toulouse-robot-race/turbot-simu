@@ -1,37 +1,33 @@
 import cv2
 import numpy as np
 
-from robot.Config import TACHO_COEF, NB_IMAGES_DELAY
-
 PIXELS_METER = 250
 
 
 class ImageWarper:
-    def __init__(self, tachometer, gyro, show_and_wait=False):
-        self.tacho = tachometer
-        self.gyro = gyro
+    def __init__(self, car, nb_images_delay, tacho_coef, show_and_wait=False, rotation_enabled=True):
+        self.tacho_coef = tacho_coef
+        self.nb_images_delay = nb_images_delay
+        self.car = car
         self.rotations = []
         self.translations = []
-        self.rotation_enabled = True
+        self.rotation_enabled = rotation_enabled
         self.show_and_wait = show_and_wait
 
-    def enable_rotation(self, enabled):
-        self.rotation_enabled = enabled
-
     def warp(self, image):
-        final = self.gyro.get_delta_cap()
-        translation = self.tacho.get_delta_tacho() / TACHO_COEF * PIXELS_METER
+        final = self.car.get_delta_cap()
+        translation = self.car.get_delta_tacho() / self.tacho_coef * PIXELS_METER
         self.rotations.append(final)
         self.translations.append(translation)
 
-        if NB_IMAGES_DELAY == 0:
+        if self.nb_images_delay == 0:
             actives_rotations = []
             actives_translations = []
         else:
-            actives_rotations = self.rotations[-NB_IMAGES_DELAY:] if len(
-                self.rotations) >= NB_IMAGES_DELAY else self.rotations
-            actives_translations = self.translations[-NB_IMAGES_DELAY:] if len(
-                self.rotations) >= NB_IMAGES_DELAY else self.translations
+            actives_rotations = self.rotations[-self.nb_images_delay:] if len(
+                self.rotations) >= self.nb_images_delay else self.rotations
+            actives_translations = self.translations[-self.nb_images_delay:] if len(
+                self.rotations) >= self.nb_images_delay else self.translations
 
         print("actives_translations", actives_translations)
         translation_to_apply = np.sum(actives_translations)

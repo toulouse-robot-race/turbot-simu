@@ -1,6 +1,183 @@
 # coding=utf-8
+TRR_2019 = [{
+    'instruction': 'setCap',  # Cap asuivre = cap actuel
+    'chenillard': True,
+    'conditionFin': 'immediat'
+},
+    {
+        'instruction': 'setTacho',  # Memorise le tacho actuel
+        'conditionFin': 'immediat'
+    },
+    {
+        'instruction': 'ligneDroite',  # suiviImageLigneDroite ou suiviImageRoues
+        'speed': 70,
+        'conditionFin': 'tacho',
+        'tacho': 2000
+    },
+    {
+        'instruction': 'setTacho',  # Memorise le tacho actuel
+        'conditionFin': 'immediat'
+    },
+    {
+        'instruction': 'ligneDroite',  # suiviImageLigneDroite ou suiviImageRoues
+        'speed': 60,
+        'conditionFin': 'tacho',
+        'tacho': 1000
+    },
+    # Premier virage
+    {
+        'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
+        'speed': 50,
+        'conditionFin': 'cap',
+        'capFinalMini': 160,
+        # En relatif par rapport au cap initial, pour la gauche : 180 300, pour la droite 60 180
+        'capFinalMaxi': 270,  # En relatif par rapport au cap initial
+    },
+    {
+        'instruction': 'setTacho',  # Memorise le tacho actuel
+        'conditionFin': 'immediat'
+    },
+    {
+        'instruction': 'ajouteCap',
+        'cap': 180,
+        'conditionFin': 'immediat',
+    },
+    # deuxième ligne droite sortie de premier virage
+    {
+        'instruction': 'ligneDroite',  # suiviImageLigneDroite ou suiviImageRoues
+        'activationDistanceIntegrale': True,
+        'obstacle': False,
+        'speed': 70,
+        'conditionFin': 'tacho',
+        'tacho': 1800,
+    },
+    {
+        'instruction': 'setTacho',  # Memorise le tacho actuel
+        'conditionFin': 'immediat'
+    },
+    # Fin deuxième ligne droite
+    {
+        'instruction': 'ligneDroite',  # suiviImageLigneDroite ou suiviImageRoues
+        'activationDistanceIntegrale': True,
+        'obstacle': False,
+        'speed': 60,
+        'conditionFin': 'tacho',
+        'tacho': 600
+    },
+    {
+        'instruction': 'setTacho',  # Memorise le tacho actuel
+        'conditionFin': 'immediat'
+    },
+    # Chicane
+    {
+        'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
+        'speed': 60,
+        'conditionFin': 'tacho',
+        'tacho': 4050,
+    },
+    {
+        'instruction': 'setTacho',  # Memorise le tacho actuel
+        'conditionFin': 'immediat'
+    },
+    # Troisième ligne droite sortie de chicane
+    {
+        'instruction': 'ligneDroite',  # suiviImageLigneDroite ou suiviImageRoues
+        'activationDistanceIntegrale': True,
+        'obstacle': False,
+        'speed': 60,
+        'conditionFin': 'tacho',
+        'tacho': 2000,
+    },
+    {
+        'instruction': 'setTacho',  # Memorise le tacho actuel
+        'conditionFin': 'immediat'
+    },
+    # Fin troisième ligne droite
+    {
+        'instruction': 'ligneDroite',  # suiviImageLigneDroite ou suiviImageRoues
+        'activationDistanceIntegrale': True,
+        'obstacle': False,
+        'speed': 50,
+        'conditionFin': 'tacho',
+        'tacho': 500
+    },
+    # Deuxième virage
+    {
+        'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
+        'speed': 45,
+        'conditionFin': 'cap',
+        'capFinalMini': 160,
+        'capFinalMaxi': 270,
+    },
+    {
+        'instruction': 'setTacho',
+        'conditionFin': 'immediat'
+    },
+    {
+        'instruction': 'ajouteCap',
+        'cap': 180,
+        'conditionFin': 'immediat',
+    },
+    # début dernière ligne droite, sortie de deuxième virage
+    {
+        'instruction': 'ligneDroite',  # suiviImageLigneDroite ou suiviImageRoues
+        'activationDistanceIntegrale': True,
+        'obstacle': False,
+        'speed': 50,
+        'conditionFin': 'tacho',
+        'tacho': 1000,
+    },
+    {
+        'instruction': 'setTacho',  # Memorise le tacho actuel
+        'conditionFin': 'immediat'
+    },
+    # Dernière ligne droite
+    {
+        'instruction': 'ligneDroite',  # suiviImageLigneDroite ou suiviImageRoues
+        'activationDistanceIntegrale': True,
+        'obstacle': False,
+        'speed': 90,  # Was 90 in TRR2018
+        'conditionFin': 'tacho',
+        'tacho': 7000,
+    },
+    {
+        'instruction': 'setTacho',  # Memorise le tacho actuel
+        'conditionFin': 'immediat'
+    },
+    # Ralentissement arrivée
+    {
+        'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
+        'activationDistanceIntegrale': True,
+        'obstacle': False,
+        'speed': 60,
+        'conditionFin': 'tacho',
+        'tacho': 500,
 
-TRR = [
+    },
+    {
+        'instruction': 'setTacho',  # Memorise le tacho actuel
+        'conditionFin': 'immediat'
+    },
+    {
+        'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
+        'speed': 45,
+        'conditionFin': 'tacho',
+        'tacho': 500,
+        'nextLabel': 'arret_apres_freinage'
+    },
+
+    {
+        'label': 'arret_apres_freinage',
+        'instruction': 'tourne',  # Arrêt avec roues a 0
+        'speed': 0,
+        'positionRoues': 0,
+        'conditionFin': 'duree',
+        'duree': 1.5,
+        'nextLabel': 'attendBouton'  # Retour au début
+    }
+]
+
+TRR_2018 = [
     {
         'instruction': 'setCap',  # Cap asuivre = cap actuel
         'chenillard': True,
@@ -14,7 +191,7 @@ TRR = [
         'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
         'activationDistanceIntegrale': False,
         'obstacle': False,
-        'vitesse': 70,
+        'speed': 70,
         'conditionFin': 'tacho',
         'tacho': 2000
     },
@@ -26,16 +203,14 @@ TRR = [
         'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
         'activationDistanceIntegrale': True,
         'obstacle': False,
-        'vitesse': 45,
+        'speed': 45,
         'conditionFin': 'tacho',
         'tacho': 500
     },
     # Premier virage
     {
-        'instruction': 'suiviImageRoues',  # suiviImageLigneDroite ou suiviImageRoues
-        'activationDistanceIntegrale': True,
-        'obstacle': False,
-        'vitesse': 31,
+        'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
+        'speed': 31,
         'conditionFin': 'cap',
         'capFinalMini': 160,
         # En relatif par rapport au cap initial, pour la gauche : 180 300, pour la droite 60 180
@@ -55,7 +230,7 @@ TRR = [
         'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
         'activationDistanceIntegrale': True,
         'obstacle': False,
-        'vitesse': 70,
+        'speed': 70,
         'conditionFin': 'tacho',
         'tacho': 1800,
     },
@@ -68,7 +243,7 @@ TRR = [
         'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
         'activationDistanceIntegrale': True,
         'obstacle': False,
-        'vitesse': 45,
+        'speed': 45,
         'conditionFin': 'tacho',
         'tacho': 450
     },
@@ -78,10 +253,8 @@ TRR = [
     },
     # Chicane
     {
-        'instruction': 'suiviImageRoues',  # suiviImageLigneDroite ou suiviImageRoues
-        'activationDistanceIntegrale': True,
-        'obstacle': False,
-        'vitesse': 31,
+        'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
+        'speed': 31,
         'conditionFin': 'tacho',
         'tacho': 4250,
     },
@@ -94,7 +267,7 @@ TRR = [
         'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
         'activationDistanceIntegrale': True,
         'obstacle': False,
-        'vitesse': 70,
+        'speed': 70,
         'conditionFin': 'tacho',
         'tacho': 2000,
     },
@@ -107,16 +280,14 @@ TRR = [
         'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
         'activationDistanceIntegrale': True,
         'obstacle': False,
-        'vitesse': 45,
+        'speed': 45,
         'conditionFin': 'tacho',
         'tacho': 500
     },
     # Deuxième virage
     {
-        'instruction': 'suiviImageRoues',  # suiviImageLigneDroite ou suiviImageRoues
-        'activationDistanceIntegrale': True,
-        'obstacle': False,
-        'vitesse': 28,
+        'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
+        'speed': 28,
         'conditionFin': 'cap',
         'capFinalMini': 160,
         'capFinalMaxi': 270,
@@ -135,7 +306,7 @@ TRR = [
         'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
         'activationDistanceIntegrale': True,
         'obstacle': False,
-        'vitesse': 50,
+        'speed': 50,
         'conditionFin': 'tacho',
         'tacho': 1000,
     },
@@ -148,9 +319,9 @@ TRR = [
         'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
         'activationDistanceIntegrale': True,
         'obstacle': False,
-        'vitesse': 90,  # Was 90 in TRR2018
+        'speed': 90,  # Was 90 in TRR2018
         'conditionFin': 'tacho',
-        'tacho': 5900,
+        'tacho': 6500,
     },
     {
         'instruction': 'setTacho',  # Memorise le tacho actuel
@@ -161,7 +332,7 @@ TRR = [
         'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
         'activationDistanceIntegrale': True,
         'obstacle': False,
-        'vitesse': 40,
+        'speed': 40,
         'conditionFin': 'tacho',
         'tacho': 500,
 
@@ -171,10 +342,10 @@ TRR = [
         'conditionFin': 'immediat'
     },
     {
-        'instruction': 'suiviImageRoues',  # suiviImageLigneDroite ou suiviImageRoues
+        'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
         'activationDistanceIntegrale': True,
         'obstacle': False,
-        'vitesse': 30,
+        'speed': 30,
         'conditionFin': 'tacho',
         'tacho': 500,
         'nextLabel': 'arret_apres_freinage'
@@ -183,7 +354,7 @@ TRR = [
     {
         'label': 'arret_apres_freinage',
         'instruction': 'tourne',  # Arrêt avec roues a 0
-        'vitesse': 0,
+        'speed': 0,
         'positionRoues': 0,
         'conditionFin': 'duree',
         'duree': 1.5,
@@ -205,14 +376,14 @@ DLVV = [
         'instruction': 'suiviImageRoues',  # suiviImageLigneDroite ou suiviImageRoues
         'activationDistanceIntegrale': True,
         'display': 'GO',
-        'vitesse': 30,
+        'speed': 30,
         'vitesseEvitement': 16,
         'conditionFin': 'tacho',
         'tacho': 25000,
     },
     {
         'instruction': 'tourne',  # Arrêt avec roues a 0
-        'vitesse': 0,
+        'speed': 0,
         'positionRoues': 0,
         'conditionFin': 'duree',
         'duree': 1.5,
@@ -231,13 +402,13 @@ LINE_ANGLE_OFFSET = [
     },
     {
         'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
-        'vitesse': 45,
+        'speed': 45,
         'conditionFin': 'tacho',
         'tacho': 25000,
     },
     {
         'instruction': 'tourne',  # Arrêt avec roues a 0
-        'vitesse': 0,
+        'speed': 0,
         'positionRoues': 0,
         'conditionFin': 'duree',
         'duree': 10,
@@ -255,14 +426,14 @@ CALIBRATE = [
     },
     {
         'instruction': 'tourne',  # suiviImageLigneDroite ou suiviImageRoues
-        'vitesse': 20,
+        'speed': 20,
         'positionRoues': 40,
         'conditionFin': 'tacho',
         'tacho': 50000,
     },
     {
         'instruction': 'tourne',  # Arrêt avec roues a 0
-        'vitesse': 0,
+        'speed': 0,
         'positionRoues': 0,
         'conditionFin': 'duree',
         'duree': 10,
@@ -283,27 +454,27 @@ HIPPODROME = [
     {
         'instruction': 'suiviImageLigneDroite',  # suiviImageLigneDroite ou suiviImageRoues
         'activationDistanceIntegrale': False,
-        'vitesse': 4,
+        'speed': 4,
         'conditionFin': 'tacho',
         'tacho': 10,
     },
     {
         'instruction': 'ligneDroite',  # Puis finit le virage 180°
-        'vitesse': 2,
+        'speed': 2,
         'conditionFin': 'tacho',
         'tacho': 5,
     },
     # {
     #     'instruction': 'tourne',  # Puis finit le virage 180°
     #     'positionRoues': 0,
-    #     'vitesse': 0.5,
+    #     'speed': 0.5,
     #     'conditionFin': 'tacho',
     #     'tacho': 3,
     # },
     {
         'instruction': 'tourne',  # Puis finit le virage 180°
         'positionRoues': 80,
-        'vitesse': 1,
+        'speed': 1,
         'conditionFin': 'cap',
         'capFinalMini': 165,  # En relatif par rapport au cap initial
         'capFinalMaxi': 195  # En relatif par rapport au cap initial
@@ -320,20 +491,20 @@ HIPPODROME = [
     # {
     #     'instruction': 'tourne',  # Puis finit le virage 180°
     #     'positionRoues': 0,
-    #     'vitesse': 0.5,
+    #     'speed': 0.5,
     #     'conditionFin': 'tacho',
     #     'tacho': 5,
     # },
     {
         'instruction': 'ligneDroite',  # Puis finit le virage 180°
-        'vitesse': 2,
+        'speed': 2,
         'conditionFin': 'tacho',
         'tacho': 5,
     },
     {
         'instruction': 'tourne',  # Puis finit le virage 180°
         'positionRoues': 80,
-        'vitesse': 1,
+        'speed': 1,
         'conditionFin': 'cap',
         'capFinalMini': 165,  # En relatif par rapport au cap initial
         'capFinalMaxi': 195  # En relatif par rapport au cap initial
@@ -343,5 +514,56 @@ HIPPODROME = [
         'cap': 180,
         'conditionFin': 'immediat',
         'nextLabel': 'hippodrome'
+    }
+]
+
+TEST = [
+    {
+        'label': 'waitGyroStable',  # Attend stabilisation du gyro
+        'instruction': 'tourne',
+        'display': 'WAITB',
+        'chenillard': False,
+        'positionRoues': 0,
+        'vitesse': 0,
+        'conditionFin': 'attendreGyroStable'
+    },
+    {
+        'label': 'attendBouton',
+        'instruction': 'tourne',  # Attend l'appui sur le bouton
+        'display': 'WAITB',
+        'chenillard': False,
+        'positionRoues': 0,
+        'vitesse': 0,
+        'conditionFin': 'attendBouton'
+    },
+    {
+        'instruction': 'tourne',
+        'display': 'GO',
+        'chenillard': True,
+        'positionRoues': 10,
+        'vitesse': 0,
+        'conditionFin': 'duree',
+        'duree': 1,
+    },
+    {
+        'instruction': 'tourne',
+        'positionRoues': -10,
+        'vitesse': 0,
+        'conditionFin': 'duree',
+        'duree': 1,
+    },
+    {
+        'instruction': 'tourne',
+        'positionRoues': 20,
+        'vitesse': 0,
+        'conditionFin': 'duree',
+        'duree': 1,
+    },
+    {
+        'instruction': 'tourne',
+        'positionRoues': -20,
+        'vitesse': 0,
+        'conditionFin': 'duree',
+        'duree': 1,
     }
 ]

@@ -2,7 +2,14 @@
 import cv2
 import numpy as np
 
-from robot.Config import CAMERA_DELAY
+
+def remove_line_behind_obstacles(mask_line, mask_obstacles):
+    diff = mask_line - mask_obstacles
+    return (diff == 255) * diff
+
+
+def clean_mask_obstacle(mask_obstacles):
+    return np.clip(mask_obstacles, 0, 1) * 255
 
 
 class ImageAnalyzer:
@@ -27,7 +34,8 @@ class ImageAnalyzer:
 
     # Constants for obstacle detection
     MIN_X_TO_CONSIDER_OBSTACLE_EXISTS = 45  # If obstacle is low enough in image, consider it as existing
-    MIN_X_TO_COMPUTE_OBSTACLE_SIDE_ETROIT = 45  # If obstacle is low enough in image, we can compute its side (only between Y_SIDE_GAUCHE and Y_SIDE_DROITE)
+    MIN_X_TO_COMPUTE_OBSTACLE_SIDE_ETROIT = 45  # If obstacle is low enough in image, we can compute its side (only
+    # between Y_SIDE_GAUCHE and Y_SIDE_DROITE)
     MIN_X_TO_COMPUTE_OBSTACLE_SIDE_LARGE = 90  # If obstacle is low enough in image, we can compute its side (all width)
     Y_SIDE_GAUCHE = 110  # Left border of "etroit zone" (for computing obstacle side etroit)
     Y_SIDE_DROITE = WIDTH - Y_SIDE_GAUCHE  # Right border of "etroit zone"
@@ -44,8 +52,10 @@ class ImageAnalyzer:
     MIDDLE_HORIZON_X = -25  # Hauteur de l'horizon (negatif = au-dessus de l'image)
 
     IMAGE_CLIPPED_LENGHT = 300
+    BOTTOM_OBSTACLE_WINDOW_HEIGHT = 5
+    LINE_WINDOW_HEIGHT_AT_OBSTACLE = 5
 
-    # Param�tres de classe
+    # Param�tres de class
     position_consigne = 0.0
     logTimestampMemory = None
     logImageMemory = None
@@ -76,41 +86,31 @@ class ImageAnalyzer:
     distance_obstacle_line = None
     side_avoidance = None
 
-    def __init__(self, simulator, line_cam_handle, obstacles_cam_handle, image_warper):
-        self.obstacles_cam_handle = obstacles_cam_handle
-        self.line_cam_handle = line_cam_handle
+    def __init__(self, car, image_warper, show_and_wait=False):
+        self.car = car
         self.image_warper = image_warper
-        self.line_cam_handle = line_cam_handle
-        self.simulator = simulator
+        self.show_and_wait = show_and_wait
 
-    def execute(self):
-        resolution, byte_array_image_string = self.simulator.get_gray_image(self.line_cam_handle, CAMERA_DELAY)
-        resolution_obstacles, byte_array_image_string_obstacle = self.simulator.get_gray_image(
-            self.obstacles_cam_handle, CAMERA_DELAY)
-
-        if resolution is not None and byte_array_image_string is not None \
-                and resolution_obstacles is not None and byte_array_image_string_obstacle is not None:
-            mask_line = self.convert_image_to_numpy(byte_array_image_string, resolution)
+    def analyze(self):
+        mask_line, mask_obstacles = self.car.get_images()
+        if mask_line is not None and mask_obstacles is not None:
             mask_line = self.clean_mask_line(mask_line)
-            mask_obstacles = self.convert_image_to_numpy(byte_array_image_string_obstacle, resolution_obstacles)
-            mask_obstacles = self.clean_mask_obstacle(mask_obstacles)
-            mask_line = self.remove_line_behind_obstacles(mask_line, mask_obstacles)
+            mask_obstacles = clean_mask_obstacle(mask_obstacles)
+            mask_line = remove_line_behind_obstacles(mask_line, mask_obstacles)
             warped_line = self.image_warper.warp(mask_line)
             warped_obstacles = self.image_warper.warp(mask_obstacles)
 
-            # Display final mask for debug
-            mask_for_debug_display = np.zeros((warped_line.shape[0], warped_line.shape[1], 3))
-            mask_for_debug_display[..., 1] = warped_obstacles
-            mask_for_debug_display[..., 2] = warped_line
-            cv2.imshow('merged final', mask_for_debug_display)
-            cv2.waitKey(0)
+            if self.show_and_wait:
+                # Display final mask for debug
+                mask_for_debug_display = np.zeros((warped_line.shape[0], warped_line.shape[1], 3))
+                mask_for_debug_display[..., 1] = warped_obstacles
+                mask_for_debug_display[..., 2] = warped_line
+                cv2.imshow('merged final', mask_for_debug_display)
+                cv2.waitKey(0)
 
             self.poly_1_interpol(warped_line)
             self.compute_line_horizontal_offset(warped_line)
             self.compute_obstacle_position(warped_line, warped_obstacles)
-
-    def convert_image_to_numpy(self, byte_array_image_string, resolution):
-        return np.flipud(np.fromstring(byte_array_image_string, dtype=np.uint8).reshape(resolution[::-1]))
 
     def clean_mask_line(self, image):
 
@@ -166,7 +166,7 @@ class ImageAnalyzer:
             return result
 
     def poly_1_interpol(self, image):
-        clipped = image[self.IMAGE_CLIPPED_LENGHT:,:]
+        clipped = image[self.IMAGE_CLIPPED_LENGHT:, :]
         print(clipped.shape)
         nonzeros_indexes = np.nonzero(clipped > self.LINE_THRESHOLD)
         y = nonzeros_indexes[0]
@@ -185,8 +185,6 @@ class ImageAnalyzer:
             self.pixel_offset_line = np.mean(x[-10:]) - 150
 
     def compute_obstacle_position(self, mask_line, mask_obstacles):
-        self.BOTTOM_OBSTACLE_WINDOW_HEIGHT = 5
-        self.LINE_WINDOW_HEIGHT_AT_OBSTACLE = 5
 
         obstacle_pixels_y, obstacle_pixels_x, = np.nonzero(mask_obstacles)
         line_pixels_y, line_pixels_x = np.nonzero(mask_line)
@@ -198,8 +196,8 @@ class ImageAnalyzer:
             return
 
         lowest_obstacle_y = np.max(obstacle_pixels_y)
-        lowest_obstacle_pixels_x = obstacle_pixels_x[np.where(obstacle_pixels_y >= lowest_obstacle_y - self.BOTTOM_OBSTACLE_WINDOW_HEIGHT)]
-        lowest_obstacle_pixels_y = obstacle_pixels_y[np.where(obstacle_pixels_y >= lowest_obstacle_y - self.BOTTOM_OBSTACLE_WINDOW_HEIGHT)]
+        lowest_obstacle_pixels_x = obstacle_pixels_x[
+            np.where(obstacle_pixels_y >= lowest_obstacle_y - self.BOTTOM_OBSTACLE_WINDOW_HEIGHT)]
 
         if len(line_pixels_x) == 0:
             self.distance_obstacle_line = None
@@ -211,19 +209,23 @@ class ImageAnalyzer:
         low_right_obstacle_y = lowest_obstacle_y
 
         # Find points on the line that are the closest to the bottom left and bottom right of the obstacle
-        idx_line_closest_to_left_obstacle = np.argmin(np.square(low_left_obstacle_x - line_pixels_x) + np.square(low_left_obstacle_y - line_pixels_y))
-        idx_line_closest_to_right_obstacle = np.argmin(np.square(low_right_obstacle_x - line_pixels_x) + np.square(low_right_obstacle_y - line_pixels_y))
+        idx_line_closest_to_left_obstacle = np.argmin(
+            np.square(low_left_obstacle_x - line_pixels_x) + np.square(low_left_obstacle_y - line_pixels_y))
+        idx_line_closest_to_right_obstacle = np.argmin(
+            np.square(low_right_obstacle_x - line_pixels_x) + np.square(low_right_obstacle_y - line_pixels_y))
         x_line_closest_left = line_pixels_x[idx_line_closest_to_left_obstacle]
         y_line_closest_left = line_pixels_y[idx_line_closest_to_left_obstacle]
         x_line_closest_right = line_pixels_x[idx_line_closest_to_right_obstacle]
         y_line_closest_right = line_pixels_y[idx_line_closest_to_right_obstacle]
 
         # Compute distances
-        distance_left_obstacle = np.sqrt( (x_line_closest_left - low_left_obstacle_x) ** 2 + (y_line_closest_left - low_left_obstacle_y) ** 2 )
-        distance_right_obstacle = np.sqrt( (x_line_closest_right - low_right_obstacle_x) ** 2 + (y_line_closest_right - low_right_obstacle_y) ** 2 )
+        distance_left_obstacle = np.sqrt(
+            (x_line_closest_left - low_left_obstacle_x) ** 2 + (y_line_closest_left - low_left_obstacle_y) ** 2)
+        distance_right_obstacle = np.sqrt(
+            (x_line_closest_right - low_right_obstacle_x) ** 2 + (y_line_closest_right - low_right_obstacle_y) ** 2)
 
         # Find position according to line
-        position_left_obstacle = np.sign(low_left_obstacle_x- x_line_closest_left)
+        position_left_obstacle = np.sign(low_left_obstacle_x - x_line_closest_left)
         position_right_obstacle = np.sign(low_right_obstacle_x - x_line_closest_right)
 
         # Transform distance to signed distance
@@ -232,53 +234,3 @@ class ImageAnalyzer:
 
         self.side_avoidance = 1 if (abs(distance_left_obstacle) > abs(distance_right_obstacle)) else -1
         self.distance_obstacle_line = min(distance_left_obstacle, distance_right_obstacle, key=abs)
-
-    def getPositionLigne1(self):
-        return self.position_ligne_1
-
-    def getPositionLigne2(self):
-        return self.position_ligne_2
-
-    def getPolyCoeffSquare(self):
-        return self.poly_coeff_square
-
-    # Tells if a new image has arrived
-    def isThereANewImage(self):
-        return True
-
-    def getPolyCoeff1(self):
-        return self.poly_coeff_1
-
-    def getPolyCoeffConst(self):
-        return self.poly_coeff_const
-
-    def getObstacleExists(self):
-        return self.obstacle_exists
-
-    def getPositionObstacle(self):
-        return self.position_obstacle
-
-    def getParallelism(self):
-        return self.parallelism
-
-    def getObstacleInBrakeZone(self):
-        return self.obstacle_in_brake_zone
-
-    def getStartDetected(self):
-        pass
-
-    def unlockObstacle(self):
-        self.position_obstacle = 0
-
-    def get_line_offset(self):
-        return self.pixel_offset_line
-
-    def get_distance_obstacle_line(self):
-        return self.distance_obstacle_line
-
-    def remove_line_behind_obstacles(self, mask_line, mask_obstacles):
-        diff = mask_line - mask_obstacles
-        return (diff == 255) * diff
-
-    def clean_mask_obstacle(self, mask_obstacles):
-        return np.clip(mask_obstacles, 0, 1) * 255

@@ -4,7 +4,7 @@ import time
 
 import numpy as np
 
-from robot.Simulator import Simulator
+from robot.simu.Simulator import Simulator
 
 simulation_duration_seconds = 40
 
