@@ -3,12 +3,12 @@ import os
 import time
 from pathlib import Path
 
-import cv2
 import numpy as np
 import tensorflow as tf
 from keras.models import load_model
 
 from robot.real.Camera import Camera
+from robot.real.UsbCam import UsbCam
 
 MODEL_FILENAME = 'deep_learning/models/grs_furby_with_data_augmentation.h5'
 
@@ -24,8 +24,6 @@ MASK_OBSTACLE_FILE_TMP = RAM_DISK_DIR + "/mask_obstacle.tmp.npy"
 
 MASK_LINE_FILE_TMP = RAM_DISK_DIR + "/mask_line.tmp.npy"
 
-CAM_HANDLE = 1
-
 # Bug fix for tensorflow on TX2
 # See here: https://devtalk.nvidia.com/default/topic/1030875/jetson-tx2/gpu-sync-failed-in-tx2-when-running-tensorflow/
 config = tf.ConfigProto()
@@ -35,10 +33,7 @@ session = tf.Session(config=config)
 # Load model
 seq = load_model(MODEL_FILENAME)
 
-# Init camera stream
-stream = cv2.VideoCapture(CAM_HANDLE)
-stream.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
-stream.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+usbCam = UsbCam()
 
 cam = Camera(MASK_LINE_FILE, MASK_OBSTACLE_FILE)
 
@@ -50,7 +45,7 @@ while True:
         time.sleep(0.1)
         continue
 
-    _, frame = stream.read()
+    frame = usbCam.read()
 
     # Process inference
     predicted_masks = seq.predict(frame[np.newaxis, :, :, :])[0, ...]

@@ -5,7 +5,9 @@ PIXELS_METER = 250
 
 
 class ImageWarper:
-    def __init__(self, car, nb_images_delay, tacho_coef, show_and_wait=False, rotation_enabled=True):
+    def __init__(self, car, nb_images_delay, tacho_coef, show_and_wait=False,
+                 rotation_enabled=True, translation_enabled=True):
+        self.translation_enabled = translation_enabled
         self.tacho_coef = tacho_coef
         self.nb_images_delay = nb_images_delay
         self.car = car
@@ -15,15 +17,16 @@ class ImageWarper:
         self.show_and_wait = show_and_wait
 
     def warp(self, image):
-        final = self.car.get_delta_cap()
-        translation = self.car.get_delta_tacho() / self.tacho_coef * PIXELS_METER
-        self.rotations.append(final)
-        self.translations.append(translation)
 
         if self.nb_images_delay == 0:
             actives_rotations = []
             actives_translations = []
         else:
+            final = self.car.get_delta_cap()
+            translation = self.car.get_delta_tacho() / self.tacho_coef * PIXELS_METER
+            self.rotations.append(final)
+            self.translations.append(translation)
+
             actives_rotations = self.rotations[-self.nb_images_delay:] if len(
                 self.rotations) >= self.nb_images_delay else self.rotations
             actives_translations = self.translations[-self.nb_images_delay:] if len(
@@ -55,22 +58,17 @@ class ImageWarper:
 
         translation_matrix = np.float32([[1, 0, 0], [0, 1, translation_to_apply]])
         rotation_matrix = cv2.getRotationMatrix2D((width / 2, height), rotation_to_apply, 1)
-        # cv2.imshow("original", image)
 
-        perspective = cv2.warpPerspective(image, perspective_matrix, (width, height))
-        # cv2.imshow("perspective", perspective)
+        warped = cv2.warpPerspective(image, perspective_matrix, (width, height))
 
-        translation = cv2.warpAffine(perspective, translation_matrix, (width, height))
-        # cv2.imshow("translation1", translation)
+        if self.translation_enabled:
+            warped = cv2.warpAffine(warped, translation_matrix, (width, height))
 
         if self.rotation_enabled:
-            final = cv2.warpAffine(translation, rotation_matrix, (width, height))
-            # cv2.imshow("rotation", rotation)
-        else:
-            final = translation
+            warped = cv2.warpAffine(warped, rotation_matrix, (width, height))
 
         if self.show_and_wait:
-            cv2.imshow("final", final)
+            cv2.imshow("final", warped)
             cv2.waitKey(0)
 
-        return final
+        return warped
