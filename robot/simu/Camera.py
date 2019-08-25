@@ -22,8 +22,15 @@ class Camera(Component):
 
         if resolution is not None and byte_array_image_string is not None \
                 and resolution_obstacles is not None and byte_array_image_string_obstacle is not None:
-            self.mask_line = convert_image_to_numpy(byte_array_image_string, resolution)
+            mask_line = convert_image_to_numpy(byte_array_image_string, resolution)
             self.mask_obstacles = convert_image_to_numpy(byte_array_image_string_obstacle, resolution_obstacles)
+            self.mask_line = remove_line_behind_obstacles(mask_line, self.mask_obstacles)
+
+
+def remove_line_behind_obstacles(mask_line, mask_obstacles):
+    np.clip(mask_obstacles, 0, 1) * 255
+    diff = mask_line - mask_obstacles
+    return (diff == 255) * diff
 
 
 def convert_image_to_numpy(byte_array_image_string, resolution):

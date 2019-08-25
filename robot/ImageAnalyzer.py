@@ -3,11 +3,6 @@ import cv2
 import numpy as np
 
 
-def remove_line_behind_obstacles(mask_line, mask_obstacles):
-    diff = mask_line - mask_obstacles
-    return (diff == 255) * diff
-
-
 def clean_mask_obstacle(mask_obstacles):
     return np.clip(mask_obstacles, 0, 1) * 255
 
@@ -96,7 +91,6 @@ class ImageAnalyzer:
         if mask_line is not None and mask_obstacles is not None:
             mask_line = self.clean_mask_line(mask_line)
             mask_obstacles = clean_mask_obstacle(mask_obstacles)
-            mask_line = remove_line_behind_obstacles(mask_line, mask_obstacles)
             warped_line = self.image_warper.warp(mask_line)
             warped_obstacles = self.image_warper.warp(mask_obstacles)
 
