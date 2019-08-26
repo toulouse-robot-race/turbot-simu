@@ -36,11 +36,11 @@ class ImageWarper:
         rotation_to_apply = np.sum(actives_rotations)
 
         # Define a tetrahedron that will become rectangular and take all screen
-        h1 = 45
-        h2 = 240
+        h1 = 25         # This parameter sets the distance of vision (if you change this, the image might become a little rectangular. You could need to change resulting image size.)
+        h2 = 240        # This parameter sets the beginning of vision distance (near the robot)
         middle = 160
-        horizon = 6
-        pente = 1.8
+        horizon = -20   # This parameter that needs to be calibrated according to the camera. If it is calibrated, squares should look rectangular. If not, they will look trapezoidal.
+        pente = 1.6     # This parameter changes de angle of vision of the reprojection
 
         tl = np.float32([h1, -(h1 - horizon) * pente + middle])
         tr = np.float32([h1, (h1 - horizon) * pente + middle])
