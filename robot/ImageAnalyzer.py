@@ -161,7 +161,6 @@ class ImageAnalyzer:
 
     def poly_1_interpol(self, image):
         clipped = image[self.IMAGE_CLIPPED_LENGHT:, :]
-        print(clipped.shape)
         nonzeros_indexes = np.nonzero(clipped > self.LINE_THRESHOLD)
         y = nonzeros_indexes[0]
         x = nonzeros_indexes[1]
@@ -182,7 +181,6 @@ class ImageAnalyzer:
 
         obstacle_pixels_y, obstacle_pixels_x, = np.nonzero(mask_obstacles)
         line_pixels_y, line_pixels_x = np.nonzero(mask_line)
-        print(line_pixels_x, line_pixels_y)
 
         if len(obstacle_pixels_y) == 0 or len(obstacle_pixels_x) == 0 \
                 or len(line_pixels_y) == 0 or len(line_pixels_x) == 0:

@@ -32,7 +32,6 @@ class ImageWarper:
             actives_translations = self.translations[-self.nb_images_delay:] if len(
                 self.rotations) >= self.nb_images_delay else self.translations
 
-        print("actives_translations", actives_translations)
         translation_to_apply = np.sum(actives_translations)
         rotation_to_apply = np.sum(actives_rotations)
 
