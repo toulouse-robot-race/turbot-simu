@@ -11,5 +11,5 @@ while True:
     frame = usbCam.read()
     warped = imageWarper.warp(frame)
     cv2.imshow("original", frame)
-    cv2.imshow("perspective warped", frame)
-    cv2.waitKey(0)
+    cv2.imshow("perspective warped", warped)
+    cv2.waitKey(10)
