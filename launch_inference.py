@@ -10,7 +10,7 @@ from keras.models import load_model
 from robot.real.Camera import Camera
 from robot.real.UsbCam import UsbCam
 
-MODEL_FILENAME = 'deep_learning/models/grs_furby_with_data_augmentation.h5'
+MODEL_FILENAME = 'deep_learning/models/final_race_model_5_3.h5'
 
 RAM_DISK_DIR = "/tmp_ram"
 
