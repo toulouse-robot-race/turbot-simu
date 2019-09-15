@@ -24,7 +24,7 @@ MASK_OBSTACLE_FILE_TMP = RAM_DISK_DIR + "/mask_obstacle.tmp.npy"
 
 MASK_LINE_FILE_TMP = RAM_DISK_DIR + "/mask_line.tmp.npy"
 
-LOGS_DIR = "logs/"
+LOGS_DIR = "logs"
 
 SIZE_LOG_FRAMES_STACK = 10
 
@@ -52,10 +52,9 @@ while True:
 
     frame = usbCam.read()
 
-    frames_to_log.append(np.array(time.time(), frame))
-
+    frames_to_log.append([time.time(), frame])
     if len(frames_to_log) >= SIZE_LOG_FRAMES_STACK:
-        np.savez(LOGS_DIR + str(time.time()), frames_to_log)
+        np.savez(LOGS_DIR + "/" + ("%010.5f" % time.time()), data=frames_to_log)
         frames_to_log.clear()
 
     # Process inference
