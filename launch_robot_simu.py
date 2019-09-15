@@ -1,13 +1,14 @@
+import os
 import time
 
 from robot import Programs
 from robot.ImageAnalyzer import ImageAnalyzer
 from robot.ImageWarper import ImageWarper
+from robot.Logger import Logger
 from robot.Sequencer import Sequencer
 from robot.simu.Camera import Camera
 from robot.simu.Config import NB_IMAGES_DELAY, TACHO_COEF
 from robot.simu.Gyro import Gyro
-from robot.simu.Logger import Logger
 from robot.simu.SimuCar import SimuCar
 from robot.simu.Simulator import Simulator
 from robot.simu.SpeedController import SpeedController
@@ -16,9 +17,11 @@ from robot.simu.Tachometer import Tachometer
 from robot.simu.Time import Time
 from robot.strategy.StrategyFactory import StrategyFactory
 
+current_dir = os.path.dirname(os.path.realpath(__file__))
+
 simulation_duration_seconds = 50
 
-simulator = Simulator()
+simulator = Simulator(log_dir=current_dir + "/simu/logs")
 
 handles = {
     "right_motor": simulator.get_handle("driving_joint_rear_right"),
@@ -58,12 +61,14 @@ car = SimuCar(steering_controller=steering_controller,
               camera=camera,
               time=simu_time)
 
-image_warper = ImageWarper(car=car, nb_images_delay=NB_IMAGES_DELAY, tacho_coef=TACHO_COEF)
+image_warper = ImageWarper(car=car,
+                           nb_images_delay=NB_IMAGES_DELAY,
+                           tacho_coef=TACHO_COEF,
+                           show_and_wait=False)
 
 image_analyzer = ImageAnalyzer(car=car,
                                image_warper=image_warper,
                                show_and_wait=True)
-
 
 strategy_factory = StrategyFactory(car, image_analyzer)
 
@@ -71,11 +76,15 @@ sequencer = Sequencer(car=car,
                       program=Programs.LINE_ANGLE_OFFSET,
                       strategy_factory=strategy_factory)
 
+
 logger = Logger(simulator=simulator,
                 image_analyzer=image_analyzer,
                 car=car,
                 sequencer=sequencer,
-                handles=handles)
+                image_warper=image_warper,
+                steering_controller=steering_controller,
+                time=simu_time,
+                log_dir=current_dir + "/logs")
 
 # Order matter, components will be executed one by one
 executable_components = [gyro,

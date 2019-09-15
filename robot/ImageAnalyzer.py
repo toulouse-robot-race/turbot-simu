@@ -81,7 +81,10 @@ class ImageAnalyzer:
     distance_obstacle_line = None
     side_avoidance = None
 
-    def __init__(self, car, image_warper, show_and_wait=False):
+    final_mask_for_display = None
+
+    def __init__(self, car, image_warper, show_and_wait=False, log=True):
+        self.log = log
         self.car = car
         self.image_warper = image_warper
         self.show_and_wait = show_and_wait
@@ -91,16 +94,17 @@ class ImageAnalyzer:
         if mask_line is not None and mask_obstacles is not None:
             mask_line = self.clean_mask_line(mask_line)
             mask_obstacles = clean_mask_obstacle(mask_obstacles)
-            warped_line = self.image_warper.warp(mask_line)
-            warped_obstacles = self.image_warper.warp(mask_obstacles)
+            warped_line = self.image_warper.warp(mask_line, "line")
+            warped_obstacles = self.image_warper.warp(mask_obstacles, "obstacle")
 
-            if self.show_and_wait:
+            if self.show_and_wait or self.log:
                 # Display final mask for debug
-                mask_for_debug_display = np.zeros((warped_line.shape[0], warped_line.shape[1], 3))
-                mask_for_debug_display[..., 1] = warped_obstacles
-                mask_for_debug_display[..., 2] = warped_line
-                cv2.imshow('merged final', mask_for_debug_display)
-                cv2.waitKey(0)
+                self.final_mask_for_display = np.zeros((warped_line.shape[0], warped_line.shape[1], 3))
+                self.final_mask_for_display[..., 1] = warped_obstacles
+                self.final_mask_for_display[..., 2] = warped_line
+                if self.show_and_wait:
+                    cv2.imshow('merged final', self.final_mask_for_display)
+                    cv2.waitKey(0)
 
             self.poly_1_interpol(warped_line)
             self.compute_line_horizontal_offset(warped_line)

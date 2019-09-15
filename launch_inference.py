@@ -24,6 +24,10 @@ MASK_OBSTACLE_FILE_TMP = RAM_DISK_DIR + "/mask_obstacle.tmp.npy"
 
 MASK_LINE_FILE_TMP = RAM_DISK_DIR + "/mask_line.tmp.npy"
 
+LOGS_DIR = "logs/"
+
+SIZE_LOG_FRAMES_STACK = 10
+
 # Bug fix for tensorflow on TX2
 # See here: https://devtalk.nvidia.com/default/topic/1030875/jetson-tx2/gpu-sync-failed-in-tx2-when-running-tensorflow/
 config = tf.ConfigProto()
@@ -37,6 +41,7 @@ usbCam = UsbCam()
 
 cam = Camera(MASK_LINE_FILE, MASK_OBSTACLE_FILE)
 
+frames_to_log = []
 while True:
     begin_time = time.time()
 
@@ -46,6 +51,12 @@ while True:
         continue
 
     frame = usbCam.read()
+
+    frames_to_log.append(np.array(time.time(), frame))
+
+    if len(frames_to_log) >= SIZE_LOG_FRAMES_STACK:
+        np.savez(LOGS_DIR + str(time.time()), frames_to_log)
+        frames_to_log.clear()
 
     # Process inference
     predicted_masks = seq.predict(frame[np.newaxis, :, :, :])[0, ...]

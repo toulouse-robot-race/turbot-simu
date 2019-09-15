@@ -1,13 +1,23 @@
+import os
+import time
+
+import numpy as np
+
+from robot.simu.Camera import convert_image_to_numpy
 from vrep import b0RemoteApi
 
 JOINT_VELOCITY_PARAMETER = 2012
+SIZE_LOG_FRAMES_STACK = 10
 
 
 class Simulator:
-    def __init__(self):
+    def __init__(self, log_dir, log=False):
         self.client = b0RemoteApi.RemoteApiClient('b0RemoteApi_pythonClient', 'b0RemoteApi')
         self.step_done = True
         self.running = True
+        self.log_dir = log_dir
+        if not os.path.isdir(log_dir):
+            os.makedirs(log_dir)
 
     def simulation_step_done(self, _):
         self.step_done = True
@@ -90,12 +100,22 @@ class Simulator:
 
     images = {}
 
+    frames_to_log = []
+
     def get_gray_image(self, vision_sensor_handle, delay):
         if vision_sensor_handle not in self.images:
             self.images[vision_sensor_handle] = {}
 
             def callback(result):
-                self.images[vision_sensor_handle][self.simulation_time] = result[1:]
+                image_result = result[1:]
+                self.images[vision_sensor_handle][self.simulation_time] = image_result
+
+                if vision_sensor_handle == self.get_handle("Vision_sensor_line"):
+                    numpy_image = convert_image_to_numpy(image_result[1], image_result[0])
+                    self.frames_to_log.append([time.time(), numpy_image])
+                    if len(self.frames_to_log) >= SIZE_LOG_FRAMES_STACK:
+                        np.savez(self.log_dir + "/" + ("%010.5f" % time.time()), data=self.frames_to_log)
+                        self.frames_to_log.clear()
 
             self.client.simxGetVisionSensorImage(vision_sensor_handle, True,
                                                  self.client.simxDefaultSubscriber(callback))
@@ -142,7 +162,7 @@ class Simulator:
 
     def teleport_to_start_pos(self):
         self.client.simxCallScriptFunction("teleport@base_link", "sim.scripttype_childscript", None,
-                                                self.client.simxServiceCall())
+                                           self.client.simxServiceCall())
 
     def set_object_pos(self, object, pos):
         self.client.simxSetObjectPosition(object, -1, pos, self.client.simxServiceCall())

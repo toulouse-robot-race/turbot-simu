@@ -13,27 +13,31 @@ class ImageWarper:
         self.car = car
         self.rotations = []
         self.translations = []
+        self.actives_translations = []
+        self.actives_rotations = []
         self.rotation_enabled = rotation_enabled
         self.show_and_wait = show_and_wait
+        self.translated = None
+        self.rotated = None
+        self.perspective = None
 
-    def warp(self, image):
-
+    def warp(self, image, type):
         if self.nb_images_delay == 0:
-            actives_rotations = []
-            actives_translations = []
+            self.actives_rotations = []
+            self.actives_translations = []
         else:
             final = self.car.get_delta_cap()
             translation = self.car.get_delta_tacho() / self.tacho_coef * PIXELS_METER
             self.rotations.append(final)
             self.translations.append(translation)
 
-            actives_rotations = self.rotations[-self.nb_images_delay:] if len(
+            self.actives_rotations = self.rotations[-self.nb_images_delay:] if len(
                 self.rotations) >= self.nb_images_delay else self.rotations
-            actives_translations = self.translations[-self.nb_images_delay:] if len(
+            self.actives_translations = self.translations[-self.nb_images_delay:] if len(
                 self.rotations) >= self.nb_images_delay else self.translations
 
-        translation_to_apply = np.sum(actives_translations)
-        rotation_to_apply = np.sum(actives_rotations)
+        translation_to_apply = np.sum(self.actives_translations)
+        rotation_to_apply = np.sum(self.actives_rotations)
 
         # Define a tetrahedron that will become rectangular and take all screen
         h1 = 45
@@ -60,11 +64,18 @@ class ImageWarper:
 
         warped = cv2.warpPerspective(image, perspective_matrix, (width, height))
 
+        if type == "line":
+            self.perspective = warped.copy()
+
         if self.translation_enabled:
             warped = cv2.warpAffine(warped, translation_matrix, (width, height))
+            if type == "line":
+                self.translated = warped.copy()
 
         if self.rotation_enabled:
             warped = cv2.warpAffine(warped, rotation_matrix, (width, height))
+            if type == "line":
+                self.rotated = warped.copy()
 
         if self.show_and_wait:
             cv2.imshow("final", warped)
