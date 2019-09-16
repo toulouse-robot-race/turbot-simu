@@ -46,7 +46,7 @@ class ImageAnalyzer:
     # Constant for computing parallelism
     MIDDLE_HORIZON_X = -25  # Hauteur de l'horizon (negatif = au-dessus de l'image)
 
-    IMAGE_CLIPPED_LENGHT = 300
+    IMAGE_CLIPPED_LENGHT = 250
     BOTTOM_OBSTACLE_WINDOW_HEIGHT = 5
     LINE_WINDOW_HEIGHT_AT_OBSTACLE = 5
 
