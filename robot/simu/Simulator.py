@@ -12,6 +12,7 @@ SIZE_LOG_FRAMES_STACK = 10
 
 class Simulator:
     def __init__(self, log_dir, log=False):
+        self.log = log
         self.client = b0RemoteApi.RemoteApiClient('b0RemoteApi_pythonClient', 'b0RemoteApi')
         self.step_done = True
         self.running = True
@@ -110,12 +111,13 @@ class Simulator:
                 image_result = result[1:]
                 self.images[vision_sensor_handle][self.simulation_time] = image_result
 
-                if vision_sensor_handle == self.get_handle("Vision_sensor_line"):
-                    numpy_image = convert_image_to_numpy(image_result[1], image_result[0])
-                    self.frames_to_log.append([time.time(), numpy_image])
-                    if len(self.frames_to_log) >= SIZE_LOG_FRAMES_STACK:
-                        np.savez(self.log_dir + "/" + ("%010.5f" % time.time()), data=self.frames_to_log)
-                        self.frames_to_log.clear()
+                if self.log:
+                    if vision_sensor_handle == self.get_handle("Vision_sensor_line"):
+                        numpy_image = convert_image_to_numpy(image_result[1], image_result[0])
+                        self.frames_to_log.append([time.time(), numpy_image])
+                        if len(self.frames_to_log) >= SIZE_LOG_FRAMES_STACK:
+                            np.savez(self.log_dir + "/" + ("%010.5f" % time.time()), data=self.frames_to_log)
+                            self.frames_to_log.clear()
 
             self.client.simxGetVisionSensorImage(vision_sensor_handle, True,
                                                  self.client.simxDefaultSubscriber(callback))

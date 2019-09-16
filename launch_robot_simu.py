@@ -92,8 +92,7 @@ executable_components = [gyro,
                          camera,
                          sequencer,
                          speed_controller,
-                         steering_controller,
-                         logger]
+                         steering_controller]
 
 simulator.start_simulation()
 
