@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-PIXELS_METER = 250
+PIXELS_METER = 133
 
 
 class ImageWarper:

@@ -2,8 +2,6 @@ import numpy as np
 
 from robot.strategy.Strategy import Strategy
 
-COEF_P_LINE_ANGLE = 50
-COEF_P_LINE_OFFSET = 0.2
 RATION_ANGLE_OFFSET = 300
 GAIN = 60
 # Width in pixels in which we avoid obstacles (if obstacle is not in corridor, we do not avoid it)

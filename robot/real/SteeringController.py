@@ -16,9 +16,12 @@ class SteeringController(Component):
     previous_steering = 0
 
     def set_steering(self, steering):
-        if not -100 < steering < 100:
-            raise Exception("steering must be between -100 and 100, was ", steering)
-        self.steering = steering
+        if steering < -100:
+            self.steering = -100
+        elif steering > 100:
+            self.steering = 100
+        else:
+            self.steering = steering
 
     def execute(self):
         if abs(self.previous_steering - self.steering) < 1:

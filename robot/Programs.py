@@ -521,7 +521,7 @@ TEST = [
     {
         'label': 'waitGyroStable',  # Attend stabilisation du gyro
         'instruction': 'tourne',
-        'display': 'WAITB',
+        'display': 'WAITG',
         'chenillard': False,
         'positionRoues': 0,
         'vitesse': 0,
@@ -537,33 +537,16 @@ TEST = [
         'conditionFin': 'attendBouton'
     },
     {
-        'instruction': 'tourne',
-        'display': 'GO',
-        'chenillard': True,
-        'positionRoues': 10,
-        'vitesse': 0,
-        'conditionFin': 'duree',
-        'duree': 1,
+        'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
+        'speed': 30,
+        'conditionFin': 'tacho',
+        'tacho': 7000,
     },
     {
-        'instruction': 'tourne',
-        'positionRoues': -10,
-        'vitesse': 0,
+        'instruction': 'tourne',  # Arrêt avec roues a 0
+        'speed': 0,
+        'positionRoues': 0,
         'conditionFin': 'duree',
-        'duree': 1,
-    },
-    {
-        'instruction': 'tourne',
-        'positionRoues': 20,
-        'vitesse': 0,
-        'conditionFin': 'duree',
-        'duree': 1,
-    },
-    {
-        'instruction': 'tourne',
-        'positionRoues': -20,
-        'vitesse': 0,
-        'conditionFin': 'duree',
-        'duree': 1,
+        'duree': 10,
     }
 ]
