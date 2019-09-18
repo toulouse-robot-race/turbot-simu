@@ -19,11 +19,18 @@ LOG_FORMAT = {
     10: "rotated image"
 }
 
+
 class Logger(Component):
 
     def __init__(self, simulator, image_analyzer,
                  car, sequencer, log_dir,
-                 time, steering_controller, image_warper, size_log_stack=10):
+                 time, steering_controller, image_warper,
+                 size_log_stack=10,
+                 frame_cycle_log=10,
+                 persist_params=False):
+        self.persist_params = persist_params
+        self.frame_cycle_log = frame_cycle_log
+        self.frame_index = 1
         self.image_warper = image_warper
         self.size_log_stack = size_log_stack
         self.steering_controller = steering_controller
@@ -46,24 +53,28 @@ class Logger(Component):
 
     def log(self):
 
-        self.log_array.append([time.time(),
-                               self.image_analyzer.final_mask_for_display,
-                               self.image_analyzer.poly_coeff_1,
-                               self.image_analyzer.pixel_offset_line,
-                               self.image_analyzer.distance_obstacle_line,
-                               self.steering_controller.steering,
-                               self.image_warper.actives_rotations,
-                               self.image_warper.actives_translations,
-                               self.image_warper.perspective,
-                               self.image_warper.translated,
-                               self.image_warper.rotated
-                               ])
+        if self.persist_params:
+            if (self.frame_index % self.frame_cycle_log) == 0:
+                self.log_array.append([time.time(),
+                                       self.image_analyzer.final_mask_for_display,
+                                       self.image_analyzer.poly_coeff_1,
+                                       self.image_analyzer.pixel_offset_line,
+                                       self.image_analyzer.distance_obstacle_line,
+                                       self.steering_controller.steering,
+                                       self.image_warper.actives_rotations,
+                                       self.image_warper.actives_translations,
+                                       self.image_warper.perspective,
+                                       self.image_warper.translated,
+                                       self.image_warper.rotated
+                                       ])
 
-        if len(self.log_array) >= self.size_log_stack:
-            np.savez(self.log_dir + "/" + self.run_session + "_" + "%03d" % self.increment_session, data=self.log_array)
-            self.increment_session += 1
-            self.log_array.clear()
+                if len(self.log_array) >= self.size_log_stack:
+                    np.savez(self.log_dir + "/" + self.run_session + "_" + "%03d" % self.increment_session,
+                             data=self.log_array)
+                    self.increment_session += 1
+                    self.log_array.clear()
+
+            self.frame_index += 1
 
         print("tacho : %s" % self.car.get_tacho())
         print("time : %fs " % self.car.get_time())
-

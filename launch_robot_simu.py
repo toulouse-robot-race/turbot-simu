@@ -21,7 +21,11 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 simulation_duration_seconds = 50
 
-simulator = Simulator(log_dir=current_dir + "/simu/logs")
+frame_cycle_log = 5
+
+simulator = Simulator(log_dir=current_dir + "/simu/logs",
+                      log_enable=True,
+                      frame_cycle_log=frame_cycle_log)
 
 handles = {
     "right_motor": simulator.get_handle("driving_joint_rear_right"),
@@ -76,7 +80,6 @@ sequencer = Sequencer(car=car,
                       program=Programs.LINE_ANGLE_OFFSET,
                       strategy_factory=strategy_factory)
 
-
 logger = Logger(simulator=simulator,
                 image_analyzer=image_analyzer,
                 car=car,
@@ -84,7 +87,9 @@ logger = Logger(simulator=simulator,
                 image_warper=image_warper,
                 steering_controller=steering_controller,
                 time=simu_time,
-                log_dir=current_dir + "/logs")
+                log_dir=current_dir + "/logs",
+                persist_params=True,
+                frame_cycle_log=frame_cycle_log)
 
 # Order matter, components will be executed one by one
 executable_components = [gyro,
@@ -92,7 +97,8 @@ executable_components = [gyro,
                          camera,
                          sequencer,
                          speed_controller,
-                         steering_controller]
+                         steering_controller,
+                         logger]
 
 simulator.start_simulation()
 

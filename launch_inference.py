@@ -28,6 +28,10 @@ LOGS_DIR = "logs"
 
 SIZE_LOG_FRAMES_STACK = 10
 
+FRAME_CYCLE_LOG = 5
+
+frame_index = 1
+
 # Bug fix for tensorflow on TX2
 # See here: https://devtalk.nvidia.com/default/topic/1030875/jetson-tx2/gpu-sync-failed-in-tx2-when-running-tensorflow/
 config = tf.ConfigProto()
@@ -52,10 +56,12 @@ while True:
 
     frame = usbCam.read()
 
-    frames_to_log.append([time.time(), frame])
-    if len(frames_to_log) >= SIZE_LOG_FRAMES_STACK:
-        np.savez(LOGS_DIR + "/" + ("%010.5f" % time.time()), data=frames_to_log)
-        frames_to_log.clear()
+    if (frame_index % FRAME_CYCLE_LOG) == 0:
+        frames_to_log.append([time.time(), frame])
+        if len(frames_to_log) >= SIZE_LOG_FRAMES_STACK:
+            np.savez(LOGS_DIR + "/" + ("%010.5f" % time.time()), data=frames_to_log)
+            frames_to_log.clear()
+    frame_index += 1
 
     # Process inference
     predicted_masks = seq.predict(frame[np.newaxis, :, :, :])[0, ...]

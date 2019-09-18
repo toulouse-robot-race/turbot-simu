@@ -11,8 +11,9 @@ SIZE_LOG_FRAMES_STACK = 10
 
 
 class Simulator:
-    def __init__(self, log_dir, log=False):
-        self.log = log
+    def __init__(self, log_dir, log_enable=False, frame_cycle_log=10):
+        self.frame_cycle_log = frame_cycle_log
+        self.log = log_enable
         self.client = b0RemoteApi.RemoteApiClient('b0RemoteApi_pythonClient', 'b0RemoteApi')
         self.step_done = True
         self.running = True
@@ -103,6 +104,8 @@ class Simulator:
 
     frames_to_log = []
 
+    frame_index = 1
+
     def get_gray_image(self, vision_sensor_handle, delay):
         if vision_sensor_handle not in self.images:
             self.images[vision_sensor_handle] = {}
@@ -113,11 +116,15 @@ class Simulator:
 
                 if self.log:
                     if vision_sensor_handle == self.get_handle("Vision_sensor_line"):
-                        numpy_image = convert_image_to_numpy(image_result[1], image_result[0])
-                        self.frames_to_log.append([time.time(), numpy_image])
-                        if len(self.frames_to_log) >= SIZE_LOG_FRAMES_STACK:
-                            np.savez(self.log_dir + "/" + ("%010.5f" % time.time()), data=self.frames_to_log)
-                            self.frames_to_log.clear()
+                        if (self.frame_index % self.frame_cycle_log) == 0:
+                            numpy_image = convert_image_to_numpy(image_result[1], image_result[0])
+                            self.frames_to_log.append([time.time(), numpy_image])
+
+                            if len(self.frames_to_log) >= SIZE_LOG_FRAMES_STACK:
+                                np.savez(self.log_dir + "/" + ("%010.5f" % time.time()), data=self.frames_to_log)
+                                self.frames_to_log.clear()
+
+                        self.frame_index += 1
 
             self.client.simxGetVisionSensorImage(vision_sensor_handle, True,
                                                  self.client.simxDefaultSubscriber(callback))
