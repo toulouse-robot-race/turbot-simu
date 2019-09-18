@@ -23,8 +23,10 @@ simulation_duration_seconds = 50
 
 frame_cycle_log = 5
 
+log_enable=False
+
 simulator = Simulator(log_dir=current_dir + "/simu/logs",
-                      log_enable=True,
+                      log_enable=log_enable,
                       frame_cycle_log=frame_cycle_log)
 
 handles = {
@@ -89,7 +91,7 @@ logger = Logger(simulator=simulator,
                 steering_controller=steering_controller,
                 time=simu_time,
                 log_dir=current_dir + "/logs",
-                persist_params=True,
+                persist_params=log_enable,
                 frame_cycle_log=frame_cycle_log)
 
 # Order matter, components will be executed one by one

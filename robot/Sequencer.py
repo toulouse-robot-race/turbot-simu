@@ -80,7 +80,9 @@ class Sequencer(Component):
 
     def init_lao(self):
         additional_offset = self.current_program['offset'] if 'offset' in self.current_program else 0
-        self.strategy = self.strategy_factory.create_lao(additional_offset)
+        angle_coef = self.current_program['angle_coef'] if 'angle_coef' in self.current_program else None
+        offset_coef = self.current_program['offset_coef'] if 'offset_coef' in self.current_program else None
+        self.strategy = self.strategy_factory.create_lao(additional_offset, angle_coef, offset_coef)
 
     def init_cap_standard(self):
         self.strategy = self.strategy_factory.create_cap_standard(self.cap_target, self.current_program['speed'])
@@ -91,12 +93,12 @@ class Sequencer(Component):
         self.current_program = self.program[self.sequence]
         instruction = self.current_program['instruction']
         print("********** Nouvelle instruction *********** ")
-        print(print(json.dumps(self.current_program, indent = 4)))
+        print(print(json.dumps(self.current_program, indent=4)))
         self.time_start = self.car.get_time()
         self.strategy = None
 
         # Applique l'instruction
-        instractions_actions = {
+        instructions_actions = {
             'setCap': self.set_cap,
             'setTacho': self.set_tacho,
             'ajouteCap': self.add_cap,
@@ -104,9 +106,9 @@ class Sequencer(Component):
             'lineAngleOffset': self.init_lao,
             'ligneDroite': self.init_cap_standard,
         }
-        if instruction not in instractions_actions.keys():
+        if instruction not in instructions_actions.keys():
             raise Exception("Instruction " + instruction + " does not exist")
-        instractions_actions[instruction]()
+        instructions_actions[instruction]()
 
         self.set_additional_params()
 

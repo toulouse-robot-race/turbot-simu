@@ -2,9 +2,6 @@ import numpy as np
 
 from robot.strategy.Strategy import Strategy
 
-RATION_ANGLE_OFFSET = 300
-GAIN = 60
-# Width in pixels in which we avoid obstacles (if obstacle is not in corridor, we do not avoid it)
 WIDTH_HALF_CORRIDOR = 50
 # Offset to take into account the width of the robot when avoiding obstacles
 ROBOT_WIDTH_AVOIDANCE = 40
@@ -20,7 +17,9 @@ def should_compute_obstacle_offset(distance_obstacle_line):
 
 class LineAngleOffset(Strategy):
 
-    def __init__(self, image_analyzer, additional_offset):
+    def __init__(self, image_analyzer, additional_offset, coef_angle=60, coef_offset=0.2):
+        self.coef_offset = coef_offset
+        self.coef_angle = coef_angle
         self.additional_offset = additional_offset
         self.image_analyzer = image_analyzer
 
@@ -37,7 +36,7 @@ class LineAngleOffset(Strategy):
 
         if coeff_poly_1_line is not None and line_offset is not None:
             angle_line = -np.arctan(coeff_poly_1_line[0])
-            return GAIN * angle_line + GAIN / RATION_ANGLE_OFFSET * (
+            return self.coef_angle * angle_line + self.coef_offset * (
                     line_offset + self.additional_offset + obstacle_avoidance_additional_offset)
         else:
             return None
