@@ -7,7 +7,7 @@ from robot.simu.Camera import convert_image_to_numpy
 from vrep import b0RemoteApi
 
 JOINT_VELOCITY_PARAMETER = 2012
-SIZE_LOG_FRAMES_STACK = 10
+SIZE_LOG_FRAMES_STACK = 5
 
 
 class Simulator:

@@ -29,6 +29,18 @@ def find_closest_original_frame_in_file(file, time):
             return original_frame_log[1]
 
 
+def draw_interpol_poly1(image, poly_coefs):
+    def poly1(x):
+        return poly_coefs[0] * x + poly_coefs[1]
+    shape = image.shape
+    xall = np.arange(0, shape[0] - 1)
+    ypoly = poly1(xall).astype(int)
+    ypoly = np.clip(ypoly, 0, shape[1] - 2)
+    image[xall, ypoly, :] = 0
+    image[xall, ypoly, 1] = 255
+    return image
+
+
 def find_closest_original_frame(time):
     closest_original_image_frame = find_closest_original_image_file(time)
     return find_closest_original_frame_in_file(closest_original_image_frame, time)
@@ -40,6 +52,7 @@ for file in glob.glob(LOG_DIR + "/run_0*.npz"):
         time = log[0]
         original_frame = find_closest_original_frame(time - TOTAL_LATENCY)
         print("time", time)
+        poly1_coefs = log[2]
         print("poly   coef 1", log[2])
         print("pixel line offset", log[3])
         print("distance_obstacle_line", log[4])
@@ -49,6 +62,8 @@ for file in glob.glob(LOG_DIR + "/run_0*.npz"):
         if original_frame is not None:
             cv2.imshow("original", original_frame)
         if log[1] is not None:
+            final = log[1]
+            final_with_interpol = draw_interpol_poly1(final, poly1_coefs)
             cv2.imshow("final", log[1])
         if log[8] is not None:
             cv2.imshow("perspective", log[8])

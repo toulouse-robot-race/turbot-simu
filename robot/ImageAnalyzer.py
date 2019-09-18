@@ -46,7 +46,7 @@ class ImageAnalyzer:
     # Constant for computing parallelism
     MIDDLE_HORIZON_X = -25  # Hauteur de l'horizon (negatif = au-dessus de l'image)
 
-    IMAGE_CLIPPED_LENGHT = 250
+    IMAGE_CLIP_LENGHT = 250
     BOTTOM_OBSTACLE_WINDOW_HEIGHT = 5
     LINE_WINDOW_HEIGHT_AT_OBSTACLE = 5
 
@@ -94,21 +94,26 @@ class ImageAnalyzer:
         if mask_line is not None and mask_obstacles is not None:
             mask_line = self.clean_mask_line(mask_line)
             mask_obstacles = clean_mask_obstacle(mask_obstacles)
-            warped_line = self.image_warper.warp(mask_line, "line")
-            warped_obstacles = self.image_warper.warp(mask_obstacles, "obstacle")
+            mask_line = self.image_warper.warp(mask_line, "line")
+            mask_obstacles = self.image_warper.warp(mask_obstacles, "obstacle")
+            mask_line = self.clip_image(mask_line)
 
             if self.show_and_wait or self.log:
                 # Display final mask for debug
-                self.final_mask_for_display = np.zeros((warped_line.shape[0], warped_line.shape[1], 3))
-                self.final_mask_for_display[..., 1] = warped_obstacles
-                self.final_mask_for_display[..., 2] = warped_line
+                self.final_mask_for_display = np.zeros((mask_line.shape[0], mask_line.shape[1], 3))
+                self.final_mask_for_display[..., 1] = mask_obstacles
+                self.final_mask_for_display[..., 2] = mask_line
                 if self.show_and_wait:
                     cv2.imshow('merged final', self.final_mask_for_display)
                     cv2.waitKey(0)
 
-            self.poly_1_interpol(warped_line)
-            self.compute_line_horizontal_offset(warped_line)
-            self.compute_obstacle_position(warped_line, warped_obstacles)
+            self.poly_1_interpol(mask_line)
+            self.compute_line_horizontal_offset(mask_line)
+            self.compute_obstacle_position(mask_line, mask_obstacles)
+
+    def clip_image(self, image):
+        image[:self.IMAGE_CLIP_LENGHT, :] = 0
+        return image
 
     def clean_mask_line(self, image):
 
@@ -164,8 +169,7 @@ class ImageAnalyzer:
             return result
 
     def poly_1_interpol(self, image):
-        clipped = image[self.IMAGE_CLIPPED_LENGHT:, :]
-        nonzeros_indexes = np.nonzero(clipped > self.LINE_THRESHOLD)
+        nonzeros_indexes = np.nonzero(image > self.LINE_THRESHOLD)
         y = nonzeros_indexes[0]
         x = nonzeros_indexes[1]
         if len(x) < 2:

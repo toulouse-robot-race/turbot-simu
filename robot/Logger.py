@@ -25,7 +25,7 @@ class Logger(Component):
     def __init__(self, simulator, image_analyzer,
                  car, sequencer, log_dir,
                  time, steering_controller, image_warper,
-                 size_log_stack=10,
+                 size_log_stack=5,
                  frame_cycle_log=10,
                  persist_params=False):
         self.persist_params = persist_params
