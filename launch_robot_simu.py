@@ -78,7 +78,8 @@ strategy_factory = StrategyFactory(car, image_analyzer)
 
 sequencer = Sequencer(car=car,
                       program=Programs.LINE_ANGLE_OFFSET,
-                      strategy_factory=strategy_factory)
+                      strategy_factory=strategy_factory,
+                      image_analyzer=image_analyzer)
 
 logger = Logger(simulator=simulator,
                 image_analyzer=image_analyzer,

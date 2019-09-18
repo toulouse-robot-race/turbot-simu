@@ -27,10 +27,11 @@ class Sequencer(Component):
 
     strategy = None
 
-    def __init__(self, car, program, strategy_factory):
+    def __init__(self, car, program, strategy_factory, image_analyzer):
         self.strategy_factory = strategy_factory
         self.car = car
         self.program = program
+        self.image_analyzer = image_analyzer
 
     def execute(self):
         # Fait clignoter la led
@@ -107,7 +108,11 @@ class Sequencer(Component):
             raise Exception("Instruction " + instruction + " does not exist")
         instractions_actions[instruction]()
 
-        # Programme la speed de la voiture
+        self.set_additional_params()
+
+        self.start_sequence = False
+
+    def set_additional_params(self):
         if 'speed' in self.current_program:
             vitesse = self.current_program['speed']
             self.car.forward(vitesse)
@@ -115,8 +120,8 @@ class Sequencer(Component):
             self.car.send_display(self.current_program['display'])
         if 'chenillard' in self.current_program:
             self.car.set_chenillard(self.current_program['chenillard'])
-
-        self.start_sequence = False
+        if 'clip' in self.current_program:
+            self.image_analyzer.set_clip_length(self.current_program['clip'])
 
     def check_cap(self):
         final_cap_mini = self.current_program['capFinalMini']

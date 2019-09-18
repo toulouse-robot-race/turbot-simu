@@ -21,6 +21,8 @@ class ImageWarper:
         self.rotated = None
         self.perspective = None
 
+    warped_height = 400
+
     def warp(self, image, type):
         if self.nb_images_delay == 0:
             self.actives_rotations = []
@@ -53,7 +55,7 @@ class ImageWarper:
         pts1 = np.array([tl, tr, bl, br])
         # Convert to openCV coordinates system
         pts1 = pts1[:, ::-1]
-        new_height = 400
+        new_height = self.warped_height
         new_width = 300
         height, width = new_height, new_width
         pts2 = np.float32([[0, 0], [new_width, 0], [0, new_height], [new_width, new_height]])

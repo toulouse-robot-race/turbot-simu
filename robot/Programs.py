@@ -403,6 +403,14 @@ LINE_ANGLE_OFFSET = [
     {
         'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
         'speed': 45,
+        'clip': 200,
+        'conditionFin': 'tacho',
+        'tacho': 2000,
+    },
+    {
+        'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
+        'speed': 45,
+        'clip': 250,
         'conditionFin': 'tacho',
         'tacho': 25000,
     },

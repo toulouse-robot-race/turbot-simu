@@ -8,18 +8,7 @@ def clean_mask_obstacle(mask_obstacles):
 
 
 class ImageAnalyzer:
-    # Constantes
-    MODEL_FILENAME = 'deep_learning_models/craie_quarter_filters_6.h5'
-    DELAY_EXECUTION = 0.07
-    LINE_THRESHOLD = 0.10
-    EVITEMENT_OFFSET = 0.30
-    X_INFERENCE_POINT_1 = 100  # Point depuis le haut de l'image pris pour calculer l'ecart par rapport a la ligne
-    X_INFERENCE_POINT_2 = 150  # Point depuis le haut de l'image pris pour calculer l'ecart par rapport a la ligne
-    WIDTH = 320
-    HEIGHT = 240
-    SAVE_TO_FILENAME = "/tmp_ram/imageAnalysisResult.json"
-    LOG_EVERY_N_IMAGES = 20  # Loggue les images toutes les N
-    LOG_BUFFER_SIZE = 10  # Taille du buffer (nombre d'images enregistrees dans un fichier)
+
 
     # Constants for cleaning inference results. IMPORTANT to recalibrate this on real conditions track.
     MIN_AREA_RATIO = 0.35  # if area / area_of_biggest_contour is less than this ratio, contour is bad
@@ -27,26 +16,8 @@ class ImageAnalyzer:
     MIN_THRESHOLD_CONTOUR = 10
     MAX_VALUE_CONTOUR = 255
 
-    # Constants for obstacle detection
-    MIN_X_TO_CONSIDER_OBSTACLE_EXISTS = 45  # If obstacle is low enough in image, consider it as existing
-    MIN_X_TO_COMPUTE_OBSTACLE_SIDE_ETROIT = 45  # If obstacle is low enough in image, we can compute its side (only
-    # between Y_SIDE_GAUCHE and Y_SIDE_DROITE)
-    MIN_X_TO_COMPUTE_OBSTACLE_SIDE_LARGE = 90  # If obstacle is low enough in image, we can compute its side (all width)
-    Y_SIDE_GAUCHE = 110  # Left border of "etroit zone" (for computing obstacle side etroit)
-    Y_SIDE_DROITE = WIDTH - Y_SIDE_GAUCHE  # Right border of "etroit zone"
-    MIN_X_TO_LOCK_OBSTACLE_POSITION = 100  # If obstacle passes this X, we lock its position
-    MAX_X_TO_UNLOCK_OBSTACLE_POSITION = 106  # If no obstacles below this X, we can unlock position
-    MIN_X_BRAKE = 130  # If obstacle gets into this zone, stop the car (X of the trapeze)
-    MAX_X_BRAKE = 220  # Don't compute brake zone below this zone
-    MIN_Y_BRAKE = 90  # Grande base du trapeze (gauche). La grande base est prise au bas de l'image
-    MAX_Y_BRAKE = 228  # Grande base du trapeze (droite)
-    MIN_Y_BRAKE_AT_MIN_X = 130  # Petite base du trapeze (gauche)
-    MAX_Y_BRAKE_AT_MIN_X = 190  # Petite base du trapeze (droite)
-    MIN_PIXELS_OBSTACLE_BRAKE = 5
-    # Constant for computing parallelism
-    MIDDLE_HORIZON_X = -25  # Hauteur de l'horizon (negatif = au-dessus de l'image)
 
-    IMAGE_CLIP_LENGHT = 250
+    LINE_THRESHOLD = 0.10
     BOTTOM_OBSTACLE_WINDOW_HEIGHT = 5
     LINE_WINDOW_HEIGHT_AT_OBSTACLE = 5
 
@@ -88,6 +59,7 @@ class ImageAnalyzer:
         self.car = car
         self.image_warper = image_warper
         self.show_and_wait = show_and_wait
+        self.clip_length = 0
 
     def analyze(self):
         mask_line, mask_obstacles = self.car.get_images()
@@ -112,7 +84,7 @@ class ImageAnalyzer:
             self.compute_obstacle_position(mask_line, mask_obstacles)
 
     def clip_image(self, image):
-        image[:self.IMAGE_CLIP_LENGHT, :] = 0
+        image[:self.clip_length, :] = 0
         return image
 
     def clean_mask_line(self, image):
@@ -234,3 +206,9 @@ class ImageAnalyzer:
 
         self.side_avoidance = 1 if (abs(distance_left_obstacle) > abs(distance_right_obstacle)) else -1
         self.distance_obstacle_line = min(distance_left_obstacle, distance_right_obstacle, key=abs)
+
+    def set_clip_length(self, clip_length):
+        if clip_length < 0 or clip_length > self.image_warper.warped_height:
+            raise Exception("Clip lenght out of final image bounds")
+        self.clip_length = clip_length
+
