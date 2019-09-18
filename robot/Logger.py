@@ -22,7 +22,7 @@ LOG_FORMAT = {
 
 class Logger(Component):
 
-    def __init__(self, simulator, image_analyzer,
+    def __init__(self, image_analyzer,
                  car, sequencer, log_dir,
                  time, steering_controller, image_warper,
                  size_log_stack=5,
@@ -39,7 +39,6 @@ class Logger(Component):
         self.image_analyzer = image_analyzer
         self.sequencer = sequencer
         self.car = car
-        self.simulator = simulator
         self.previous_joint_pos = 0
         self.first_pos = None
         self.log_array = []

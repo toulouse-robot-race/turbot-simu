@@ -23,7 +23,7 @@ simulation_duration_seconds = 50
 
 frame_cycle_log = 5
 
-log_enable=False
+log_enable = False
 
 simulator = Simulator(log_dir=current_dir + "/simu/logs",
                       log_enable=log_enable,
@@ -83,8 +83,7 @@ sequencer = Sequencer(car=car,
                       strategy_factory=strategy_factory,
                       image_analyzer=image_analyzer)
 
-logger = Logger(simulator=simulator,
-                image_analyzer=image_analyzer,
+logger = Logger(image_analyzer=image_analyzer,
                 car=car,
                 sequencer=sequencer,
                 image_warper=image_warper,

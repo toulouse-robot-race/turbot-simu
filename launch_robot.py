@@ -5,6 +5,7 @@ from pathlib import Path
 from robot import Programs
 from robot.ImageAnalyzer import ImageAnalyzer
 from robot.ImageWarper import ImageWarper
+from robot.Logger import Logger
 from robot.Sequencer import Sequencer
 from robot.real.Arduino import Arduino
 from robot.real.Camera import Camera
@@ -24,6 +25,12 @@ RAM_DISK_DIR = "/tmp_ram"
 MASK_LINE_FILE = RAM_DISK_DIR + "/mask_line.npy"
 
 MASK_OBSTACLE_FILE = RAM_DISK_DIR + "/mask_obstacle.npy"
+
+current_dir = os.path.dirname(os.path.realpath(__file__))
+
+frame_cycle_log = 5
+
+log_enable=False
 
 if not Path(MASK_OBSTACLE_FILE).is_file() or not Path(MASK_LINE_FILE).is_file():
     raise Exception("Inference is not launched")
@@ -53,7 +60,10 @@ car = RealCar(steering_controller=steering_controller,
               time=real_time,
               arduino=arduino)
 
-image_warper = ImageWarper(car=car, nb_images_delay=NB_IMAGES_DELAY, tacho_coef=TACHO_COEF, rotation_enabled=True)
+image_warper = ImageWarper(car=car,
+                           nb_images_delay=NB_IMAGES_DELAY,
+                           tacho_coef=TACHO_COEF,
+                           rotation_enabled=True)
 
 image_analyzer = ImageAnalyzer(car=car,
                                image_warper=image_warper,
@@ -64,8 +74,18 @@ strategy_factory = StrategyFactory(car, image_analyzer)
 
 sequencer = Sequencer(car=car,
                       program=Programs.TEST,
-                      strategy_factory=strategy_factory)
+                      strategy_factory=strategy_factory,
+                      image_analyzer=image_analyzer)
 
+logger = Logger(image_analyzer=image_analyzer,
+                car=car,
+                sequencer=sequencer,
+                image_warper=image_warper,
+                steering_controller=steering_controller,
+                time=time,
+                log_dir=current_dir + "/logs",
+                persist_params=log_enable,
+                frame_cycle_log=frame_cycle_log)
 
 # Order matter, components will be executed one by one
 executable_components = [arduino,
@@ -74,7 +94,8 @@ executable_components = [arduino,
                          camera,
                          sequencer,
                          speed_controller,
-                         steering_controller]
+                         steering_controller,
+                         logger]
 
 # Time needed by the serials connections to get ready
 time.sleep(1)
