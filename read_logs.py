@@ -18,7 +18,6 @@ TOTAL_LATENCY = 0.10
 def find_closest_original_image_file(time):
     last_file = None
     for file_path in sorted(glob.glob(ORIGINAL_LOG_DIR + "/*.pickle")):
-        print(file_path)
         time_file = float(file_path.replace(".pickle", "")
                           .replace(ORIGINAL_LOG_DIR + "/", "")
                           .replace(ORIGINAL_LOG_DIR, "")
@@ -64,9 +63,7 @@ for file_path in sorted(glob.glob(COMPUTED_LOG_DIR + "/run_*.pickle")):
     with open(file_path, "rb")as file:
         logs = pickle.load(file)
         for log in logs:
-            print("\n")
             time = log[0]
-            print(time)
             original_frame = find_closest_original_frame(time - TOTAL_LATENCY)
             print("time", time)
             poly1_coefs = log[2]
