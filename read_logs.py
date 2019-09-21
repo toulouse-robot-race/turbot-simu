@@ -56,7 +56,8 @@ def find_closest_original_frame(time):
     return find_closest_original_frame_in_file(closest_original_image_frame, time)
 
 
-for file_path in glob.glob(COMPUTED_LOG_DIR + "/run_*.pickle"):
+for file_path in sorted(glob.glob(COMPUTED_LOG_DIR + "/run_*.pickle")):
+    print(file_path)
     with open(file_path, "rb")as file:
         logs = pickle.load(file)
         print()
