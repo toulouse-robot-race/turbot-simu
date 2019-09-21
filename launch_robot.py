@@ -3,7 +3,6 @@ import os
 import time
 from pathlib import Path
 
-from launch_inference import INFERENCE_DISABLE_FILE
 from robot import Programs
 from robot.ImageAnalyzer import ImageAnalyzer
 from robot.ImageWarper import ImageWarper
@@ -21,6 +20,8 @@ from robot.real.Time import Time
 from robot.real.Vesc import Vesc
 from robot.simu.Config import TACHO_COEF
 from robot.strategy.StrategyFactory import StrategyFactory
+
+INFERENCE_DISABLE_FILE = "inference.disable"
 
 RAM_DISK_DIR = "/tmp_ram"
 
