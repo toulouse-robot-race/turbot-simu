@@ -17,11 +17,13 @@ def should_compute_obstacle_offset(distance_obstacle_line):
 
 class LineAngleOffset(Strategy):
 
-    def __init__(self, image_analyzer, additional_offset, coef_angle=60, coef_offset=0.2):
+    def __init__(self, image_analyzer, additional_offset, coef_angle=60, coef_offset=0.2, coef_cumul_offset=0.01):
         self.coef_offset = coef_offset
         self.coef_angle = coef_angle
         self.additional_offset = additional_offset
         self.image_analyzer = image_analyzer
+        self.cumul_offset = 0
+        self.coef_cumul_offset = coef_cumul_offset
 
     def compute_steering(self):
         self.image_analyzer.analyze()
@@ -34,10 +36,18 @@ class LineAngleOffset(Strategy):
 
         line_offset = self.image_analyzer.pixel_offset_line
 
+        if line_offset is None:
+            line_offset = 0
+
+        error_offset = line_offset + obstacle_avoidance_additional_offset * 3 + self.additional_offset
+
+        self.cumul_offset = self.cumul_offset * 0.9
+        self.cumul_offset += error_offset
+        np.clip(self.cumul_offset,-1000,1000)
+
         if coeff_poly_1_line is not None and line_offset is not None:
             angle_line = -np.arctan(coeff_poly_1_line[0])
-            return self.coef_angle * angle_line + self.coef_offset * (
-                    line_offset + self.additional_offset + obstacle_avoidance_additional_offset)
+            return self.coef_angle * angle_line + self.coef_offset * error_offset + self.cumul_offset * self.coef_cumul_offset
         else:
             return None
 
