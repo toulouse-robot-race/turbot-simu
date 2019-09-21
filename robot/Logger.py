@@ -75,5 +75,3 @@ class Logger(Component):
 
             self.frame_index += 1
 
-            print("tacho : %s" % self.car.get_tacho())
-            print("time : %fs " % self.car.get_time())
