@@ -26,8 +26,10 @@ class Logger(Component):
                  time, steering_controller, image_warper,
                  size_log_stack=5,
                  frame_cycle_log=10,
-                 persist_params=False):
-        self.persist_params = persist_params
+                 log_persist_enable=False,
+                 compress_log=True):
+        self.compress_log = compress_log
+        self.log_persist_enable = log_persist_enable
         self.frame_cycle_log = frame_cycle_log
         self.frame_index = 1
         self.image_warper = image_warper
@@ -51,7 +53,7 @@ class Logger(Component):
 
     def log(self):
 
-        if self.persist_params:
+        if self.log_persist_enable:
             if (self.frame_index % self.frame_cycle_log) == 0:
                 self.log_array.append([self.time.time(),
                                        self.image_analyzer.final_mask_for_display,
@@ -71,9 +73,13 @@ class Logger(Component):
 
                 if len(self.log_array) >= self.size_log_stack:
                     begin_log_time = self.time.time()
-                    file_path = self.log_dir + "/" + self.run_session + "_" + "%03d" % self.increment_session + ".pgz"
-                    with gzip.open(file_path, "w")as file:
-                        pickle.dump(self.log_array, file)
+                    file_path = self.log_dir + "/" + self.run_session + "_" + "%03d" % self.increment_session
+                    if self.compress_log:
+                        with gzip.open(file_path + ".pgz", "w")as file:
+                            pickle.dump(self.log_array, file)
+                    else:
+                        with open(file_path + ".pickle", "wb")as file:
+                            pickle.dump(self.log_array, file)
                     print("log time", self.time.time() - begin_log_time)
                     self.increment_session += 1
                     self.log_array.clear()

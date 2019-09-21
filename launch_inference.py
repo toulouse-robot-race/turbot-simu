@@ -39,6 +39,8 @@ frame_index = 1
 
 log_enabled = True
 
+compress_log = True
+
 # Bug fix for tensorflow on TX2
 # See here: https://devtalk.nvidia.com/default/topic/1030875/jetson-tx2/gpu-sync-failed-in-tx2-when-running-tensorflow/
 config = tf.ConfigProto()
@@ -68,9 +70,13 @@ while True:
             frames_to_log.append([time.time(), frame])
             if len(frames_to_log) >= SIZE_LOG_FRAMES_STACK:
                 begin_log_time = time.time()
-                file_path = LOGS_DIR + "/" + ("%010.5f" % time.time()) + ".pgz"
-                with gzip.open(file_path, "w")as file:
-                    pickle.dump(frames_to_log, file)
+                file_path = LOGS_DIR + "/" + ("%010.5f" % time.time())
+                if compress_log:
+                    with gzip.open(file_path + ".pgz", "w")as file:
+                        pickle.dump(frames_to_log, file)
+                else:
+                    with open(file_path + ".pickle", "wb")as file:
+                        pickle.dump(frames_to_log, file)
                 print("log time", time.time() - begin_log_time)
                 frames_to_log.clear()
         frame_index += 1

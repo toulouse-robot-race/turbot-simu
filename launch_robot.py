@@ -86,8 +86,9 @@ logger = Logger(image_analyzer=image_analyzer,
                 steering_controller=steering_controller,
                 time=time,
                 log_dir=current_dir + "/logs/robot",
-                persist_params=log_enable,
-                frame_cycle_log=frame_cycle_log)
+                log_persist_enable=log_enable,
+                frame_cycle_log=frame_cycle_log,
+                compress_log=True)
 
 # Order matter, components will be executed one by one
 executable_components = [arduino,

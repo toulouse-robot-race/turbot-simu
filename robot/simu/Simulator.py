@@ -11,7 +11,8 @@ SIZE_LOG_FRAMES_STACK = 5
 
 
 class Simulator:
-    def __init__(self, log_dir, log_enable=False, frame_cycle_log=10):
+    def __init__(self, log_dir, log_enable=False, frame_cycle_log=10, compress_log=True):
+        self.compress_log = compress_log
         self.frame_cycle_log = frame_cycle_log
         self.log = log_enable
         self.client = b0RemoteApi.RemoteApiClient('b0RemoteApi_pythonClient', 'b0RemoteApi')
@@ -121,9 +122,13 @@ class Simulator:
                             self.frames_to_log.append([time.time(), numpy_image])
 
                             if len(self.frames_to_log) >= SIZE_LOG_FRAMES_STACK:
-                                file_path = self.log_dir + "/" + ("%010.5f" % time.time()) + ".pgz"
-                                with gzip.open(file_path, "w")as file:
-                                    pickle.dump(self.frames_to_log, file)
+                                file_path = self.log_dir + "/" + ("%010.5f" % time.time())
+                                if self.compress_log:
+                                    with gzip.open(file_path + ".pgz", "w")as file:
+                                        pickle.dump(self.frames_to_log, file)
+                                else:
+                                    with open(file_path + ".pickle", "wb")as file:
+                                        pickle.dump(self.frames_to_log, file)
                                 self.frames_to_log.clear()
 
                         self.frame_index += 1
