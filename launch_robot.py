@@ -3,6 +3,7 @@ import os
 import time
 from pathlib import Path
 
+from launch_inference import INFERENCE_DISABLE_FILE
 from robot import Programs
 from robot.ImageAnalyzer import ImageAnalyzer
 from robot.ImageWarper import ImageWarper
@@ -100,12 +101,19 @@ executable_components = [arduino,
                          steering_controller,
                          logger]
 
+os.remove(INFERENCE_DISABLE_FILE)
 # Time needed by the serials connections to get ready
 time.sleep(1)
-while True:
-    begin_loop_time = time.time()
-    [component.execute() for component in executable_components]
-    if show_loop_time:
-        print("loop time",time.time() - begin_loop_time)
-    # Time needed by arduino to receive next command
-    time.sleep(0.005)
+try:
+    while True:
+        begin_loop_time = time.time()
+        [component.execute() for component in executable_components]
+        if show_loop_time:
+            print("loop time", time.time() - begin_loop_time)
+        # Time needed by arduino to receive next command
+        time.sleep(0.005)
+except KeyboardInterrupt:
+    vesc.send_speed_command(0)
+    os.remove(current_dir + "/.started")
+    open(current_dir + "/" + INFERENCE_DISABLE_FILE, 'a').close()
+    print("Exiting..")
