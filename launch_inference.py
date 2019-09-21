@@ -60,6 +60,7 @@ while True:
 
     # Check if inference is enabled
     if Path(INFERENCE_DISABLE_FILE).is_file():
+        print("Wait robot to start")
         time.sleep(0.1)
         continue
 
