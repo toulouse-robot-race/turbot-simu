@@ -18,7 +18,11 @@ TOTAL_LATENCY = 0.10
 def find_closest_original_image_file(time):
     last_file = None
     for file_path in glob.glob(ORIGINAL_LOG_DIR + "/*.pickle"):
-        time_file = float(file_path.replace(".pickle", "").replace(ORIGINAL_LOG_DIR + "/", "").replace("\\", ""))
+        print(file_path)
+        time_file = float(file_path.replace(".pickle", "")
+                          .replace(ORIGINAL_LOG_DIR + "/", "")
+                          .replace(ORIGINAL_LOG_DIR, "")
+                          .replace("\\", ""))
         if time_file >= time:
             return file_path
         last_file = file_path
@@ -71,7 +75,8 @@ for file_path in glob.glob(COMPUTED_LOG_DIR + "/run_*.pickle"):
                 cv2.imshow("original", original_frame)
             if log[1] is not None:
                 final = log[1]
-                final_with_interpol = draw_interpol_poly1(final, poly1_coefs)
+                if poly1_coefs is not None:
+                    final_with_interpol = draw_interpol_poly1(final, poly1_coefs)
                 cv2.imshow("final", log[1])
             if log[8] is not None:
                 cv2.imshow("perspective", log[8])

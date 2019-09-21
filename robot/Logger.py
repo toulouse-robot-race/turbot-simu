@@ -60,9 +60,12 @@ class Logger(Component):
                                        self.steering_controller.steering,
                                        self.image_warper.actives_rotations,
                                        self.image_warper.actives_translations,
-                                       self.image_warper.perspective,
-                                       self.image_warper.translated,
-                                       self.image_warper.rotated
+                                       # self.image_warper.perspective,
+                                       # self.image_warper.translated,
+                                       # self.image_warper.rotated
+                                       None,
+                                       None,
+                                       None
                                        ])
 
                 if len(self.log_array) >= self.size_log_stack:
