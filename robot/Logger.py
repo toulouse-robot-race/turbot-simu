@@ -1,7 +1,5 @@
 import os
-import time
-
-import numpy as np
+import pickle
 
 from robot.Component import Component
 
@@ -54,7 +52,7 @@ class Logger(Component):
 
         if self.persist_params:
             if (self.frame_index % self.frame_cycle_log) == 0:
-                self.log_array.append([time.time(),
+                self.log_array.append([self.time.time(),
                                        self.image_analyzer.final_mask_for_display,
                                        self.image_analyzer.poly_coeff_1,
                                        self.image_analyzer.pixel_offset_line,
@@ -68,12 +66,14 @@ class Logger(Component):
                                        ])
 
                 if len(self.log_array) >= self.size_log_stack:
-                    np.savez(self.log_dir + "/" + self.run_session + "_" + "%03d" % self.increment_session,
-                             data=self.log_array)
+                    file_path = self.log_dir + "/" + self.run_session + "_" + "%03d" % self.increment_session + ".pickle"
+                    with open(file_path, "wb")as file:
+                        pickle.dump(self.log_array, file)
+
                     self.increment_session += 1
                     self.log_array.clear()
 
             self.frame_index += 1
 
-        print("tacho : %s" % self.car.get_tacho())
-        print("time : %fs " % self.car.get_time())
+            print("tacho : %s" % self.car.get_tacho())
+            print("time : %fs " % self.car.get_time())

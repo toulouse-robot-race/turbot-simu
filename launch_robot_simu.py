@@ -23,7 +23,7 @@ simulation_duration_seconds = 50
 
 frame_cycle_log = 5
 
-log_enable = False
+log_enable = True
 
 simulator = Simulator(log_dir=current_dir + "/simu/logs",
                       log_enable=log_enable,

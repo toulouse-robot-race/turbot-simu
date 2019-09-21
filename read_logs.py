@@ -1,4 +1,5 @@
 import glob
+import pickle
 
 import cv2
 import numpy as np
@@ -12,21 +13,22 @@ TOTAL_LATENCY = 0.10
 
 def find_closest_original_image_file(time):
     last_file = None
-    for file in glob.glob(ORIGINAL_LOG_DIR + "/*.npz"):
-        time_file = float(file.replace(".npz", "").replace("simu/logs", "").replace("\\", ""))
+    for file_path in glob.glob(ORIGINAL_LOG_DIR + "/*.pickle"):
+        time_file = float(file_path.replace(".pickle", "").replace("simu/logs", "").replace("\\", ""))
         if time_file >= time:
-            return file
-        last_file = file
+            return file_path
+        last_file = file_path
     return last_file
 
 
-def find_closest_original_frame_in_file(file, time):
-    logs_original_images = np.load(file, allow_pickle=True)["data"]
-    times = [log_original_image[0] for log_original_image in logs_original_images]
-    nearest_time = min(times, key=lambda x: abs(time - x))
-    for original_frame_log in logs_original_images:
-        if original_frame_log[0] == nearest_time:
-            return original_frame_log[1]
+def find_closest_original_frame_in_file(file_path, time):
+    with open(file_path, "rb")as file:
+        logs_original_images = pickle.load(file)
+        times = [log_original_image[0] for log_original_image in logs_original_images]
+        nearest_time = min(times, key=lambda x: abs(time - x))
+        for original_frame_log in logs_original_images:
+            if original_frame_log[0] == nearest_time:
+                return original_frame_log[1]
 
 
 def draw_interpol_poly1(image, poly_coefs):
@@ -46,29 +48,31 @@ def find_closest_original_frame(time):
     return find_closest_original_frame_in_file(closest_original_image_frame, time)
 
 
-for file in glob.glob(LOG_DIR + "/run_0*.npz"):
-    logs = np.load(file, allow_pickle=True)["data"]
-    for log in logs:
-        time = log[0]
-        original_frame = find_closest_original_frame(time - TOTAL_LATENCY)
-        print("time", time)
-        poly1_coefs = log[2]
-        print("poly   coef 1", log[2])
-        print("pixel line offset", log[3])
-        print("distance_obstacle_line", log[4])
-        print("steering", log[5])
-        print("actives rotations", log[6])
-        print("actives translations", log[7])
-        if original_frame is not None:
-            cv2.imshow("original", original_frame)
-        if log[1] is not None:
-            final = log[1]
-            final_with_interpol = draw_interpol_poly1(final, poly1_coefs)
-            cv2.imshow("final", log[1])
-        if log[8] is not None:
-            cv2.imshow("perspective", log[8])
-        if log[9] is not None:
-            cv2.imshow("translated", log[9])
-        if log[9] is not None:
-            cv2.imshow("rotated", log[10])
-        cv2.waitKey(0)
+for file_path in glob.glob(LOG_DIR + "/run_*.pickle"):
+    with open(file_path, "rb")as file:
+        logs = pickle.load(file)
+        print()
+        for log in logs:
+            time = log[0]
+            original_frame = find_closest_original_frame(time - TOTAL_LATENCY)
+            print("time", time)
+            poly1_coefs = log[2]
+            print("poly   coef 1", log[2])
+            print("pixel line offset", log[3])
+            print("distance_obstacle_line", log[4])
+            print("steering", log[5])
+            print("actives rotations", log[6])
+            print("actives translations", log[7])
+            if original_frame is not None:
+                cv2.imshow("original", original_frame)
+            if log[1] is not None:
+                final = log[1]
+                final_with_interpol = draw_interpol_poly1(final, poly1_coefs)
+                cv2.imshow("final", log[1])
+            if log[8] is not None:
+                cv2.imshow("perspective", log[8])
+            if log[9] is not None:
+                cv2.imshow("translated", log[9])
+            if log[9] is not None:
+                cv2.imshow("rotated", log[10])
+            cv2.waitKey(0)
