@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import gzip
 import os
 import pickle
 import time
@@ -63,8 +64,8 @@ while True:
     if (frame_index % FRAME_CYCLE_LOG) == 0:
         frames_to_log.append([time.time(), frame])
         if len(frames_to_log) >= SIZE_LOG_FRAMES_STACK:
-            file_path = LOGS_DIR + "/" + ("%010.5f" % time.time()) + ".pickle"
-            with open(file_path, "wb")as file:
+            file_path = LOGS_DIR + "/" + ("%010.5f" % time.time()) + ".pgz"
+            with gzip.open(file_path, "w")as file:
                 pickle.dump(frames_to_log, file)
             frames_to_log.clear()
     frame_index += 1

@@ -1,3 +1,4 @@
+import gzip
 import os
 import pickle
 
@@ -69,8 +70,8 @@ class Logger(Component):
                                        ])
 
                 if len(self.log_array) >= self.size_log_stack:
-                    file_path = self.log_dir + "/" + self.run_session + "_" + "%03d" % self.increment_session + ".pickle"
-                    with open(file_path, "wb")as file:
+                    file_path = self.log_dir + "/" + self.run_session + "_" + "%03d" % self.increment_session + ".pgz"
+                    with gzip.open(file_path, "w")as file:
                         pickle.dump(self.log_array, file)
 
                     self.increment_session += 1

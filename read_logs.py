@@ -1,4 +1,5 @@
 import glob
+import gzip
 import pickle
 
 import cv2
@@ -17,8 +18,8 @@ TOTAL_LATENCY = 0.10
 
 def find_closest_original_image_file(time):
     last_file = None
-    for file_path in sorted(glob.glob(ORIGINAL_LOG_DIR + "/*.pickle")):
-        time_file = float(file_path.replace(".pickle", "")
+    for file_path in sorted(glob.glob(ORIGINAL_LOG_DIR + "/*.pgz")):
+        time_file = float(file_path.replace(".pgz", "")
                           .replace(ORIGINAL_LOG_DIR + "/", "")
                           .replace(ORIGINAL_LOG_DIR, "")
                           .replace("\\", ""))
@@ -30,7 +31,7 @@ def find_closest_original_image_file(time):
 
 
 def find_closest_original_frame_in_file(file_path, time):
-    with open(file_path, "rb")as file:
+    with gzip.open(file_path, "r")as file:
         logs_original_images = pickle.load(file)
         times = [log_original_image[0] for log_original_image in logs_original_images]
         nearest_time = min(times, key=lambda x: abs(time - x))
@@ -56,11 +57,11 @@ def find_closest_original_frame(time):
     return find_closest_original_frame_in_file(closest_original_image_frame, time)
 
 
-for file_path in sorted(glob.glob(COMPUTED_LOG_DIR + "/run_*.pickle")):
+for file_path in sorted(glob.glob(COMPUTED_LOG_DIR + "/run_*.pgz")):
     print("\n")
     print("\n")
     print(file_path)
-    with open(file_path, "rb")as file:
+    with gzip.open(file_path, "r")as file:
         logs = pickle.load(file)
         for log in logs:
             time = log[0]

@@ -1,3 +1,4 @@
+import gzip
 import os
 import pickle
 import time
@@ -120,8 +121,8 @@ class Simulator:
                             self.frames_to_log.append([time.time(), numpy_image])
 
                             if len(self.frames_to_log) >= SIZE_LOG_FRAMES_STACK:
-                                file_path = self.log_dir + "/" + ("%010.5f" % time.time()) + ".pickle"
-                                with open(file_path, "wb")as file:
+                                file_path = self.log_dir + "/" + ("%010.5f" % time.time()) + ".pgz"
+                                with gzip.open(file_path, "w")as file:
                                     pickle.dump(self.frames_to_log, file)
                                 self.frames_to_log.clear()
 
