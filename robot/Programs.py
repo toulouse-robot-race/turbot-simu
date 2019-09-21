@@ -541,12 +541,16 @@ TEST = [
     },
     {
         'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
-        'speed': 30,
+        'speed': 18,
+        'clip': 150,
+        'offset': 30,
+        'angle_coef': 60,
+        'offset_coef': 0.15,
         'conditionFin': 'tacho',
-        'tacho': 7000,
+        'tacho': 10000,
     },
     {
-        'instruction': 'tourne',  # Arrêt avec roues a 0
+        'instruction': 'tourne',  # ArrÃªt avec roues a 0
         'speed': 0,
         'positionRoues': 0,
         'conditionFin': 'duree',
