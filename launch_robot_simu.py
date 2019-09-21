@@ -25,7 +25,7 @@ frame_cycle_log = 5
 
 log_enable = True
 
-simulator = Simulator(log_dir=current_dir + "/logs/simu",
+simulator = Simulator(log_dir=current_dir + "/logs/original",
                       log_enable=log_enable,
                       frame_cycle_log=frame_cycle_log)
 
@@ -89,7 +89,7 @@ logger = Logger(image_analyzer=image_analyzer,
                 image_warper=image_warper,
                 steering_controller=steering_controller,
                 time=simu_time,
-                log_dir=current_dir + "/logs",
+                log_dir=current_dir + "/logs/simu",
                 persist_params=log_enable,
                 frame_cycle_log=frame_cycle_log)
 

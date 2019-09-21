@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import time
 from pathlib import Path
 
@@ -30,7 +31,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 frame_cycle_log = 5
 
-log_enable=False
+log_enable=True
 
 if not Path(MASK_OBSTACLE_FILE).is_file() or not Path(MASK_LINE_FILE).is_file():
     raise Exception("Inference is not launched")

@@ -8,6 +8,8 @@ ROBOT_LOG_DIR = "logs/robot"
 
 SIMU_LOG_DIR = "logs/simu"
 
+COMPUTED_LOG_DIR = SIMU_LOG_DIR
+
 ORIGINAL_LOG_DIR = "logs/original"
 
 TOTAL_LATENCY = 0.10
@@ -16,7 +18,7 @@ TOTAL_LATENCY = 0.10
 def find_closest_original_image_file(time):
     last_file = None
     for file_path in glob.glob(ORIGINAL_LOG_DIR + "/*.pickle"):
-        time_file = float(file_path.replace(".pickle", "").replace("simu/logs", "").replace("\\", ""))
+        time_file = float(file_path.replace(".pickle", "").replace(ORIGINAL_LOG_DIR, "").replace("\\", ""))
         if time_file >= time:
             return file_path
         last_file = file_path
@@ -50,7 +52,7 @@ def find_closest_original_frame(time):
     return find_closest_original_frame_in_file(closest_original_image_frame, time)
 
 
-for file_path in glob.glob(ROBOT_LOG_DIR + "/run_*.pickle"):
+for file_path in glob.glob(COMPUTED_LOG_DIR + "/run_*.pickle"):
     with open(file_path, "rb")as file:
         logs = pickle.load(file)
         print()
