@@ -103,7 +103,9 @@ executable_components = [arduino,
                          steering_controller,
                          logger]
 
-os.remove(INFERENCE_DISABLE_FILE)
+if Path(INFERENCE_DISABLE_FILE).is_file():
+    os.remove(INFERENCE_DISABLE_FILE)
+
 # Time needed by the serials connections to get ready
 time.sleep(1)
 try:
