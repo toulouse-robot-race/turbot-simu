@@ -557,3 +557,23 @@ TEST = [
         'duree': 10,
     }
 ]
+
+TEST_LOGS = [
+    {
+        'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
+        'speed': 0,
+        'clip': 150,
+        'offset': 30,
+        'angle_coef': 60,
+        'offset_coef': 0.15,
+        'conditionFin': 'tacho',
+        'tacho': 10000,
+    },
+    {
+        'instruction': 'tourne',  # ArrÃªt avec roues a 0
+        'speed': 0,
+        'positionRoues': 0,
+        'conditionFin': 'duree',
+        'duree': 10,
+    }
+]
