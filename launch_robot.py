@@ -106,7 +106,7 @@ executable_components = [arduino,
 if Path(INFERENCE_DISABLE_FILE).is_file():
     os.remove(INFERENCE_DISABLE_FILE)
 
-# Time needed by the serials connections to get ready
+# Time needed by the serial connections to get ready
 time.sleep(1)
 try:
     while True:
@@ -119,4 +119,5 @@ try:
 except KeyboardInterrupt:
     vesc.send_speed_command(0)
     open(current_dir + "/" + INFERENCE_DISABLE_FILE, 'a').close()
+    print("\n")
     print("Exiting..")

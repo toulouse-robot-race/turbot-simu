@@ -29,7 +29,7 @@ def open_log_file(file_path):
 
 def find_closest_original_image_file(time):
     last_file = None
-    for file_path in sorted(glob.glob(ORIGINAL_LOG_DIR + "/*"), key=lambda x: os.path.splitext(x)[1]):
+    for file_path in sorted(glob.glob(ORIGINAL_LOG_DIR + "/*"), key=lambda x: os.path.splitext(x)[0]):
         time_file = float(file_path.replace(os.path.splitext(file_path)[1], "")
                           .replace(ORIGINAL_LOG_DIR + "/", "")
                           .replace(ORIGINAL_LOG_DIR, "")
@@ -68,7 +68,7 @@ def find_closest_original_frame(time):
     return find_closest_original_frame_in_file(closest_original_image_frame, time)
 
 
-for file_path in sorted(glob.glob(COMPUTED_LOG_DIR + "/run_*"), key=lambda x: os.path.splitext(x)[1]):
+for file_path in sorted(glob.glob(COMPUTED_LOG_DIR + "/run_*"), key=lambda x: os.path.splitext(x)[0]):
     print("\n")
     print("\n")
     print(file_path)
