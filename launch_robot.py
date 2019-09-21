@@ -83,7 +83,7 @@ logger = Logger(image_analyzer=image_analyzer,
                 image_warper=image_warper,
                 steering_controller=steering_controller,
                 time=time,
-                log_dir=current_dir + "/logs",
+                log_dir=current_dir + "/logs/robot",
                 persist_params=log_enable,
                 frame_cycle_log=frame_cycle_log)
 

@@ -43,7 +43,7 @@ class Logger(Component):
         self.run_session = "run_" + str(time.time())
         self.increment_session = 1
         if not os.path.isdir(log_dir):
-            os.mkdir(log_dir)
+            os.makedirs(log_dir)
 
     def execute(self):
         self.log()

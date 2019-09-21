@@ -25,7 +25,7 @@ frame_cycle_log = 5
 
 log_enable = True
 
-simulator = Simulator(log_dir=current_dir + "/simu/logs",
+simulator = Simulator(log_dir=current_dir + "/logs/simu",
                       log_enable=log_enable,
                       frame_cycle_log=frame_cycle_log)
 

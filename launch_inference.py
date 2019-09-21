@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import pickle
 import time
 from pathlib import Path
 
@@ -24,7 +25,10 @@ MASK_OBSTACLE_FILE_TMP = RAM_DISK_DIR + "/mask_obstacle.tmp.npy"
 
 MASK_LINE_FILE_TMP = RAM_DISK_DIR + "/mask_line.tmp.npy"
 
-LOGS_DIR = "logs"
+LOGS_DIR = "logs/original"
+
+if not os.path.isdir(LOGS_DIR):
+    os.makedirs(LOGS_DIR)
 
 SIZE_LOG_FRAMES_STACK = 10
 
@@ -59,7 +63,9 @@ while True:
     if (frame_index % FRAME_CYCLE_LOG) == 0:
         frames_to_log.append([time.time(), frame])
         if len(frames_to_log) >= SIZE_LOG_FRAMES_STACK:
-            np.savez(LOGS_DIR + "/" + ("%010.5f" % time.time()), data=frames_to_log)
+            file_path = LOGS_DIR + "/" + ("%010.5f" % time.time()) + ".pickle"
+            with open(file_path, "wb")as file:
+                pickle.dump(frames_to_log, file)
             frames_to_log.clear()
     frame_index += 1
 

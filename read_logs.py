@@ -4,9 +4,11 @@ import pickle
 import cv2
 import numpy as np
 
-LOG_DIR = "logs"
+ROBOT_LOG_DIR = "logs/robot"
 
-ORIGINAL_LOG_DIR = "simu/logs"
+SIMU_LOG_DIR = "logs/simu"
+
+ORIGINAL_LOG_DIR = "logs/original"
 
 TOTAL_LATENCY = 0.10
 
@@ -48,7 +50,7 @@ def find_closest_original_frame(time):
     return find_closest_original_frame_in_file(closest_original_image_frame, time)
 
 
-for file_path in glob.glob(LOG_DIR + "/run_*.pickle"):
+for file_path in glob.glob(ROBOT_LOG_DIR + "/run_*.pickle"):
     with open(file_path, "rb")as file:
         logs = pickle.load(file)
         print()
