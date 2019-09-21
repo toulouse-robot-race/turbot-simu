@@ -70,10 +70,11 @@ class Logger(Component):
                                        ])
 
                 if len(self.log_array) >= self.size_log_stack:
+                    begin_log_time = self.time.time()
                     file_path = self.log_dir + "/" + self.run_session + "_" + "%03d" % self.increment_session + ".pgz"
                     with gzip.open(file_path, "w")as file:
                         pickle.dump(self.log_array, file)
-
+                    print("log time", self.time.time() - begin_log_time)
                     self.increment_session += 1
                     self.log_array.clear()
 

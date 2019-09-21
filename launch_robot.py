@@ -31,7 +31,9 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 frame_cycle_log = 5
 
-log_enable=True
+log_enable = True
+
+show_loop_time = True
 
 if not Path(MASK_OBSTACLE_FILE).is_file() or not Path(MASK_LINE_FILE).is_file():
     raise Exception("Inference is not launched")
@@ -70,7 +72,6 @@ image_analyzer = ImageAnalyzer(car=car,
                                image_warper=image_warper,
                                show_and_wait=False)
 
-
 strategy_factory = StrategyFactory(car, image_analyzer)
 
 sequencer = Sequencer(car=car,
@@ -101,6 +102,9 @@ executable_components = [arduino,
 # Time needed by the serials connections to get ready
 time.sleep(1)
 while True:
+    begin_loop_time = time.time()
     [component.execute() for component in executable_components]
+    if show_loop_time:
+        print("loop time",time.time() - begin_loop_time)
     # Time needed by arduino to receive next command
     time.sleep(0.005)
