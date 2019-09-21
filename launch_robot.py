@@ -116,6 +116,5 @@ try:
         time.sleep(0.005)
 except KeyboardInterrupt:
     vesc.send_speed_command(0)
-    os.remove(current_dir + "/.started")
     open(current_dir + "/" + INFERENCE_DISABLE_FILE, 'a').close()
     print("Exiting..")
