@@ -17,7 +17,8 @@ TOTAL_LATENCY = 0.10
 
 def find_closest_original_image_file(time):
     last_file = None
-    for file_path in glob.glob(ORIGINAL_LOG_DIR + "/*.pickle"):
+    for file_path in sorted(glob.glob(ORIGINAL_LOG_DIR + "/*.pickle")):
+        print(file_path)
         time_file = float(file_path.replace(".pickle", "")
                           .replace(ORIGINAL_LOG_DIR + "/", "")
                           .replace(ORIGINAL_LOG_DIR, "")
