@@ -8,7 +8,7 @@ ROBOT_LOG_DIR = "logs/robot"
 
 SIMU_LOG_DIR = "logs/simu"
 
-COMPUTED_LOG_DIR = SIMU_LOG_DIR
+COMPUTED_LOG_DIR = ROBOT_LOG_DIR
 
 ORIGINAL_LOG_DIR = "logs/original"
 
