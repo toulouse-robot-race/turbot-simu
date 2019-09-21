@@ -36,6 +36,7 @@ log_enable = True
 
 show_loop_time = True
 
+
 if not Path(MASK_OBSTACLE_FILE).is_file() or not Path(MASK_LINE_FILE).is_file():
     raise Exception("Inference is not launched")
 

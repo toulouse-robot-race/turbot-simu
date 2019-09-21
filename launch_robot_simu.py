@@ -25,10 +25,12 @@ frame_cycle_log = 5
 
 log_enable = True
 
+compress_log = True
+
 simulator = Simulator(log_dir=current_dir + "/logs/original",
                       log_enable=log_enable,
                       frame_cycle_log=frame_cycle_log,
-                      compress_log=True)
+                      compress_log=compress_log)
 
 handles = {
     "right_motor": simulator.get_handle("driving_joint_rear_right"),
@@ -93,7 +95,7 @@ logger = Logger(image_analyzer=image_analyzer,
                 log_dir=current_dir + "/logs/simu",
                 log_persist_enable=log_enable,
                 frame_cycle_log=frame_cycle_log,
-                compress_log=True)
+                compress_log=compress_log)
 
 # Order matter, components will be executed one by one
 executable_components = [gyro,
