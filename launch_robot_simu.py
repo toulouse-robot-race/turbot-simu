@@ -23,7 +23,7 @@ simulation_duration_seconds = 50
 
 frame_cycle_log = 5
 
-log_enable = True
+log_enable = False
 
 compress_log = True
 

@@ -8,14 +8,11 @@ def clean_mask_obstacle(mask_obstacles):
 
 
 class ImageAnalyzer:
-
-
     # Constants for cleaning inference results. IMPORTANT to recalibrate this on real conditions track.
     MIN_AREA_RATIO = 0.35  # if area / area_of_biggest_contour is less than this ratio, contour is bad
     MIN_AREA_TO_KEEP = 100.  # if max_area if less than this, reject all image
     MIN_THRESHOLD_CONTOUR = 10
     MAX_VALUE_CONTOUR = 255
-
 
     LINE_THRESHOLD = 0.10
     BOTTOM_OBSTACLE_WINDOW_HEIGHT = 5
@@ -60,6 +57,7 @@ class ImageAnalyzer:
         self.image_warper = image_warper
         self.show_and_wait = show_and_wait
         self.clip_length = 0
+        self.offset_line_height = 50
 
     def analyze(self):
         mask_line, mask_obstacles = self.car.get_images()
@@ -70,18 +68,22 @@ class ImageAnalyzer:
             mask_obstacles = self.image_warper.warp(mask_obstacles, "obstacle")
             mask_line = self.clip_image(mask_line)
 
+            self.poly_1_interpol(mask_line)
+            self.compute_robot_horizontal_offset_from_poly1()
+            print("offset", self.pixel_offset_line)
+            self.compute_obstacle_position(mask_line, mask_obstacles)
+
             if self.show_and_wait or self.log:
+
                 # Display final mask for debug
                 self.final_mask_for_display = np.zeros((mask_line.shape[0], mask_line.shape[1], 3))
                 self.final_mask_for_display[..., 1] = mask_obstacles
                 self.final_mask_for_display[..., 2] = mask_line
+                self.draw_line_offset_line()
+                draw_interpol_poly1(self.final_mask_for_display, self.poly_coeff_1)
                 if self.show_and_wait:
                     cv2.imshow('merged final', self.final_mask_for_display)
                     cv2.waitKey(0)
-
-            self.poly_1_interpol(mask_line)
-            self.compute_line_horizontal_offset(mask_line)
-            self.compute_obstacle_position(mask_line, mask_obstacles)
 
     def clip_image(self, image):
         image[:self.clip_length, :] = 0
@@ -149,13 +151,18 @@ class ImageAnalyzer:
         else:
             self.poly_coeff_1 = np.polyfit(y, x, 1)
 
-    def compute_line_horizontal_offset(self, image):
-        nonzeros_indexes = np.nonzero((image > self.LINE_THRESHOLD).copy())
-        x = nonzeros_indexes[1]
-        if len(x) == 0:
+    def draw_line_offset_line(self):
+        lineY = (self.image_warper.warped_height - self.offset_line_height)
+        shape = self.final_mask_for_display.shape
+        lineX = np.arange(0, shape[1] - 1)
+        self.final_mask_for_display[lineY, lineX, :] = 1
+
+    def compute_robot_horizontal_offset_from_poly1(self):
+        if self.poly_coeff_1 is None:
             self.pixel_offset_line = None
         else:
-            self.pixel_offset_line = np.mean(x[-10:]) - 150
+            self.pixel_offset_line = (self.poly_coeff_1[0] * (self.image_warper.warped_height - self.offset_line_height)
+                                      + self.poly_coeff_1[1]) - (self.image_warper.warped_width / 2)
 
     def compute_obstacle_position(self, mask_line, mask_obstacles):
 
@@ -212,3 +219,20 @@ class ImageAnalyzer:
             raise Exception("Clip lenght out of final image bounds")
         self.clip_length = clip_length
 
+    def set_offset_line_height(self, offset_line_height):
+        if offset_line_height < 0 or offset_line_height > self.image_warper.warped_height:
+            raise Exception("Clip lenght out of final image bounds")
+        self.offset_line_height = offset_line_height
+
+
+def draw_interpol_poly1(image, poly_coefs):
+    def poly1(x):
+        return poly_coefs[0] * x + poly_coefs[1]
+
+    shape = image.shape
+    xall = np.arange(0, shape[0] - 1)
+    ypoly = poly1(xall).astype(int)
+    ypoly = np.clip(ypoly, 0, shape[1] - 2)
+    image[xall, ypoly, :] = 0
+    image[xall, ypoly, 1] = 255
+    return image

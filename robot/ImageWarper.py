@@ -22,6 +22,7 @@ class ImageWarper:
         self.perspective = None
 
     warped_height = 400
+    warped_width = 300
 
     def warp(self, image, type):
         if self.nb_images_delay == 0:
@@ -56,7 +57,7 @@ class ImageWarper:
         # Convert to openCV coordinates system
         pts1 = pts1[:, ::-1]
         new_height = self.warped_height
-        new_width = 300
+        new_width = self.warped_width
         height, width = new_height, new_width
         pts2 = np.float32([[0, 0], [new_width, 0], [0, new_height], [new_width, new_height]])
         perspective_matrix = cv2.getPerspectiveTransform(pts1, pts2)
