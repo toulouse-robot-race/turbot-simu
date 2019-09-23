@@ -27,7 +27,7 @@ class LineAngleOffset(Strategy):
 
     def compute_steering(self):
         self.image_analyzer.analyze()
-        coeff_poly_1_line = self.image_analyzer.poly_coeff_1
+        coeff_poly_1_line = self.image_analyzer.poly_1_coefs
         distance_obstacle_line = self.image_analyzer.distance_obstacle_line
 
         obstacle_avoidance_additional_offset = 0 \

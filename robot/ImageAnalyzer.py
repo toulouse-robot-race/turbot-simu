@@ -37,8 +37,8 @@ class ImageAnalyzer:
     position_ligne_1 = 0.
     position_ligne_2 = 0.
     poly_coeff_square = None
-    poly_coeff_1 = None
-    poly_coeff_const = None
+    poly_1_coefs = None
+    poly_2_coefs = None
     position_obstacle = False
     parallelism = 0
     obstacle_exists = False
@@ -76,11 +76,13 @@ class ImageAnalyzer:
             if self.show_and_wait or self.log:
 
                 # Display final mask for debug
+                self.poly_2_interpol(mask_line)
                 self.final_mask_for_display = np.zeros((mask_line.shape[0], mask_line.shape[1], 3))
                 self.final_mask_for_display[..., 1] = mask_obstacles
                 self.final_mask_for_display[..., 2] = mask_line
                 self.draw_line_offset_line()
-                draw_interpol_poly1(self.final_mask_for_display, self.poly_coeff_1)
+                draw_interpol_poly1(self.final_mask_for_display, self.poly_1_coefs)
+                draw_interpol_poly2(self.final_mask_for_display, self.poly_2_coefs)
                 if self.show_and_wait:
                     cv2.imshow('merged final', self.final_mask_for_display)
                     cv2.waitKey(0)
@@ -143,13 +145,19 @@ class ImageAnalyzer:
             return result
 
     def poly_1_interpol(self, image):
+        self.poly_1_coefs = self.poly_interpol(image, 1)
+
+    def poly_2_interpol(self, image):
+        self.poly_2_coefs = self.poly_interpol(image, 2)
+
+    def poly_interpol(self, image, degree):
         nonzeros_indexes = np.nonzero(image > self.LINE_THRESHOLD)
         y = nonzeros_indexes[0]
         x = nonzeros_indexes[1]
         if len(x) < 2:
-            self.poly_coeff_1 = None
+            return None
         else:
-            self.poly_coeff_1 = np.polyfit(y, x, 1)
+            return np.polyfit(y, x, degree)
 
     def draw_line_offset_line(self):
         lineY = (self.image_warper.warped_height - self.offset_baseline_height)
@@ -158,11 +166,12 @@ class ImageAnalyzer:
         self.final_mask_for_display[lineY, lineX, :] = 1
 
     def compute_robot_horizontal_offset_from_poly1(self):
-        if self.poly_coeff_1 is None:
+        if self.poly_1_coefs is None:
             self.pixel_offset_line = None
         else:
-            self.pixel_offset_line = (self.poly_coeff_1[0] * (self.image_warper.warped_height - self.offset_baseline_height)
-                                      + self.poly_coeff_1[1]) - (self.image_warper.warped_width / 2)
+            self.pixel_offset_line = (self.poly_1_coefs[0] * (
+                    self.image_warper.warped_height - self.offset_baseline_height)
+                                      + self.poly_1_coefs[1]) - (self.image_warper.warped_width / 2)
 
     def compute_obstacle_position(self, mask_line, mask_obstacles):
 
@@ -229,9 +238,19 @@ def draw_interpol_poly1(image, poly_coefs):
     def poly1(x):
         return poly_coefs[0] * x + poly_coefs[1]
 
+    return draw_interpol(image, poly1)
+
+
+def draw_interpol_poly2(image, poly_coefs):
+    def poly2(x):
+        return poly_coefs[0] * x * x + poly_coefs[1] * x + poly_coefs[2]
+    return draw_interpol(image, poly2)
+
+
+def draw_interpol(image, interpol_function):
     shape = image.shape
     xall = np.arange(0, shape[0] - 1)
-    ypoly = poly1(xall).astype(int)
+    ypoly = interpol_function(xall).astype(int)
     ypoly = np.clip(ypoly, 0, shape[1] - 2)
     image[xall, ypoly, :] = 0
     image[xall, ypoly, 1] = 255
