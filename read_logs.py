@@ -4,7 +4,8 @@ import os
 import pickle
 
 import cv2
-import numpy as np
+
+from robot.ImageAnalyzer import draw_interpol_poly1
 
 ROBOT_LOG_DIR = "logs/robot"
 
@@ -49,18 +50,6 @@ def find_closest_original_frame_in_file(file_path, time):
         for original_frame_log in logs_original_images:
             if original_frame_log[0] == nearest_time:
                 return original_frame_log[1]
-
-
-def draw_interpol_poly1(image, poly_coefs):
-    def poly1(x):
-        return poly_coefs[0] * x + poly_coefs[1]
-    shape = image.shape
-    xall = np.arange(0, shape[0] - 1)
-    ypoly = poly1(xall).astype(int)
-    ypoly = np.clip(ypoly, 0, shape[1] - 2)
-    image[xall, ypoly, :] = 0
-    image[xall, ypoly, 1] = 255
-    return image
 
 
 def find_closest_original_frame(time):

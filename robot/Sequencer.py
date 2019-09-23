@@ -118,6 +118,8 @@ class Sequencer(Component):
         if 'speed' in self.current_program:
             vitesse = self.current_program['speed']
             self.car.forward(vitesse)
+        if 'offset_baseline_height' in self.current_program:
+            self.image_analyzer.set_offset_baseline_height(self.current_program['offset_baseline_height'])
         if 'display' in self.current_program:
             self.car.send_display(self.current_program['display'])
         if 'chenillard' in self.current_program:

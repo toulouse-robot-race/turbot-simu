@@ -57,7 +57,7 @@ class ImageAnalyzer:
         self.image_warper = image_warper
         self.show_and_wait = show_and_wait
         self.clip_length = 0
-        self.offset_line_height = 50
+        self.offset_baseline_height = 50
 
     def analyze(self):
         mask_line, mask_obstacles = self.car.get_images()
@@ -152,7 +152,7 @@ class ImageAnalyzer:
             self.poly_coeff_1 = np.polyfit(y, x, 1)
 
     def draw_line_offset_line(self):
-        lineY = (self.image_warper.warped_height - self.offset_line_height)
+        lineY = (self.image_warper.warped_height - self.offset_baseline_height)
         shape = self.final_mask_for_display.shape
         lineX = np.arange(0, shape[1] - 1)
         self.final_mask_for_display[lineY, lineX, :] = 1
@@ -161,7 +161,7 @@ class ImageAnalyzer:
         if self.poly_coeff_1 is None:
             self.pixel_offset_line = None
         else:
-            self.pixel_offset_line = (self.poly_coeff_1[0] * (self.image_warper.warped_height - self.offset_line_height)
+            self.pixel_offset_line = (self.poly_coeff_1[0] * (self.image_warper.warped_height - self.offset_baseline_height)
                                       + self.poly_coeff_1[1]) - (self.image_warper.warped_width / 2)
 
     def compute_obstacle_position(self, mask_line, mask_obstacles):
@@ -219,10 +219,10 @@ class ImageAnalyzer:
             raise Exception("Clip lenght out of final image bounds")
         self.clip_length = clip_length
 
-    def set_offset_line_height(self, offset_line_height):
+    def set_offset_baseline_height(self, offset_line_height):
         if offset_line_height < 0 or offset_line_height > self.image_warper.warped_height:
             raise Exception("Clip lenght out of final image bounds")
-        self.offset_line_height = offset_line_height
+        self.offset_baseline_height = offset_line_height
 
 
 def draw_interpol_poly1(image, poly_coefs):
