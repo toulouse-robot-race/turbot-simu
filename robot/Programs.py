@@ -30,7 +30,10 @@ TRR_2019 = [{
         'speed': 50,
         'conditionFin': 'cap',
         'capFinalMini': 160,
-        # En relatif par rapport au cap initial, pour la gauche : 180 300, pour la droite 60 180
+        'clip': 200,
+        'angle_coef': 60,
+        'offset_coef': 0.4,
+        'offset_baseline_height': 50,
         'capFinalMaxi': 270,  # En relatif par rapport au cap initial
     },
     {
@@ -72,6 +75,10 @@ TRR_2019 = [{
     {
         'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
         'speed': 60,
+        'clip': 200,
+        'angle_coef': 60,
+        'offset_coef': 0.4,
+        'offset_baseline_height': 50,
         'conditionFin': 'tacho',
         'tacho': 4050,
     },
@@ -105,6 +112,10 @@ TRR_2019 = [{
     {
         'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
         'speed': 45,
+        'clip': 100,
+        'angle_coef': 60,
+        'offset_coef': 0.4,
+        'offset_baseline_height': 50,
         'conditionFin': 'cap',
         'capFinalMini': 160,
         'capFinalMaxi': 270,
@@ -148,7 +159,10 @@ TRR_2019 = [{
     {
         'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
         'activationDistanceIntegrale': True,
-        'obstacle': False,
+        'clip': 100,
+        'angle_coef': 60,
+        'offset_coef': 0.4,
+        'offset_baseline_height': 50,
         'speed': 60,
         'conditionFin': 'tacho',
         'tacho': 500,
@@ -162,6 +176,10 @@ TRR_2019 = [{
         'instruction': 'lineAngleOffset',  # suiviImageLigneDroite ou suiviImageRoues
         'speed': 45,
         'conditionFin': 'tacho',
+        'clip': 150,
+        'angle_coef': 60,
+        'offset_coef': 0.4,
+        'offset_baseline_height': 50,
         'tacho': 500,
         'nextLabel': 'arret_apres_freinage'
     },
