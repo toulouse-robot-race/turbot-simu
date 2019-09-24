@@ -1,27 +1,44 @@
+import os
 import time
 
 from robot import Programs
-from robot.Asservisement import Asservissement
-from robot.Car import Car
-from robot.Gyro import Gyro
 from robot.ImageAnalyzer import ImageAnalyzer
+from robot.ImageWarper import ImageWarper
 from robot.Logger import Logger
 from robot.Sequencer import Sequencer
-from robot.Simulator import Simulator
-from robot.SpeedController import SpeedController
-from robot.Tachometer import Tachometer
-from robot.Time import Time
+from robot.simu.Camera import Camera
+from robot.simu.Config import NB_IMAGES_DELAY, TACHO_COEF
+from robot.simu.Gyro import Gyro
+from robot.simu.SimuCar import SimuCar
+from robot.simu.Simulator import Simulator
+from robot.simu.SpeedController import SpeedController
+from robot.simu.SteeringController import SteeringController
+from robot.simu.Tachometer import Tachometer
+from robot.simu.Time import Time
+from robot.strategy.StrategyFactory import StrategyFactory
+
+current_dir = os.path.dirname(os.path.realpath(__file__))
 
 simulation_duration_seconds = 50
 
-simulator = Simulator()
+frame_cycle_log = 5
+
+log_enable = False
+
+compress_log = True
+
+simulator = Simulator(log_dir=current_dir + "/logs/original",
+                      log_enable=log_enable,
+                      frame_cycle_log=frame_cycle_log,
+                      compress_log=compress_log)
 
 handles = {
     "right_motor": simulator.get_handle("driving_joint_rear_right"),
     "left_motor": simulator.get_handle("driving_joint_rear_left"),
     "left_steering": simulator.get_handle("steering_joint_fl"),
     "right_steering": simulator.get_handle("steering_joint_fr"),
-    "cam": simulator.get_handle("Vision_sensor"),
+    "line_cam": simulator.get_handle("Vision_sensor_line"),
+    "obstacles_cam": simulator.get_handle("Vision_sensor_obstacles"),
     "base_car": simulator.get_handle("base_link")
 }
 
@@ -29,8 +46,8 @@ gyro_name = "gyroZ"
 
 simu_time = Time(simulator)
 
-image_analyzer = ImageAnalyzer(simulator=simulator,
-                               cam_handle=handles["cam"])
+steering_controller = SteeringController(simulator=simulator,
+                                         steering_handles=[handles["left_steering"], handles["right_steering"]])
 
 speed_controller = SpeedController(simulator=simulator,
                                    motor_handles=[handles["left_motor"], handles["right_motor"]],
@@ -42,40 +59,51 @@ gyro = Gyro(simulator=simulator,
 tachometer = Tachometer(simulator=simulator,
                         base_car=handles['base_car'])
 
-car = Car(simulator=simulator,
-          steering_handles=[handles["left_steering"], handles["right_steering"]],
-          motors_handles=[handles["left_motor"], handles["right_motor"]],
-          speed_controller=speed_controller,
-          tachometer=tachometer,
-          gyro=gyro)
+camera = Camera(simulator=simulator,
+                line_cam_handle=handles["line_cam"],
+                obstacles_cam_handle=handles["obstacles_cam"])
 
-asservissement = Asservissement(car=car,
-                                image_analyzer=image_analyzer,
-                                time=simu_time)
+car = SimuCar(steering_controller=steering_controller,
+              speed_controller=speed_controller,
+              tachometer=tachometer,
+              gyro=gyro,
+              camera=camera,
+              time=simu_time)
+
+image_warper = ImageWarper(car=car,
+                           nb_images_delay=NB_IMAGES_DELAY,
+                           tacho_coef=TACHO_COEF,
+                           show_and_wait=False)
+
+image_analyzer = ImageAnalyzer(car=car,
+                               image_warper=image_warper,
+                               show_and_wait=False)
+
+strategy_factory = StrategyFactory(car, image_analyzer)
 
 sequencer = Sequencer(car=car,
-                      time=simu_time,
-                      asservissement=asservissement,
-                      program=Programs.TRR)
+                      program=Programs.TRR_2019,
+                      strategy_factory=strategy_factory,
+                      image_analyzer=image_analyzer)
 
-logger = Logger(simulator=simulator,
-                time=simu_time,
-                image_analyzer=image_analyzer,
-                speed_controller=speed_controller,
+logger = Logger(image_analyzer=image_analyzer,
                 car=car,
-                gyro=gyro,
-                asservissement=asservissement,
                 sequencer=sequencer,
-                handles=handles,
-                tachometer=tachometer)
+                image_warper=image_warper,
+                steering_controller=steering_controller,
+                time=simu_time,
+                log_dir=current_dir + "/logs/simu",
+                log_persist_enable=log_enable,
+                frame_cycle_log=frame_cycle_log,
+                compress_log=compress_log)
 
 # Order matter, components will be executed one by one
 executable_components = [gyro,
                          tachometer,
-                         image_analyzer,
+                         camera,
                          sequencer,
-                         asservissement,
                          speed_controller,
+                         steering_controller,
                          logger]
 
 simulator.start_simulation()
@@ -83,8 +111,5 @@ simulator.start_simulation()
 while simu_time.time() < simulation_duration_seconds:
     start_step_time = time.time()
     [component.execute() for component in executable_components]
-    print("code execution time : %fs " % (time.time() - start_step_time))
-
     start_simulator_step_time = time.time()
     simulator.do_simulation_step()
-    print("simulator execution time : %fs " % (time.time() - start_simulator_step_time))

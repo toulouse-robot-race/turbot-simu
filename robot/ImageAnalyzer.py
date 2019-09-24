@@ -2,29 +2,23 @@
 import cv2
 import numpy as np
 
-from robot.Config import CAMERA_DELAY
+
+def clean_mask_obstacle(mask_obstacles):
+    return np.clip(mask_obstacles, 0, 1) * 255
 
 
 class ImageAnalyzer:
-    # Constantes
-    MODEL_FILENAME = 'deep_learning_models/craie_quarter_filters_6.h5'
-    DELAY_EXECUTION = 0.07
-    LINE_THRESHOLD = 0.10
-    EVITEMENT_OFFSET = 0.30
-    X_INFERENCE_POINT_1 = 100  # Point depuis le haut de l'image pris pour calculer l'ecart par rapport a la ligne
-    X_INFERENCE_POINT_2 = 150  # Point depuis le haut de l'image pris pour calculer l'ecart par rapport a la ligne
-    WIDTH = 320
-    SAVE_TO_FILENAME = "/tmp_ram/imageAnalysisResult.json"
-    LOG_EVERY_N_IMAGES = 20  # Loggue les images toutes les N
-    LOG_BUFFER_SIZE = 10  # Taille du buffer (nombre d'images enregistrees dans un fichier)
-
     # Constants for cleaning inference results. IMPORTANT to recalibrate this on real conditions track.
     MIN_AREA_RATIO = 0.35  # if area / area_of_biggest_contour is less than this ratio, contour is bad
     MIN_AREA_TO_KEEP = 100.  # if max_area if less than this, reject all image
     MIN_THRESHOLD_CONTOUR = 10
     MAX_VALUE_CONTOUR = 255
 
-    # Param�tres de classe
+    LINE_THRESHOLD = 0.10
+    BOTTOM_OBSTACLE_WINDOW_HEIGHT = 5
+    LINE_WINDOW_HEIGHT_AT_OBSTACLE = 5
+
+    # Param�tres de class
     position_consigne = 0.0
     logTimestampMemory = None
     logImageMemory = None
@@ -43,27 +37,61 @@ class ImageAnalyzer:
     position_ligne_1 = 0.
     position_ligne_2 = 0.
     poly_coeff_square = None
+    poly_1_coefs = None
+    poly_2_coefs = None
+    position_obstacle = False
+    parallelism = 0
+    obstacle_exists = False
+    obstacle_in_brake_zone = False
+    obstacle_position_unlock = True
+    obstacle_position_lock = False
+    pixel_offset_line = None
+    distance_obstacle_line = None
+    side_avoidance = None
 
-    def __init__(self, simulator, cam_handle):
-        self.cam_handle = cam_handle
-        self.simulator = simulator
+    final_mask_for_display = None
 
-    def execute(self):
-        resolution, byte_array_image_string = self.simulator.get_gray_image(self.cam_handle, CAMERA_DELAY)
-        if resolution is None and byte_array_image_string is None:
-            return
-        mask0 = self.convert_image_to_numpy(byte_array_image_string, resolution)
-        mask0 = self.clean_mask(mask0)
-        self.position_ligne_1, self.position_ligne_2, poly_coeff = self.get_ecart_ligne(mask0)
-        if poly_coeff is not None:
-            self.poly_coeff_square = poly_coeff[0]
-        else:
-            self.poly_coeff_square = None
+    def __init__(self, car, image_warper, show_and_wait=False, log=True):
+        self.log = log
+        self.car = car
+        self.image_warper = image_warper
+        self.show_and_wait = show_and_wait
+        self.clip_length = 0
+        self.offset_baseline_height = 50
 
-    def convert_image_to_numpy(self, byte_array_image_string, resolution):
-        return np.flipud(np.fromstring(byte_array_image_string, dtype=np.uint8).reshape(resolution[::-1]))
+    def analyze(self):
+        mask_line, mask_obstacles = self.car.get_images()
+        if mask_line is not None and mask_obstacles is not None:
+            mask_line = self.clean_mask_line(mask_line)
+            mask_obstacles = clean_mask_obstacle(mask_obstacles)
+            mask_line = self.image_warper.warp(mask_line, "line")
+            mask_obstacles = self.image_warper.warp(mask_obstacles, "obstacle")
+            mask_line = self.clip_image(mask_line)
 
-    def clean_mask(self, image):
+            self.poly_1_interpol(mask_line)
+            self.compute_robot_horizontal_offset_from_poly1()
+            print("offset", self.pixel_offset_line)
+            self.compute_obstacle_position(mask_line, mask_obstacles)
+
+            if self.show_and_wait or self.log:
+
+                # Display final mask for debug
+                self.poly_2_interpol(mask_line)
+                self.final_mask_for_display = np.zeros((mask_line.shape[0], mask_line.shape[1], 3))
+                self.final_mask_for_display[..., 1] = mask_obstacles
+                self.final_mask_for_display[..., 2] = mask_line
+                self.draw_line_offset_line()
+                draw_interpol_poly1(self.final_mask_for_display, self.poly_1_coefs)
+                draw_interpol_poly2(self.final_mask_for_display, self.poly_2_coefs)
+                if self.show_and_wait:
+                    cv2.imshow('merged final', self.final_mask_for_display)
+                    cv2.waitKey(0)
+
+    def clip_image(self, image):
+        image[:self.clip_length, :] = 0
+        return image
+
+    def clean_mask_line(self, image):
 
         # Scale to openCV format: transform [0.,1.] to [0,255]
         int_mat = (image * 255).astype(np.uint8)
@@ -116,75 +144,114 @@ class ImageAnalyzer:
 
             return result
 
-    # get_ecart_ligne
-    def get_ecart_ligne(self, image):
+    def poly_1_interpol(self, image):
+        self.poly_1_coefs = self.poly_interpol(image, 1)
 
-        def poly_2_interpol(image):
-            nonzeros_indexes = np.nonzero((image > self.LINE_THRESHOLD).copy())
-            x = nonzeros_indexes[0]
-            y = nonzeros_indexes[1]
-            if len(x) < 2:
-                return None, None
-            else:
-                poly_coeff = np.polyfit(x, y, 2)
+    def poly_2_interpol(self, image):
+        self.poly_2_coefs = self.poly_interpol(image, 2)
 
-            # Create interpolated function
-            def interpol_function(x):
-                values = np.int16(poly_coeff[2] + x * poly_coeff[1] + x ** 2 * poly_coeff[0])
-                return np.minimum(np.maximum(values, 0), self.WIDTH - 1)
-
-            return interpol_function, poly_coeff
-
-        # Interpole la ligne � partir des points x, y
-        poly2, poly_coeff = poly_2_interpol(image)
-
-
-        if poly2 is None:
-            # Si on a perdu la ligne, on fait l'hypothese qu'elle est du meme cote que la derniere fois qu'on l'a vue
-            return self.position_ligne_1, self.position_ligne_2, None
+    def poly_interpol(self, image, degree):
+        nonzeros_indexes = np.nonzero(image > self.LINE_THRESHOLD)
+        y = nonzeros_indexes[0]
+        x = nonzeros_indexes[1]
+        if len(x) < 2:
+            return None
         else:
-            position_1 = (2.0 * poly2(self.X_INFERENCE_POINT_1) / self.WIDTH) - 1.0
-            position_2 = (2.0 * poly2(self.X_INFERENCE_POINT_2) / self.WIDTH) - 1.0
-            return position_1, position_2, poly_coeff
+            return np.polyfit(y, x, degree)
 
-    def getPositionLigne1(self):
-        return self.position_ligne_1
+    def draw_line_offset_line(self):
+        lineY = (self.image_warper.warped_height - self.offset_baseline_height)
+        shape = self.final_mask_for_display.shape
+        lineX = np.arange(0, shape[1] - 1)
+        self.final_mask_for_display[lineY, lineX, :] = 1
 
-    def getPositionLigne2(self):
-        return self.position_ligne_2
+    def compute_robot_horizontal_offset_from_poly1(self):
+        if self.poly_1_coefs is None:
+            self.pixel_offset_line = None
+        else:
+            self.pixel_offset_line = (self.poly_1_coefs[0] * (
+                    self.image_warper.warped_height - self.offset_baseline_height)
+                                      + self.poly_1_coefs[1]) - (self.image_warper.warped_width / 2)
 
-    def getPolyCoeffSquare(self):
-        return self.poly_coeff_square
+    def compute_obstacle_position(self, mask_line, mask_obstacles):
 
-    # Tells if a new image has arrived
-    def isThereANewImage(self):
-        return True
+        obstacle_pixels_y, obstacle_pixels_x, = np.nonzero(mask_obstacles)
+        line_pixels_y, line_pixels_x = np.nonzero(mask_line)
 
-    def getPolyCoeff1(self):
-        pass
+        if len(obstacle_pixels_y) == 0 or len(obstacle_pixels_x) == 0 \
+                or len(line_pixels_y) == 0 or len(line_pixels_x) == 0:
+            self.distance_obstacle_line = None
+            return
 
-    def getPolyCoeffConst(self):
-        pass
+        lowest_obstacle_y = np.max(obstacle_pixels_y)
+        lowest_obstacle_pixels_x = obstacle_pixels_x[
+            np.where(obstacle_pixels_y >= lowest_obstacle_y - self.BOTTOM_OBSTACLE_WINDOW_HEIGHT)]
 
-    def getObstacleExists(self):
-        pass
+        if len(line_pixels_x) == 0:
+            self.distance_obstacle_line = None
+            return
 
-    def getPositionObstacle(self):
-        return 0
+        low_left_obstacle_x = np.min(lowest_obstacle_pixels_x)
+        low_left_obstacle_y = lowest_obstacle_y
+        low_right_obstacle_x = np.max(lowest_obstacle_pixels_x)
+        low_right_obstacle_y = lowest_obstacle_y
 
-    def getParallelism(self):
-        return 0
+        # Find points on the line that are the closest to the bottom left and bottom right of the obstacle
+        idx_line_closest_to_left_obstacle = np.argmin(
+            np.square(low_left_obstacle_x - line_pixels_x) + np.square(low_left_obstacle_y - line_pixels_y))
+        idx_line_closest_to_right_obstacle = np.argmin(
+            np.square(low_right_obstacle_x - line_pixels_x) + np.square(low_right_obstacle_y - line_pixels_y))
+        x_line_closest_left = line_pixels_x[idx_line_closest_to_left_obstacle]
+        y_line_closest_left = line_pixels_y[idx_line_closest_to_left_obstacle]
+        x_line_closest_right = line_pixels_x[idx_line_closest_to_right_obstacle]
+        y_line_closest_right = line_pixels_y[idx_line_closest_to_right_obstacle]
 
-    def getObstacleInBrakeZone(self):
-        return False
+        # Compute distances
+        distance_left_obstacle = np.sqrt(
+            (x_line_closest_left - low_left_obstacle_x) ** 2 + (y_line_closest_left - low_left_obstacle_y) ** 2)
+        distance_right_obstacle = np.sqrt(
+            (x_line_closest_right - low_right_obstacle_x) ** 2 + (y_line_closest_right - low_right_obstacle_y) ** 2)
 
-    def getStartDetected(self):
-        pass
+        # Find position according to line
+        position_left_obstacle = np.sign(low_left_obstacle_x - x_line_closest_left)
+        position_right_obstacle = np.sign(low_right_obstacle_x - x_line_closest_right)
 
-    def unlockObstacle(self):
-        pass
+        # Transform distance to signed distance
+        distance_left_obstacle *= position_left_obstacle
+        distance_right_obstacle *= position_right_obstacle
 
-        # Tells if a new image has arrived
+        self.side_avoidance = 1 if (abs(distance_left_obstacle) > abs(distance_right_obstacle)) else -1
+        self.distance_obstacle_line = min(distance_left_obstacle, distance_right_obstacle, key=abs)
 
-    def isThereANewImage(self):
-        return True
+    def set_clip_length(self, clip_length):
+        if clip_length < 0 or clip_length > self.image_warper.warped_height:
+            raise Exception("Clip lenght out of final image bounds")
+        self.clip_length = clip_length
+
+    def set_offset_baseline_height(self, offset_line_height):
+        if offset_line_height < 0 or offset_line_height > self.image_warper.warped_height:
+            raise Exception("Clip lenght out of final image bounds")
+        self.offset_baseline_height = offset_line_height
+
+
+def draw_interpol_poly1(image, poly_coefs):
+    def poly1(x):
+        return poly_coefs[0] * x + poly_coefs[1]
+
+    return draw_interpol(image, poly1)
+
+
+def draw_interpol_poly2(image, poly_coefs):
+    def poly2(x):
+        return poly_coefs[0] * x * x + poly_coefs[1] * x + poly_coefs[2]
+    return draw_interpol(image, poly2)
+
+
+def draw_interpol(image, interpol_function):
+    shape = image.shape
+    xall = np.arange(0, shape[0] - 1)
+    ypoly = interpol_function(xall).astype(int)
+    ypoly = np.clip(ypoly, 0, shape[1] - 2)
+    image[xall, ypoly, :] = 0
+    image[xall, ypoly, 1] = 255
+    return image

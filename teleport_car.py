@@ -1,6 +1,6 @@
 import time
 
-from robot.Simulator import Simulator
+from robot.simu.Simulator import Simulator
 
 simulation_duration_seconds = 5
 
